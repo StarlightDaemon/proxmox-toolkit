@@ -15,7 +15,7 @@ Copy and paste the script into your manager. This avoids raw-script links being 
    | [Violentmonkey](https://violentmonkey.github.io/guide/creating-a-userscript/) | Click its toolbar icon, then **+** to create a new script. |
    | [Tampermonkey](https://www.tampermonkey.net/faq.php?locale=en&q=Q102) | Open its dashboard and choose **Add a new script**. |
 
-2. Open [the source on main](../proxmox-copy-console.user.js), or download `proxmox-copy-console.user.js` from the [0.5.0 release](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.5.0). Copy the entire file, including its `// ==UserScript==` header, into the editor. Confirm `@name Proxmox Toolkit` and `@version 0.5.0`.
+2. Open [the stable source](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.5.0/proxmox-copy-console.user.js), or download `proxmox-copy-console.user.js` from the [0.5.0 release](https://github.com/StarlightDaemon/proxmox-toolkit/releases/tag/v0.5.0). Copy the entire file, including its `// ==UserScript==` header, into the editor. Confirm `@name Proxmox Toolkit` and `@version 0.5.0`.
 3. **Replace** the supplied `https://*:8006/*` include rule with your trusted Proxmox host, for example:
 
    ```javascript
@@ -29,7 +29,9 @@ Copy and paste the script into your manager. This avoids raw-script links being 
 
 Replace the code in your existing entry, then reapply your trusted-host include rule before saving and reloading Proxmox.
 
-The name changed from **Proxmox Copy Console** to **Proxmox Toolkit** in 0.5.0. Managers may treat the new name as a separate installation. If you create a separate entry, disable the old one before enabling Toolkit. The repository URL, script filename, and namespace retain their original names.
+The name changed from **Proxmox Copy Console** to **Proxmox Toolkit** in 0.5.0. Managers may treat the new name as a separate installation. If you create a separate entry, disable the old one before enabling Toolkit.
+
+The repository moved to **StarlightDaemon/proxmox-toolkit** on 2026-11-02. Old repository links redirect to the new address. The historical 0.5.0 release keeps its original `proxmox-copy-console.user.js` asset and namespace. Three synchronized editions and a new Toolkit filename are under development; follow the [editions branch](https://github.com/StarlightDaemon/proxmox-toolkit/tree/codex/standalone-editions) for candidate instructions. Do not replace the stable script with a different edition just because its filename matches.
 
 ## Clipboard access
 
@@ -41,6 +43,6 @@ The default requires HTTPS on port **8006**. For a custom port, change both the 
 
 ## Rollback to copy-only
 
-Replace Toolkit with the [0.4.1 source](https://github.com/StarlightDaemon/proxmox-copy-console/blob/v0.4.1/proxmox-copy-console.user.js), reapply your trusted-host rule, save, and reload Proxmox. Keep one entry enabled. This restores the earlier Copy-only behavior.
+Replace Toolkit with the [0.4.1 source](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.4.1/proxmox-copy-console.user.js), reapply your trusted-host rule, save, and reload Proxmox. Keep one entry enabled. This restores the earlier Copy-only behavior.
 
 If the buttons do not appear, check [troubleshooting](USAGE.md#troubleshooting) before using diagnostic probes.

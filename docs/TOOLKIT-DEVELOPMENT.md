@@ -1,6 +1,32 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-01: public documentation cleanup
+## Latest checkpoint — 2026-11-02: repository rename and edition development
+
+The maintainer authorized renaming the existing repository to
+`StarlightDaemon/proxmox-toolkit`, updating links and local origin, and checking
+old-address redirects. Original repository ID `1375405402` was verified before
+and after the rename. Starting main/checkout commit:
+`df1957edac560e5ae1caac36063ccc542866f442`. Local path remains
+`E:\Citadel\proxmox-copy-console`; origin now points to
+`https://github.com/StarlightDaemon/proxmox-toolkit.git`.
+
+Publish canonical link/migration documentation on main while preserving the
+accepted v0.5.0 tag and release assets. Stable installation links are pinned
+to that tag so development edition filenames cannot change their meaning.
+The maintainer chose Toolkit plus Copy-only and Paste-only scripts, generated
+from shared source with one synchronized Toolkit version for all editions.
+Implement and verify the changed runtime on `codex/standalone-editions`;
+new Firefox + Violentmonkey live acceptance is separate from stable 0.5.0.
+
+Rename verification: old repository, main-source page, and v0.5.0 release
+URLs returned 301 then 200; the old release-asset URL returned 301, 302, then
+200. The old raw tagged-source URL returned 200 directly (available, without
+an HTTP redirect). Git lookup using the old clone URL returned the expected
+main commit. Latest remains regular stable v0.5.0, with asset SHA-256
+`8263ac0d60dcb9d08f1653c97cdfcdaa1960cdd0f404015c5a8beddedae523f8`.
+These are remote URL/ref/asset checks, not new runtime or live Proxmox tests.
+
+## Previous checkpoint — 2026-11-01: public documentation cleanup
 
 The maintainer approved a shorter README, a corrected GitHub About description,
 and two focused guides. Verified clean starting commit

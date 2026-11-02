@@ -4,6 +4,19 @@ This file records durable decisions by version. Historical sections preserve the
 
 ## Product scope and simplicity
 
+On 2026-11-02 the maintainer authorized renaming this existing repository to
+**proxmox-toolkit**, retaining its history/releases and old-address redirect.
+Update current canonical links and local origin; leave the old repository
+name unused. Historical records and published assets retain their identities.
+
+The maintainer also chose three independently installable editions:
+**Toolkit** (all features), **Copy Console**, and **Paste & Execute**. Future
+features follow the same optional standalone plus all-in-one pattern. Generate
+the editions from shared source rather than maintaining divergent forks.
+Toolkit owns the version: one manifest stamps the same version into every
+edition on every release, including editions with unchanged runtime behavior.
+Develop this packaging separately from the accepted stable 0.5.0 runtime.
+
 The maintainer approved **Proxmox Toolkit** and Paste & Execute development on
 2026-09-23. Stable 0.5.0 adds that console action alongside
 Copy in one userscript. Firefox + Violentmonkey is the primary development and
@@ -27,17 +40,20 @@ within the accepted scope and approved stable **0.5.0**, removing the RC label.
 Preserve the tested runtime, change version/description metadata only, promote
 main, and publish v0.5.0 as a regular GitHub Release explicitly marked Latest.
 This promotion does not imply new browser/manager or scenario qualification.
-Preserve earlier tags/releases; remote renaming remains separate.
+Preserve earlier tags/releases. Repository renaming was separately authorized
+on 2026-11-02 as recorded above.
 
-Keep one readable installable file, no runtime dependencies or build step, and
-shared console targeting/lifecycle. On 2026-10-15 the maintainer removed the
+Keep each edition as one readable installable file with no runtime dependencies
+or user build step, and share console targeting/lifecycle in the development
+source. On 2026-10-15 the maintainer removed the
 fixed source-size ceiling and made efficiency the primary structural criterion.
 Review repeated discovery and DOM work, idle behavior, resource lifetimes, and
 the value of added complexity. Prefer readable shared logic; keep correctness
 and input safeguards. Support performance claims with operation counts or
 browser profiling. Report source bytes/hash for candidate identity without a
 size threshold. Avoid speculative frameworks and minification for cosmetic
-size reductions. Remote renaming/publication remains separate.
+size reductions. Publication of new runtime candidates remains separate from
+the repository rename and existing stable release.
 
 The October 16 efficiency review confirmed the checker has no source-size gate.
 Reuse resolved ownership only within one synchronous scan, including pending

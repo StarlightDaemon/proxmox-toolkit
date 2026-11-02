@@ -1,6 +1,6 @@
 # Proxmox Toolkit
 
-[![Version](https://img.shields.io/badge/version-0.5.0-0969da)](https://github.com/StarlightDaemon/proxmox-copy-console/releases/latest)
+[![Version](https://img.shields.io/badge/version-0.5.0-0969da)](https://github.com/StarlightDaemon/proxmox-toolkit/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-2da44e)](LICENSE)
 
 Native **Copy** and **Paste & Execute** buttons for Proxmox node shells and LXC consoles.
@@ -10,12 +10,12 @@ Native **Copy** and **Paste & Execute** buttons for Proxmox node shells and LXC 
 
 One userscript, with no build step, runtime dependencies, or server installation. It uses the console's existing connection and stores no transcripts or clipboard history.
 
-**[Install](#install)** · [Usage guide](docs/USAGE.md) · [Release notes](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.5.0)
+**[Install](#install)** · [Usage guide](docs/USAGE.md) · [Release notes](https://github.com/StarlightDaemon/proxmox-toolkit/releases/tag/v0.5.0)
 
 ## Install
 
 1. Open your userscript manager; **Firefox + Violentmonkey** is the primary tested combination.
-2. Copy the complete [script file](proxmox-copy-console.user.js), including its userscript header, into a new entry or replace your existing entry. Confirm `@version 0.5.0`.
+2. Copy the complete [stable script file](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.5.0/proxmox-copy-console.user.js), including its userscript header, into a new entry or replace your existing entry. Confirm `@version 0.5.0`.
 3. **Replace** the supplied `https://*:8006/*` include rule with your trusted host, for example `https://pve.example.net:8006/*`. Adding a narrow rule beside the broad rule does not restrict access.
 4. Save, keep one entry enabled in one manager, reload Proxmox, and open a node **Shell** or LXC **Console**. Disable the old **Proxmox Copy Console** entry if you created a separate Toolkit entry.
 
@@ -36,5 +36,7 @@ Targets current stable **Proxmox VE** through its main HTTPS interface on port *
 Standalone windows, noVNC/SPICE, PDM remote consoles, and custom proxy ports are outside supported scope.
 
 ## Documentation
+
+The repository is now **proxmox-toolkit**; the old repository address redirects here. Three synchronized editions—Toolkit, Copy Console, and Paste & Execute—are being developed on [the editions branch](https://github.com/StarlightDaemon/proxmox-toolkit/tree/codex/standalone-editions). The 0.5.0 release remains the accepted stable all-in-one script.
 
 See the [documentation index](docs/README.md) for the guides, design, test records, and contributor references.

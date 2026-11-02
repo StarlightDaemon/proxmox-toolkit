@@ -2,10 +2,15 @@
 
 ## Repository purpose
 
-`StarlightDaemon/proxmox-copy-console` contains Proxmox Toolkit development and
+`StarlightDaemon/proxmox-toolkit` contains Proxmox Toolkit development and
 the stable Proxmox Copy Console lineage. The maintainer approved the Toolkit
 name, Paste & Execute development, main promotion, and v0.5.0 stable release
-publication as Latest. Remote renaming remains separate.
+publication as Latest. On 2026-11-02 the maintainer authorized renaming this
+existing repository, updating links/remotes, and developing Toolkit, Copy-only,
+and Paste-only editions. Every edition follows the Toolkit version on every
+release, even when its own runtime has not changed. Preserve the old-name
+redirect by leaving that repository name unused. New runtime behavior needs
+its own acceptance; the three-edition candidate is separate from stable 0.5.0.
 
 ## Authoritative project documents
 
