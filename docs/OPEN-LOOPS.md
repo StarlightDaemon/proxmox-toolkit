@@ -14,6 +14,7 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
+| OL-12 | Three-edition candidate; live acceptance pending | Toolkit, Copy Console, and Paste & Execute are generated from shared source at synchronized 0.6.0-dev.1. Validate each alone and the individuals together in Firefox + Violentmonkey, including clipboard serialization, targeting, cancellation, lifecycle, and migration. Preserve stable 0.5.0 evidence; close only with actual new live observations. See [Editions](EDITIONS.md) and [Testing](TESTING.md#toolkit-acceptance). |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |
 | OL-05 | Package evidence pending | Record installed console package versions and compare with the pinned xterm fixture. Add or refresh a fixture only when an observed package/API difference warrants it; close with comparison and relevant regression evidence. |

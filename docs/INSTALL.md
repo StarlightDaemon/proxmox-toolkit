@@ -35,6 +35,8 @@ The repository moved to **StarlightDaemon/proxmox-toolkit** on 2026-11-02. Old r
 
 ## Clipboard access
 
+For **0.6.0-dev.1** candidate installation, use the [edition selection and migration guide](EDITIONS.md). The stable instructions above link to v0.5.0; its historical filename identifies the all-in-one script, while the development file with that name is Copy-only.
+
 The script needs access to the Proxmox page, clipboard writing for Copy, and browser clipboard reading when Paste & Execute is activated. Firefox may show its own **Paste** prompt; approve it within 15 seconds or the operation expires. See [usage](USAGE.md#paste--execute) for what gets sent.
 
 ## Custom ports

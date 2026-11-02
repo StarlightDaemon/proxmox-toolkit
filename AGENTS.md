@@ -14,10 +14,12 @@ its own acceptance; the three-edition candidate is separate from stable 0.5.0.
 
 ## Authoritative project documents
 
-- `proxmox-copy-console.user.js` — stable Toolkit 0.5.0 on main, preserving the runtime of maintainer-tested 0.5.0-dev.1 and published 0.5.0-rc.1. The earlier 0.4.1 tag/release preserves the live-tested 0.4.1-dev.1 runtime. Preserve the evidence limits in Testing; practical acceptance does not establish the full compatibility matrix.
+- `src/toolkit.js` and `tools/editions.json` — shared development source and one Toolkit-owned version manifest for all editions. Edit these, then run `node tools/build.cjs`; do not hand-edit generated userscripts.
+- `proxmox-toolkit.user.js`, `proxmox-copy-console.user.js`, `proxmox-paste-execute.user.js` — generated 0.6.0-dev.1 Toolkit, Copy-only, and Paste-only candidates on the development branch. These changed runtimes need new acceptance. Stable 0.5.0 remains at its tag/release, where the historical `proxmox-copy-console.user.js` file is all-in-one. Preserve Testing evidence limits and earlier release identities.
 - `README.md` — user-facing project overview.
 - `docs/INSTALL.md` — installation, updates, host restrictions, migration, and rollback.
 - `docs/USAGE.md` — action behavior, feedback, cancellation limits, and user troubleshooting.
+- `docs/EDITIONS.md` — edition selection, migration, generation, coexistence, and synchronized release versions.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.
 - `docs/README.md` — current documentation index.

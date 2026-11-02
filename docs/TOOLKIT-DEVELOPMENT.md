@@ -26,6 +26,35 @@ main commit. Latest remains regular stable v0.5.0, with asset SHA-256
 `8263ac0d60dcb9d08f1653c97cdfcdaa1960cdd0f404015c5a8beddedae523f8`.
 These are remote URL/ref/asset checks, not new runtime or live Proxmox tests.
 
+### Three synchronized development editions
+
+Built **0.6.0-dev.1** from `src/toolkit.js` and `tools/editions.json`:
+Toolkit (`proxmox-toolkit.user.js`), Copy-only (`proxmox-copy-console.user.js`),
+and Paste-only (`proxmox-paste-execute.user.js`). All versions follow Toolkit
+on every release, including editions with unchanged runtime. Build/check tools
+enforce deterministic output and synchronized metadata; generation stamps the
+manager probe header too. No user build step or runtime dependency is added.
+
+Copy-only excludes clipboard reading and terminal input. Paste-only excludes
+buffer extraction and clipboard-write grants/APIs. Selected action groups
+share lifecycle code. Individuals coordinate clipboard work through an owned
+DOM token, without shared privileged callbacks or clipboard text. Paste checks
+ownership around input. Action markers refuse overlapping controls. Install
+Toolkit or one/both individuals, not both configurations. Each individual has
+one scan interval; Toolkit shares one. The historical v0.5.0 asset keeps its
+all-in-one meaning; migration guidance identifies editions by name/version.
+
+Verification: **221 local tests passed**, zero failures/skips, under Node.js
+24.18.0. Existing 180 regressions passed; 41 additional checks cover capability
+exclusion, synchronized stamping with unchanged runtime, coexistence, shared
+locks, lost ownership, cancellation, standalone text safeguards, and real-xterm
+Copy/partial-Paste execution. Source/metadata/links, generation freshness,
+fixture integrity, and whitespace checks passed. Mock polling counts retain
+one query per edition scan, one busy-marker read per scan, bounded resources,
+and no hidden discovery. Two individuals use two scans, not Toolkit's one.
+These are operation counts, not browser timing claims. New Firefox/manager
+and Proxmox acceptance is pending under OL-12. No new stable release is made.
+
 ## Previous checkpoint — 2026-11-01: public documentation cleanup
 
 The maintainer approved a shorter README, a corrected GitHub About description,

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.6.0-dev.1 — Unreleased synchronized editions
+
+- Generate Toolkit, Copy Console, and Paste & Execute from one shared source
+  and one Toolkit-owned version manifest. Every edition carries the same
+  release version even when its runtime is unchanged.
+- Name the all-in-one file `proxmox-toolkit.user.js`. The development
+  `proxmox-copy-console.user.js` is Copy-only; `proxmox-paste-execute.user.js`
+  is Paste-only. Preserve historical assets and document migration.
+- Omit excluded capability code from standalone outputs; Paste-only has no
+  clipboard-write grants. Retain input/session validation and Copy policy.
+- Coordinate pending actions across editions with an owned DOM token; refuse
+  overlapping controls. Keep discovery per scan and resource lifetimes bounded.
+  New live acceptance remains pending.
+- Rename the existing repository to proxmox-toolkit and update links/origin.
+  Verify old repository/source/release/download/Git URLs; keep the old name
+  unused so redirects remain intact.
+
 ## 0.5.0 — 2026-11-01
 
 - Promote the unchanged 0.5.0-rc.1 runtime to stable after the maintainer

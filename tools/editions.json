@@ -1,0 +1,27 @@
+{
+    "version": "0.6.0-dev.1",
+    "repository": "https://github.com/StarlightDaemon/proxmox-toolkit",
+    "editions": [
+        {
+            "id": "toolkit",
+            "name": "Proxmox Toolkit",
+            "file": "proxmox-toolkit.user.js",
+            "features": ["COPY", "PASTE"],
+            "description": "Copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles."
+        },
+        {
+            "id": "copy",
+            "name": "Proxmox Copy Console",
+            "file": "proxmox-copy-console.user.js",
+            "features": ["COPY"],
+            "description": "Copy the retained Proxmox node/LXC console buffer to the clipboard."
+        },
+        {
+            "id": "paste",
+            "name": "Proxmox Paste & Execute",
+            "file": "proxmox-paste-execute.user.js",
+            "features": ["PASTE"],
+            "description": "Paste clipboard text and send Enter in the current Proxmox node/LXC console."
+        }
+    ]
+}

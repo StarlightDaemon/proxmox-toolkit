@@ -2,6 +2,36 @@
 
 ## Current status
 
+The development checkout contains synchronized **0.6.0-dev.1** Toolkit,
+Copy-only, and Paste-only editions. These generated runtimes change toolbar
+grouping and cross-script clipboard coordination. Their evidence is separate
+from stable 0.5.0 below. No new live Firefox, OS clipboard, or Proxmox acceptance
+is claimed. See [Editions](EDITIONS.md) for installation and version policy.
+
+### Three-edition local verification — 2026-11-02
+
+All **221 tests passed**, zero failures/skips, under Node.js 24.18.0.
+This includes the 180 existing regressions plus 41 edition/version/capability,
+coexistence, shared-lock, standalone-input, and real-xterm integration checks.
+Generated files match the shared source/manifest; all versions agree. Static
+capability checks confirm Copy-only has no clipboard read/terminal input code
+and Paste-only has no clipboard-write APIs/grants or buffer extraction.
+Metadata, source parsing, local links, fixture integrity, and whitespace checks
+are reported separately from runtime/live acceptance.
+
+Mock counts: 100 scans of two visible consoles perform 100 component queries
+and 200 frame/geometry reads in Toolkit. The two individuals perform 200
+component queries across 100 paired ticks, using two bounded intervals. Shared
+busy state is read once per edition scan. Hidden ticks do no discovery or busy
+marker reads. Neither counts nor bytes establish browser timing gains.
+New clipboard/toolbar/manager-boundary behavior still needs live acceptance.
+
+| Edition | Bytes | SHA-256 |
+| --- | --- | --- |
+| Toolkit | 29,705 | `a40a14e2a05d5aef440374569d6bfbda62bfc7135830dda6f797c0f67158f429` |
+| Copy-only | 20,881 | `2db5a72a5a961c52d3bcd0953c1537e2879430fc0200a8667f3374925b5f9beb` |
+| Paste-only | 22,900 | `73ad841a01bd8723068c748542fbd67dc3d12c82e3e5e4b341b1cbc943c81d03` |
+
 **Proxmox Toolkit 0.5.0 is stable.** Firefox + Violentmonkey
 remains the primary target. Its executable runtime is unchanged from
 0.5.0-dev.1 and 0.5.0-rc.1; only userscript version/description metadata changed
@@ -136,13 +166,14 @@ source-size limit. Efficiency is assessed through targeted operation counts and,
 when needed, browser profiling.
 
 ```sh
+node tools/build.cjs --check
 node tools/check.cjs
-node --test --test-isolation=none tests/console.test.cjs tests/compatibility.test.cjs tests/baseline.test.cjs tests/probe.test.cjs tests/paste.test.cjs
+node --test --test-isolation=none tests/console.test.cjs tests/compatibility.test.cjs tests/baseline.test.cjs tests/probe.test.cjs tests/paste.test.cjs tests/editions.test.cjs
 node tools/fetch-xterm.cjs
 node --test --test-isolation=none tests/*.test.cjs
 ```
 
-The first two commands work offline. The downloader fetches a pinned, integrity-checked Proxmox xterm bundle into ignored `.cache/` if missing. The full suite fails for a missing/corrupt fixture rather than skipping parser coverage.
+The first three commands work offline. The downloader fetches a pinned, integrity-checked Proxmox xterm bundle into ignored `.cache/` if missing. The full suite fails for a missing/corrupt fixture rather than skipping parser coverage.
 
 Mocks exercise targeting, clipboard contracts, errors, lifecycle, focus, and
 sandbox-adapter behavior. Input cases include console/socket replacement,
@@ -160,19 +191,21 @@ contents, or live Proxmox compatibility.
 
 ## Toolkit acceptance
 
-Install the [Toolkit source](../proxmox-copy-console.user.js) in Firefox
+Install the chosen [edition source](EDITIONS.md#choose-an-edition) in Firefox
 with Violentmonkey, following the [migration/rollback instructions](INSTALL.md).
-Confirm `Proxmox Toolkit`, `0.5.0`, your exact trusted-host include rule,
-and only one enabled installation. Keep the released 0.4.1 source available for
-rollback. Record browser, manager, PVE, and `pve-xtermjs` versions plus the actual
+Confirm the edition name, `0.6.0-dev.1`, and your trusted-host rule. Test Toolkit
+alone, each standalone alone, and both individuals together in separate runs;
+keep older entries disabled. Retain stable 0.5.0 for rollback. Record browser,
+manager, PVE, and `pve-xtermjs` versions plus the actual
 script hash. Numeric versions from earlier Copy reports are not candidate data.
 
 Use an idle node Shell and a scratch LXC Console with an empty shell prompt.
 These are manual test instructions. The practical acceptance report above does
 not establish a pass for each individual step.
 
-1. Confirm exactly one Copy and one Paste & Execute beside the native control.
-   Re-run Copy on synthetic scrollback and verify the pasted result in an editor.
+1. Confirm only the chosen action(s) beside the native control. Perform the
+   following Copy/Paste steps where that action is installed. Re-run Copy on
+   synthetic scrollback and verify the pasted result in an editor.
 2. Copy `printf '%s\n' 'toolkit-one'` from a local editor with no trailing newline.
    Click Paste & Execute. If Firefox shows its Paste prompt, approve within 15
    seconds. Expect `toolkit-one` once, followed by the shell prompt. Record the
@@ -214,6 +247,12 @@ not establish a pass for each individual step.
    the input tests. Record precise failures and whether disabling the candidate
    restores the old behavior. Secondary Chrome/Tampermonkey qualification follows
    primary acceptance, and is not yet established.
+
+9. With both individuals active, start a delayed read and activate Copy from
+   the other script; then reverse with a delayed Copy write and Paste. Expect
+   no overlapping clipboard action. Verify completion, denial, timeout, and
+   cancellation release the shared lock and controls recover. Check each
+   standalone's own targeting, focus, teardown, and current name/version.
 
 If Paste is disabled while Copy works, the clipboard-read capability or exact
 connection/input checks (including ExtJS hide subscription/removal) are

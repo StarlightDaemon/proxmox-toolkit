@@ -1,10 +1,27 @@
 # Design
 
-This describes stable **Proxmox Toolkit 0.5.0**, preserving the runtime of maintainer-tested 0.5.0-dev.1 and published 0.5.0-rc.1 with version/description metadata changes only. Earlier 0.4.1 remains available as the copy-only release. The [historical design](historicals/DESIGN.md) preserves the 0.3.0 baseline and the development sequence. [Decisions](../DECISIONS.md) records the rationale.
+This describes **0.6.0-dev.1** generated editions, developed from stable Toolkit 0.5.0. Stable 0.5.0 retains its accepted runtime at its tag/release; changed lifecycle and cross-script coordination require new live acceptance. The [historical design](historicals/DESIGN.md) preserves the baseline and development sequence. [Decisions](../DECISIONS.md) records the rationale.
+
+## Editions and generation
+
+`src/toolkit.js` is shared source; `tools/editions.json` owns Toolkit's release
+version and feature selection. The Node generator emits three independently
+installable files, physically omitting excluded feature code. Every edition
+follows Toolkit's version on every release. See [Editions](EDITIONS.md).
+Toolkit has one scan interval; two active individuals each have one. Action
+markers prevent overlapping toolbar installation; use Toolkit or individuals.
+
+A DOM attribute holds a random clipboard lease across manager sandboxes.
+Each action checks/acquires it synchronously before clipboard work; only its
+owner releases it. Paste validates ownership along with the captured session
+before input and Enter. No clipboard/command content or privileged callbacks
+are shared. This is trusted-page coordination, not authentication. Completion,
+errors, cancellation, and watchdogs release it. Reload recovers if an extension
+is killed while holding it. Busy state is read once per synchronous scan.
 
 ## Scope and console ownership
 
-One directly installable userscript adds native ExtJS Copy and Paste & Execute buttons beside the relevant node Shell or LXC Console control. There are no runtime dependencies, server changes, or transcript/clipboard-history storage. Input goes through the console's existing connection; the script opens no additional transport.
+Each directly installable edition adds its selected native ExtJS actions beside the relevant node Shell or LXC Console control. There are no runtime dependencies, server changes, or transcript/clipboard-history storage. Input goes through the console's existing connection; the script opens no additional transport.
 
 The manager's include rule selects eligible pages. A runtime guard also requires HTTPS, port 8006, and the top-level page. Restrict installation to trusted hosts: page globals are integration points, not authentication.
 
@@ -34,7 +51,7 @@ Copy selects callable `GM_setClipboard`, otherwise `GM.setClipboard` with its re
 
 One pending flag prevents overlapping clipboard reads/writes. The initiating button remains focusable but ignores repeated activation; other controls disable. Copy's five-second watchdog reports uncertainty without canceling a possible late write. Late completion cannot overwrite timeout feedback.
 
-Icons/tooltips show outcomes without changing either button's label. Each action defines its default icon and available/unavailable tooltips once; unchanged tooltips and disabled states are not rewritten during polling. Feedback resets after 1.5 seconds to each action's own icon/tooltip. Focus returns only when the same button still has focus and the same terminal is active in a focused, visible document. Destroying either control cleans up both controls, their timers, and pending input, while skipping a button whose ExtJS destruction is already in progress. Fixed error messages never include clipboard/terminal text or arbitrary exception contents.
+Icons/tooltips show outcomes without changing button labels. Each action defines its default presentation once; unchanged tooltips and disabled states are not rewritten during polling. Feedback resets after 1.5 seconds. Focus returns only to the same terminal from the same focused button in a visible document. Destroying a control cleans up its edition's toolbar group, timers, and pending input, while skipping a button already being destroyed. For Toolkit that group contains both actions; individual editions own one action each. Fixed errors never include clipboard/terminal text or arbitrary exception contents.
 
 ## Paste and input lifecycle
 
@@ -88,8 +105,9 @@ an empty shell prompt, clear an existing command, or verify an exit status.
 
 Discovery runs immediately, every 500 ms while visible, and on visibility return. Idle scans never extract terminal rows or read the clipboard. Failed integration retries with warnings limited to once per 30 seconds; partial button pairs are disposed of. ExtJS owns layout and appearance.
 
-There is one page-lifetime recovery interval and three page-lifetime listeners
-(visibility change, hash change, and page hide). The interval continues to wake
+Each active edition has one page-lifetime recovery interval and a visibility
+listener. Editions with Paste also have hash-change and page-hide listeners.
+The interval continues to wake
 while hidden, but performs no component query, frame search, or geometry/style
 read; a hidden-page tick cancels pending input. Keep that simple recovery policy
 until browser profiling justifies changing it. No output observer or cache of

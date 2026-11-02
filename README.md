@@ -37,6 +37,6 @@ Standalone windows, noVNC/SPICE, PDM remote consoles, and custom proxy ports are
 
 ## Documentation
 
-The repository is now **proxmox-toolkit**; the old repository address redirects here. Three synchronized editions—Toolkit, Copy Console, and Paste & Execute—are being developed on [the editions branch](https://github.com/StarlightDaemon/proxmox-toolkit/tree/codex/standalone-editions). The 0.5.0 release remains the accepted stable all-in-one script.
+The repository is now **proxmox-toolkit**; the old address redirects here. Three synchronized editions—Toolkit, Copy Console, and Paste & Execute—are available as **0.6.0-dev.1 development candidates** on [the editions branch](https://github.com/StarlightDaemon/proxmox-toolkit/tree/codex/standalone-editions). See [edition selection and development](docs/EDITIONS.md). These changed runtimes await live acceptance; 0.5.0 remains the accepted stable all-in-one release.
 
 See the [documentation index](docs/README.md) for the guides, design, test records, and contributor references.

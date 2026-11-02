@@ -3,10 +3,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const { createHash } = require('node:crypto');
+const { manifest, buildEdition } = require('./build.cjs');
 const root = path.join(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'proxmox-copy-console.user.js'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'proxmox-toolkit.user.js'), 'utf8');
 const version = source.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
-assert.equal(version, '0.5.0', 'Update version checks intentionally when preparing a release');
+assert.equal(version, manifest.version, 'Toolkit follows the shared release manifest');
 assert.match(source, /^\/\/ @name\s+Proxmox Toolkit$/m, 'Product name');
 // Size/hash identify the candidate; efficiency is reviewed through runtime work
 // and resource lifetimes, without a source-size threshold (see DECISIONS.md).
@@ -14,6 +15,13 @@ assert.deepEqual([...source.matchAll(/^\/\/ @grant\s+(\S+)$/gm)].map(m => m[1]).
     ['GM.info', 'GM.setClipboard', 'GM_info', 'GM_setClipboard', 'unsafeWindow']);
 assert.ok(!/^\/\/ @(?:require|resource|connect|updateURL|downloadURL)\b/m.test(source), 'No implicit runtime dependencies or update channel');
 const managerProbe = fs.readFileSync(path.join(root, 'tools', 'probe-manager.user.js'), 'utf8');
+for (const edition of manifest.editions) {
+    const text = fs.readFileSync(path.join(root, edition.file), 'utf8').replace(/\r\n/g, '\n');
+    assert.equal(text, buildEdition(edition), `Regenerate ${edition.file} with node tools/build.cjs`);
+    assert.equal(text.match(/^\/\/ @version\s+(\S+)$/m)?.[1], version, 'Every edition follows Toolkit, even if its runtime is unchanged');
+    assert.ok(!/^\/\/ @(?:require|resource|connect|updateURL|downloadURL)\b/m.test(text));
+    console.log(`${edition.file}: ${Buffer.byteLength(text)} bytes, SHA-256 ${createHash('sha256').update(text).digest('hex')}`);
+}
 for (const field of ['version', 'include', 'grant', 'run-at', 'noframes']) {
     const pattern = new RegExp(`^// @${field}\\b[^\\r\\n]*`, 'gm');
     assert.deepEqual(managerProbe.match(pattern), source.match(pattern), `Manager probe must mirror @${field}`);

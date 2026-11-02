@@ -65,12 +65,12 @@ test('real xterm strips terminal escape styling without evaluating displayed tex
         assert.equal(extract(term).text, '<script>');
     });
 });
-test('installed copy handler works with the real xterm buffer', async () => {
+for (const edition of ['toolkit', 'copy']) test(`${edition} installed copy handler works with the real xterm buffer`, async () => {
     await fixture({ cols: 5 }, async term => {
         await write(term, 'abcd界\r\nnext');
         const view = consoleView();
         view.frame.contentWindow.term = term;
-        const h = host({ views: [view] });
+        const h = host({ views: [view], edition });
         await h.click();
         assert.deepEqual(h.copied, ['abcd界\nnext']);
     });
@@ -91,16 +91,16 @@ test('renderer-free xterm emits bracketed paste data before its missing-textarea
     });
 });
 
-test('real-xterm partial paste failure is not followed by Enter or an automatic retry', async () => {
+for (const edition of ['toolkit', 'paste']) test(`${edition} real-xterm partial paste failure is not followed by Enter or retry`, async () => {
     await fixture({}, async term => {
         await write(term, '\x1b[?2004h');
         const sent = [];
         term.onData(data => sent.push(data));
         const view = consoleView();
         view.frame.contentWindow.term = term;
-        const h = host({ views: [view], readClipboard: () => Promise.resolve('echo toolkit\n') });
+        const h = host({ views: [view], edition, readClipboard: () => Promise.resolve('echo toolkit\n') });
         await h.paste();
         assert.deepEqual(sent, ['\x1b[200~echo toolkit\x1b[201~']);
-        assert.match(h.created[1].tooltip, /partially sent; inspect console/);
+        assert.match(h.created.find(button => button.text === 'Paste & Execute').tooltip, /partially sent; inspect console/);
     });
 });

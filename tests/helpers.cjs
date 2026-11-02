@@ -2,13 +2,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.join(__dirname, '..', 'proxmox-copy-console.user.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '..', 'proxmox-toolkit.user.js'), 'utf8');
 // The only instrumentation is an export inside the IIFE. No shipped test globals
 // or duplicated extraction logic; startup and installed handlers execute normally.
-const instrumented = source.replace(/\}\)\(\);\s*$/, `
-    globalThis.probe = { extractBuffer, extractFullConsole, resolveConsole, controls };
+function instrument(text) { return text.replace(/\}\)\(\);\s*$/, `
+    globalThis.probe = { extractBuffer: typeof extractBuffer === 'function' ? extractBuffer : undefined,
+        extractFullConsole: typeof extractFullConsole === 'function' ? extractFullConsole : undefined, resolveConsole, controls };
 })();`);
-if (source === instrumented) throw new Error('Userscript export seam not found');
+}
 
 function buffer(rows) {
     return { length: rows.length, getLine: y => rows[y] };
@@ -51,17 +52,26 @@ function consoleView({ type = 'shell', node = 'pve', vmid = 101, text, label = '
     return { anchor, toolbar, owner, root, frame, frames, term };
 }
 function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = false, hidden = false, create, hasPVE = true,
-    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow', readClipboard } = {}) {
+    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow', readClipboard, edition = 'toolkit' } = {}) {
     let now = 0, nextId = 0;
     const timers = new Map(), intervals = [], events = {}, copied = [], created = [], warnings = [];
     const anchors = views.map(v => v.anchor);
-    const window = { addEventListener(name, fn) { events[name] = fn; } };
+    function listen(name, fn) {
+        const previous = events[name];
+        events[name] = previous ? (...args) => { previous(...args); fn(...args); } : fn;
+    }
+    const attributes = new Map();
+    const window = { addEventListener: listen };
     window.self = window;
     window.top = subframe ? {} : window;
     const document = {
         hidden, activeElement: null, focused: true,
         hasFocus() { return this.focused; },
-        addEventListener(name, fn) { events[name] = fn; },
+        addEventListener: listen,
+        documentElement: {
+            hasAttribute: name => attributes.has(name), getAttribute: name => attributes.get(name) ?? null,
+            setAttribute: (name, value) => attributes.set(name, value), removeAttribute: name => attributes.delete(name),
+        },
     };
     const Ext = {
         queries: 0,
@@ -102,7 +112,7 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
         },
     };
     const context = {
-        window, document, location: new URL(url), URL,
+        window, document, location: new URL(url), URL, crypto: require('node:crypto').webcrypto,
         navigator: { clipboard: { readText: readClipboard || (() => Promise.resolve('echo toolkit')) },
             userActivation: { isActive: true } },
         unsafeWindow: { Ext, PVE: hasPVE ? {} : undefined },
@@ -123,10 +133,18 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
         delete context.unsafeWindow;
     }
     Object.assign(context, globals);
-    vm.runInNewContext(instrumented, context, { filename: 'proxmox-copy-console.user.js' });
+    function installEdition(id, overrides = {}) {
+        const config = require('../tools/editions.json').editions.find(item => item.id === id);
+        if (!config) throw Error(`Unknown edition: ${id}`);
+        const text = fs.readFileSync(path.join(__dirname, '..', config.file), 'utf8');
+        const sandbox = { ...context, ...overrides };
+        vm.runInNewContext(instrument(text), sandbox, { filename: config.file });
+        return sandbox;
+    }
+    const initial = installEdition(edition);
     return {
-        api: context.probe, document, context, Ext, events, timers, intervals, copied, created, warnings, anchors,
-        scan() { intervals[0]?.fn(); },
+        api: initial.probe, document, context: initial, Ext, events, timers, intervals, copied, created, warnings, anchors, installEdition,
+        scan() { for (const interval of intervals) interval.fn(); },
         advance(ms) {
             now += ms;
             for (const [id, timer] of [...timers]) {
