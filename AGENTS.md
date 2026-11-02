@@ -6,19 +6,25 @@
 the stable Proxmox Copy Console lineage. The maintainer approved the Toolkit
 name, Paste & Execute development, main promotion, and v0.5.0 stable release
 publication as Latest. On 2026-11-02 the maintainer authorized renaming this
-existing repository, updating links/remotes, and developing Toolkit, Copy-only,
-and Paste-only editions. Every edition follows the Toolkit version on every
+existing repository, updating links/remotes, and developing Toolkit and companion editions. Every edition follows the Toolkit version on every
 release, even when its own runtime has not changed. Preserve the old-name
 redirect by leaving that repository name unused. New runtime behavior needs
-its own acceptance; the three-edition candidate is separate from stable 0.5.0.
+its own acceptance. On 2026-11-02 the maintainer accepted the last tested
+0.7.0-dev.8 candidate for stable 0.7.0 and authorized pushing/publishing it as
+the new stable. This promotion preserves runtime behavior and does not imply
+full report, clipboard or browser-matrix qualification. The maintainer
+authorized all catalog/open-loop feature implementations and then consolidated
+packaging to Toolkit plus one Copy & Paste edition. No other individual feature
+userscripts are shipped. Preserve historical edition records as historical.
 
 ## Authoritative project documents
 
-- `src/toolkit.js` and `tools/editions.json` — shared development source and one Toolkit-owned version manifest for all editions. Edit these, then run `node tools/build.cjs`; do not hand-edit generated userscripts.
-- `proxmox-toolkit.user.js`, `proxmox-copy-console.user.js`, `proxmox-paste-execute.user.js` — generated 0.6.0-dev.1 Toolkit, Copy-only, and Paste-only candidates on the development branch. These changed runtimes need new acceptance. Stable 0.5.0 remains at its tag/release, where the historical `proxmox-copy-console.user.js` file is all-in-one. Preserve Testing evidence limits and earlier release identities.
+- `src/toolkit.js`, `src/settings.js`, `src/console-extras.js`, `src/catalog-model.js`, `src/catalog-ui.js`, `tools/features.cjs`, and `tools/editions.json` — shared build-time source, feature registry, and one version manifest. Run `node tools/build.cjs`; do not hand-edit generated userscripts.
+- `proxmox-toolkit.user.js` and `proxmox-copy-paste.user.js` — the only generated 0.7.0 stable editions, promoted from dev.8. Toolkit has all 22 toggles; Copy & Paste has the three clipboard actions. Detailed live qualification remains tracked. Historical 0.5.0 retains its all-in-one proxmox-copy-console.user.js asset at its tag/release.
 - `README.md` — user-facing project overview.
 - `docs/INSTALL.md` — installation, updates, host restrictions, migration, and rollback.
 - `docs/USAGE.md` — action behavior, feedback, cancellation limits, and user troubleshooting.
+- `docs/CATALOG.md`, `docs/CATALOG-DEVELOPMENT.md`, and `docs/CATALOG-ACCEPTANCE.md` — configurable catalog usage, implementation record, and pending live campaign.
 - `docs/EDITIONS.md` — edition selection, migration, generation, coexistence, and synchronized release versions.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.

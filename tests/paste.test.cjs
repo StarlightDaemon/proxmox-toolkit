@@ -6,18 +6,18 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
 function setup(text = 'echo toolkit', options = {}) {
     const view = consoleView();
     const h = host({ views: [view], readClipboard: () => Promise.resolve(text), ...options });
-    return { view, h, button: h.created[1] };
+    return { view, h, button: h.action('Paste & Execute') };
 }
 
 test('paste uses its owner console and orders paste before a separate Enter', async () => {
     const node = consoleView(), lxc = consoleView({ type: 'lxc', node: 'other', vmid: 202 });
     const h = host({ views: [node, lxc], readClipboard: () => Promise.resolve('printf toolkit') });
-    assert.equal(lxc.toolbar.items.items[2], h.created[3]);
+    assert.equal(lxc.toolbar.items.items[3], h.created.filter(button => button.text === 'Paste & Execute')[1]);
     await h.paste(1);
     assert.deepEqual(lxc.term.sent, [{ paste: 'printf toolkit' }, { input: '\r' }]);
     assert.deepEqual(node.term.sent, []);
     assert.deepEqual(h.copied, [], 'pasting never writes to the OS clipboard');
-    assert.match(h.created[3].tooltip, /^Text and Enter sent;/);
+    assert.match(h.created.filter(button => button.text === 'Paste & Execute')[1].tooltip, /^Text and Enter sent;/);
 });
 
 for (const [name, text, expected] of [
@@ -328,8 +328,11 @@ test('one pending clipboard operation blocks repeated paste and copy across all 
     const views = [consoleView(), consoleView({ node: 'other' })];
     const h = host({ views, readClipboard() { reads++; return new Promise(done => { resolve = done; }); } });
     const pending = h.paste();
-    assert.equal(h.created[1].disabled, false, 'initiator keeps focus');
-    for (const i of [0, 2, 3]) assert.equal(h.created[i].disabled, true);
+    assert.equal(h.action('Paste & Execute').disabled, false, 'initiator keeps focus');
+    for (const text of ['Copy', 'Paste Only']) {
+        for (const button of h.created.filter(button => button.text === text)) assert.equal(button.disabled, true);
+    }
+    assert.equal(h.action('Diagnostics').disabled, false, 'opening a panel does not need the lease');
     await h.paste();
     await h.paste(1);
     await h.click();
@@ -435,7 +438,7 @@ test('Firefox exported paste callback ignores page arguments and returns no prom
         cloneInto: value => ({ ...value }), exportFunction: callback => callback,
     } });
     const untrusted = new Proxy({}, { get() { throw Error('page arguments must not be read'); } });
-    assert.equal(h.created[1].handler(untrusted), undefined);
+    assert.equal(h.action('Paste & Execute').handler(untrusted), undefined);
     await flush();
     assert.equal(view.term.sent.length, 2);
 });

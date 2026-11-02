@@ -1,6 +1,129 @@
 # Decisions
 
+## Stable 0.7.0 promotion — 2026-11-02
+
+After positive dev.8 workflow feedback, the maintainer explicitly directed that
+the last tested version become the new stable and be pushed. Promote dev.8 as
+0.7.0 for both Toolkit and Copy & Paste, commit the accumulated implementation
+and release documentation, advance main, and publish v0.7.0 as Latest with both
+generated userscripts. No new runtime feature is part of promotion. Preserve
+the tested body except generated version identity; retain defaults, grants,
+settings keys, host restrictions and all historical tags/releases.
+
+This is maintainer practical acceptance and release authorization, not an
+assertion that every report, clipboard case or compatibility cell passed.
+Keep detailed qualification and conditional maintenance in Open Loops. Tools-menu
+grouping and versioned handoff copies remain unapproved proposals. The active
+release checkout is `E:\Citadel\proxmox-toolkit`; the old folder is preserved.
+
+## Category settings and report entry points — 2026-11-02
+
+Approved for dev.8: replace the generic Features/Reports split with six native
+category tabs. Keep Inventory, Recovery, Maintenance and Integration distinct;
+Console contains clipboard/output tools and Troubleshooting contains diagnostics,
+recipes, tasks and network exploration. Each report opens beside its setting.
+Use wrapped tabs and paginated cards instead of a long settings list. Keep the
+footer docked, preserve unsaved settings during internal navigation, and clear
+the draft when returning to Proxmox. Report availability uses saved runtime
+flags until Save & Reload. The preserved-console workspace behavior is unchanged.
+This supersedes the earlier Reports-tab return destination below.
+
+## Main workspace and global launcher — 2026-11-02
+
+Approved for dev.6: Toolkit sits immediately left of global Documentation and
+toggles a native panel covering only #content. This supersedes the resource-Help
+placement and modal settings decisions below for current development. Server
+tree, global header and task log remain usable. Native cards and their iframe
+documents stay mounted and active underneath; interaction is blocked with inert
+and console-action guards while covered. No setContent/card-switch/reparent/hide
+is used on toggling. Return destroys only owned UI and restores prior attributes.
+Navigation/logout exits normally, and Save & Reload remains an explicit reload.
+Resize and cleanup use scoped native listeners, not new idle polling. No new
+userscript permissions are needed. Live Firefox/Proxmox acceptance is separate
+from synthetic browser evidence.
+
+## Versioned names, grants and report return — 2026-11-02
+
+The maintainer requested version numbers in the script name. From dev.5 the
+generator stamps both edition names and @version from the shared manifest;
+namespace `homelab` and settings keys remain unchanged. Updating the existing
+manager entry is required to preserve its storage rather than creating a new
+name-based installation. Stable release identity remains historical.
+
+Remove explicit GM_info/GM.info grants because reviewed managers supply these
+properties automatically. Keep the legacy/modern clipboard, storage and menu
+grants plus unsafeWindow: each serves an implemented capability. The menu is a
+deliberate recovery shortcut alongside the native toolbar. Toggles control work,
+not static grant revocation. Installation docs record the audit and sources.
+
+Every report has persistent native Back to Toolkit / Close navigation outside
+its scrolling body. Back returns to the Reports tab, destroys the old report and
+cancels collection. It does not save settings, reload or fetch automatically.
+No forward/history cache of potentially sensitive report snapshots is introduced.
+
+## Configurable catalog and packaging consolidation — 2026-11-02
+
+The maintainer authorized all ten researched management tools and the six deferred
+feature ideas, with each capability toggleable. During implementation the maintainer
+replaced the individual-feature packaging plan with all-in-one Toolkit plus one
+lightweight Copy & Paste edition. This supersedes earlier standalone-per-feature
+decisions for development only; historical artifacts/releases are not rewritten.
+
+Toolkit has 22 toggles. As requested for dev.3, only Copy, Paste Only and
+Paste & Execute default on; the other nineteen default off. Saved selections
+remain intact; Restore defaults applies this baseline only after Save & Reload. Copy & Paste has only Copy, Paste & Execute and Paste Only, all
+initially on. Settings are versioned, per edition/origin, stored by the manager,
+and applied through Save & Reload. Settings UI remains accessible with all off.
+Management data is collected on demand using same-origin GETs and bounded lifetimes.
+Blank report scope means all visible resources, within collection limits. Node
+Maintenance evaluates each visible node independently. Compare retains explicit
+comparison targets, and task detail requires a UPID but can infer the node.
+Explicit invalid node filters never silently broaden the scope.
+The maintainer subsequently requested native integration: the edition button
+sits immediately before the selected resource's Help component and opens Settings directly.
+Settings use ExtJS windows, tabs, fields and buttons with the installed PVE theme.
+Reports remain accessible on a Reports tab and use native window/button shells
+with scoped DOM content. The former floating launcher/home page and shadow-root
+settings design are superseded. Console order is Copy, Paste Only, Paste & Execute.
+See [catalog](docs/CATALOG.md) and [implementation record](docs/CATALOG-DEVELOPMENT.md).
+Each distinct candidate handed to the maintainer for testing advances dev.N in
+the shared manifest, including UI fixes. Settings show that version visibly.
+Reusing dev.1 for the earlier native UI handoff was an oversight; dev.2 corrects
+the Help/Documentation selector and stamps both editions together.
+Local implementation authority does not grant commit/push/release authority.
+
 This file records durable decisions by version. Historical sections preserve their original rationale; current compatibility and evidence are summarized in [Testing](docs/TESTING.md). An idea is not accepted merely because it appears in a historical proposal.
+
+## Selected feature expansion — 0.6.0-dev.2 (unreleased)
+
+The 2026-11-02 implementation handoff authorizes local Paste Only, Console
+Export, Diagnostics and Diagnostic Recipes, plus an individual edition for each.
+The original standalone Paste & Execute keeps its identity; “Paste Only” now
+means the distinct action that never appends Enter. Seven editions share one
+manifest version. Stable 0.5.0 and all published identities remain unchanged.
+
+Toolkit keeps direct Copy, Paste & Execute and Paste Only buttons, with native
+Export/Diagnostics/Recipes items under Tools. Export captures one explicit-open
+snapshot; plain text is the default download button, with Markdown beside it.
+Diagnostics are snapshots, refreshed explicitly, copied as an allowlisted schema;
+unknown/unobserved values remain null. The recipe picker uses Previous/Next and
+Copy command; it never stages or executes input. These native controls avoid a
+custom UI framework and preserve keyboard semantics for live qualification.
+
+Extraction, writing, reading/validation, Enter dispatch, panels and diagnostics
+are separate build capabilities. Report and recipe copying use the existing
+five-second write contract and owned cross-edition lease. Opening panels does
+not acquire that lease. Cancelling a dispatched write only abandons completion
+tracking; a late OS clipboard change remains possible. Paste Only uses the same
+15-second lifecycle, normalization, controls/Unicode checks and bracketed-paste
+requirement as Paste & Execute, but does not require the Enter API.
+
+Console identities accept primitive native values, avoiding arbitrary object
+coercion during diagnostics. Native-anchor ambiguity prevents integration;
+missing/ambiguous frames can still be diagnosed through an unambiguous anchor.
+All six deferred features remain deferred. Local implementation/review does not
+authorize committing, pushing, PRs, merging or releasing. See
+[review](docs/FEATURE-REVIEW.md) and [acceptance](docs/FEATURE-ACCEPTANCE.md).
 
 ## Product scope and simplicity
 

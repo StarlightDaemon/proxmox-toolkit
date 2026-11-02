@@ -1,7 +1,9 @@
 # Open loops
 
-Stable **Proxmox Toolkit 0.5.0** preserves the maintainer-tested 0.5.0-dev.1 /
-0.5.0-rc.1 runtime after explicit stable promotion approval on 2026-11-01.
+Stable **Proxmox Toolkit 0.7.0** promotes the maintainer-tested 0.7.0-dev.8
+runtime after explicit stable promotion approval on 2026-11-02. Both Toolkit
+and Copy & Paste share the release version. Detailed qualification remains
+separate from practical workflow acceptance. Historical 0.5.0 is preserved.
 The reported Toolkit environment is Firefox 159.0 (64-bit), Violentmonkey
 2.50.0, and Windows 11. Earlier 0.4.1 copy-only reports cover four primary
 browser/manager combinations; they do not qualify Toolkit input elsewhere.
@@ -14,14 +16,43 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
-| OL-12 | Three-edition candidate; live acceptance pending | Toolkit, Copy Console, and Paste & Execute are generated from shared source at synchronized 0.6.0-dev.1. Validate each alone and the individuals together in Firefox + Violentmonkey, including clipboard serialization, targeting, cancellation, lifecycle, and migration. Preserve stable 0.5.0 evidence; close only with actual new live observations. See [Editions](EDITIONS.md) and [Testing](TESTING.md#toolkit-acceptance). |
+| OL-12 | Stable 0.7.0 approved; detailed live qualification open | Record remaining Toolkit and Copy & Paste observations using the [catalog campaign](CATALOG-ACCEPTANCE.md), especially report permissions/results, actual clipboard/file contents, serial/proxy, migration and lifecycle cases. Maintainer practical acceptance authorizes release; it does not mark the full checklist passed. |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |
 | OL-05 | Package evidence pending | Record installed console package versions and compare with the pinned xterm fixture. Add or refresh a fixture only when an observed package/API difference warrants it; close with comparison and relevant regression evidence. |
 | OL-06 | Duplicate idle/pending polling work removed; browser profiling conditional | October 16 mock instrumentation confirms one component query per scan and one frame search per visible console, both idle and pending a clipboard read; hidden-page ticks do no discovery. Timer/listener counts stay bounded; see [Testing](TESTING.md). These counts do not establish browser CPU/latency gains. Keep the 500 ms interval; profile browser cost only after a reported issue or before making timing claims. |
-| OL-07 | Installation guidance updated; monitor actual friction | Copy/paste is now the primary install path, with host restrictions and a custom-port note. Revisit defaults only for recurring setup problems; do not broaden permissions or add settings speculatively. |
-| OL-08 | Idea, not planned | Viewport-only copying needs a recurring workflow need before design work. Define scrolled-viewport semantics, wrapped edges, accessibility, and maintenance cost before considering implementation. |
+| OL-07 | Settings and explicit custom origins implemented; live migration pending | Verify manager host rules, custom port/path setup and persistence using the catalog campaign. No default permission broadening. |
+| OL-08 | Scoped Copy implemented; live acceptance pending | Viewport clips wrapped edges; last-N uses logical retained lines. Validate actual clipboard contents and native panel behavior. |
 | OL-10 | Deferred: environmental UI errors | If the earlier Firefox exceptions recur, reproduce identical navigation in a clean profile, then isolate extensions/preferences. Close with a demonstrated cause or inability to reproduce; keep unrelated Proxmox fixes outside this script. |
+| OL-13 | Proposal only: configurable Tools-menu grouping | Review the grouped/inline preference proposal before implementing it. Existing grouping is unchanged by stable promotion. |
+| OL-14 | Proposal only: versioned handoff copies | Decide whether versioned handoff files would help review. No change to Codex review controls is established or authorized by this proposal. |
+| OL-15 | Local checkout housekeeping | Use `E:\Citadel\proxmox-toolkit` for ongoing work; both old and new folders still exist. Verify no unique work and close old-folder tasks before any separately authorized removal. The new linked review worktree has been repaired; do not prune it. |
+
+## Routine maintenance
+
+- Generate both editions from shared source and one manifest version. Run build,
+  static/link, pinned-fixture and Node checks for changes; use the synthetic
+  ExtJS browser fixture for affected UI behavior and collect live evidence where
+  browser/manager or Proxmox behavior matters.
+- Keep install/release links, migration and rollback instructions, asset hashes,
+  and the evidence register aligned with each release. Never reuse the old
+  GitHub repository name while its redirect is needed.
+- Revisit pinned Proxmox/xterm/ExtJS fixtures when installed package differences
+  or defects justify it. Preserve clipboard safeguards and review idle work,
+  timer/listener lifetimes and cancellation when changing runtime behavior.
+
+## Catalog implementation
+
+The maintainer authorized the remaining six ideas and ten management tools on
+2026-11-02, then consolidated packaging to Toolkit plus Copy & Paste.
+Scoped Copy, Find in Scrollback, Review & Paste, VM serial support, Copy Task
+Report, and custom HTTPS/proxy support are implemented as opt-in Toolkit features.
+The ten management tools and all existing actions have individual toggles. See
+[catalog](CATALOG.md) and [development](CATALOG-DEVELOPMENT.md).
+
+The evidence-only and conditional entries above remain open: local implementation
+cannot supply installed package versions, live clipboard/browser acceptance,
+production profiling or reproduction of an absent environmental error.
 
 ## Completed
 

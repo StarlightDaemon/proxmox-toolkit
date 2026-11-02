@@ -99,7 +99,7 @@ test('Firefox sharing adapter exports both callbacks without returning privilege
             return { ...options };
         },
     } });
-    assert.equal(shared.length, 4, 'configuration and destroy callback for each action are shared');
+    assert.equal(shared.length, 17, 'console actions plus header configuration/destroy callbacks are shared');
     assert.equal(targets.every(t => t === h.context.unsafeWindow), true);
     assert.equal(h.click(), undefined, 'no sandbox Promise crosses into the page');
     await new Promise(resolve => setImmediate(resolve));
@@ -127,10 +127,10 @@ test('discovery avoids page-array filter and some callbacks under strict compart
     };
     view.toolbar.items.items.some = rejectCallback;
     const h = host({ views });
-    assert.equal(h.created.length, 2);
+    assert.equal(h.created.length, 7);
     assert.equal(h.warnings.length, 0);
     h.scan();
-    assert.equal(h.created.length, 2, 'repeated discovery does not duplicate controls');
+    assert.equal(h.created.length, 7, 'repeated discovery does not duplicate controls');
     await h.click();
     assert.deepEqual(h.copied, ['retained output']);
 });
@@ -150,7 +150,7 @@ test('explicit Firefox exports work without function cloning and contain callbac
             return (...args) => callback(...args);
         },
     } });
-    assert.equal(exports.length, 4, 'copy, paste, and both destroy handlers are exported');
+    assert.equal(exports.length, 15, 'console handlers plus header click/destroy handlers are exported');
     assert.equal(targets.every(target => target === h.context.unsafeWindow), true);
     const untrustedArgument = new Proxy({}, { get() { throw Error('must not inspect page arguments'); } });
     assert.equal(h.created[0].handler(untrustedArgument), undefined);
@@ -167,8 +167,8 @@ test('failed explicit export is contained without fallback or clipboard writes',
         cloneInto(value) { clones++; return { ...value }; },
         exportFunction() { exports++; throw Error('PRIVATE FAILURE'); },
     } });
-    assert.equal(clones, 1);
-    assert.equal(exports, 1);
+    assert.equal(clones, 2, 'header and console each attempt one safe bridge');
+    assert.equal(exports, 2);
     assert.equal(h.created.length, 0);
     assert.equal(h.copied.length, 0);
     assert.equal(h.warnings.length, 1);

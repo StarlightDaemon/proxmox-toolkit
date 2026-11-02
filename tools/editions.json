@@ -1,27 +1,48 @@
 {
-    "version": "0.6.0-dev.1",
+    "version": "0.7.0",
     "repository": "https://github.com/StarlightDaemon/proxmox-toolkit",
     "editions": [
         {
             "id": "toolkit",
             "name": "Proxmox Toolkit",
             "file": "proxmox-toolkit.user.js",
-            "features": ["COPY", "PASTE"],
-            "description": "Copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles."
+            "features": [
+                "COPY",
+                "PASTE_ONLY",
+                "PASTE",
+                "EXPORT",
+                "DIAGNOSTICS",
+                "RECIPES",
+                "SCOPED",
+                "FIND",
+                "REVIEW",
+                "SERIAL",
+                "CUSTOM_PORT",
+                "INVENTORY",
+                "COMPARE",
+                "BACKUPS",
+                "TASKS",
+                "TASK_REPORT",
+                "SNAPSHOTS",
+                "STORAGE",
+                "MAINTENANCE",
+                "NETWORK",
+                "GUEST_HEALTH",
+                "RECOVERY"
+            ],
+            "description": "Configurable console tools and read-only management reports for Proxmox VE."
         },
         {
-            "id": "copy",
-            "name": "Proxmox Copy Console",
-            "file": "proxmox-copy-console.user.js",
-            "features": ["COPY"],
-            "description": "Copy the retained Proxmox node/LXC console buffer to the clipboard."
-        },
-        {
-            "id": "paste",
-            "name": "Proxmox Paste & Execute",
-            "file": "proxmox-paste-execute.user.js",
-            "features": ["PASTE"],
-            "description": "Paste clipboard text and send Enter in the current Proxmox node/LXC console."
+            "id": "copy-paste",
+            "name": "Proxmox Copy & Paste",
+            "file": "proxmox-copy-paste.user.js",
+            "features": [
+                "COPY",
+                "PASTE_ONLY",
+                "PASTE"
+            ],
+            "configurable": true,
+            "description": "Copy, Paste & Execute and Paste Only with persistent feature toggles for Proxmox consoles."
         }
     ]
 }

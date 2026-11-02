@@ -14,27 +14,27 @@ test('localized node and LXC controls each copy their own console', async () => 
     const node = consoleView({ text: 'node', label: 'Terminal local' });
     const lxc = consoleView({ type: 'lxc', text: 'guest', label: 'Konsole' });
     const h = host({ views: [node, lxc] });
-    assert.equal(h.created.length, 4);
+    assert.equal(h.created.length, 14);
     assert.equal(node.toolbar.items.items[1], h.created[0]);
     await h.click(0);
     await h.click(1);
     assert.deepEqual(h.copied, ['node', 'guest']);
 });
-test('repeated scans create one ordinary stable-text pair of buttons', () => {
+test('repeated scans create one ordinary stable-text action group', () => {
     const h = host({ views: [consoleView()] });
     for (let i = 0; i < 10; i++) h.scan();
-    assert.equal(h.created.length, 2);
+    assert.equal(h.created.length, 7);
     assert.equal(h.created[0].text, 'Copy');
-    assert.equal(h.created[1].text, 'Paste & Execute');
+    assert.equal(h.action('Paste & Execute').text, 'Paste & Execute');
 });
 test('external destruction cleans up each button once using ExtJS event ordering', () => {
     for (const index of [0, 1]) {
         const h = host({ views: [consoleView()] });
         h.created[index].destroy();
-        assert.deepEqual(h.created.map(button => button.destroyCalls), [1, 1]);
+        assert.deepEqual(h.created.map(button => button.destroyCalls), Array(7).fill(1));
         assert.equal(h.api.controls.size, 0);
         h.scan();
-        assert.equal(h.created.length, 4, 'a new pair can be installed after teardown');
+        assert.equal(h.created.length, 14, 'a new group can be installed after teardown');
     }
 });
 test('idle discovery resolves each console once and avoids unchanged button updates', () => {
@@ -62,11 +62,11 @@ test('idle discovery resolves each console once and avoids unchanged button upda
     views[0].frame.visible = false;
     h.scan();
     assert.equal(h.created[0].disabled, true);
-    assert.equal(h.created[1].disabled, true);
+    assert.equal(h.action('Paste & Execute').disabled, true);
     views[0].frame.visible = true;
     h.scan();
     assert.equal(h.created[0].disabled, false);
-    assert.equal(h.created[1].disabled, false);
+    assert.equal(h.action('Paste & Execute').disabled, false);
 });
 
 test('pending paste shares polling discovery without adding queries, DOM reads, or timers', async () => {
@@ -123,9 +123,12 @@ test('unrelated controls cannot borrow a frame outside their owner', async () =>
     empty.frames.length = 0;
     const actual = consoleView({ text: 'correct' });
     const h = host({ views: [empty, actual] });
-    assert.equal(empty.toolbar.items.items.length, 1);
-    assert.equal(h.created.length, 2);
-    await h.click();
+    assert.equal(h.action('Copy', 0).disabled, true);
+    assert.equal(h.action('Diagnostics', 0).disabled, false);
+    assert.equal(h.created.length, 14);
+    await h.click(0);
+    assert.deepEqual(h.copied, []);
+    await h.click(1);
     assert.deepEqual(h.copied, ['correct']);
 });
 test('duplicate eligible frames fail closed, and recover when one disappears', async () => {
@@ -183,10 +186,12 @@ for (const [name, change] of [
     ['missing identity', v => { delete v.anchor.nodename; }],
     ['inaccessible frame', v => { Object.defineProperty(v.frame, 'contentWindow', { get() { throw Error('blocked'); } }); }],
 ]) {
-    test(`${name} does not install a copy button`, () => {
+    test(`${name} cannot activate a copy button`, () => {
         const v = consoleView();
         change(v);
-        assert.equal(host({ views: [v] }).created.length, 0);
+        const h = host({ views: [v] });
+        assert.ok(!h.action('Copy') || h.action('Copy').disabled);
+        assert.equal(h.copied.length, 0);
     });
 }
 test('Firefox wrapped-object discovery survives a throwing direct getter', async () => {
@@ -234,7 +239,7 @@ test('idle scans never read buffer rows and hidden pages do not discover compone
     assert.equal(h.Ext.queries, 0);
     h.document.hidden = false;
     h.events.visibilitychange();
-    assert.equal(h.created.length, 2);
+    assert.equal(h.created.length, 7);
     h.scan();
     assert.equal(h.warnings.length, 0);
 });
@@ -312,7 +317,7 @@ test('Tampermonkey success waits for its callback; no duplicate write during pen
     const pending = h.click();
     assert.equal(h.created[0].tooltip, 'Copying console buffer');
     assert.equal(h.created[0].disabled, false, 'keep the initiating control focusable');
-    assert.equal(h.created[1].disabled, true);
+    assert.equal(h.action('Paste & Execute').disabled, true);
     await h.click(1);
     assert.equal(count, 1);
     callback();

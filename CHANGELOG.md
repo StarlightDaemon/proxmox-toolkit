@@ -1,5 +1,142 @@
 # Changelog
 
+## 0.7.0 — 2026-11-02
+
+- Promote the maintainer-tested 0.7.0-dev.8 runtime to stable at the maintainer's
+  explicit request. Both Toolkit and Copy & Paste follow version 0.7.0.
+  Runtime behavior, defaults, grants, settings keys and host rules are unchanged;
+  generated names, version strings and development descriptions reflect stable.
+- Ship only `proxmox-toolkit.user.js` and `proxmox-copy-paste.user.js`. Toolkit
+  has 22 toggles across Console, Inventory, Recovery, Troubleshooting, Maintenance
+  and Integration; Copy & Paste has the three clipboard actions. Only Copy,
+  Paste Only and Paste & Execute default on.
+- Include dev.8's Documentation-adjacent workspace, inline report launchers,
+  draft-preserving Back navigation, fixed footer and preserved console.
+  Update installation, migration, rollback and maintenance documentation.
+- Stable promotion accepts the maintainer's tested workflow. Detailed report,
+  actual clipboard, proxy/serial and broader manager/browser observations remain
+  tracked; local automation does not mark those scenarios passed.
+- Preserve earlier tags, releases, assets and historical edition records.
+  Keep the old GitHub repository name unused so its redirect continues working.
+
+## 0.7.0-dev.8 — Unreleased category settings navigation
+
+- Replace Features/Reports with Console, Inventory, Recovery, Troubleshooting,
+  Maintenance and Integration. Move Diagnostics and Recipes into Troubleshooting.
+- Place report launchers beside their toggles; retain saved-state gating and
+  explicit Run report. Back returns to the matching category with the draft intact.
+- Wrap tabs and paginate settings cards on smaller panels. Keep footer controls
+  docked and preserve the existing console while toggling back to Proxmox.
+- Keep the three clipboard defaults, settings keys and nine grants unchanged.
+  Synchronize Toolkit, Copy & Paste and the probe to dev.8.
+- Verify 375 Node tests and real ExtJS browser navigation/layout/lifecycle checks.
+  Live Firefox/Proxmox acceptance remains pending.
+
+## 0.7.0-dev.7 — Unreleased global button styling correction
+
+- Give the global Toolkit launcher an explicit native button base class so the
+  north container's x-plain defaults cannot strip its styling. Match
+  Documentation's UI/scale and use its 5px right-hand spacing; remove the old
+  resource-toolbar UI and inline class. The companion launcher follows the same fix.
+- Reproduce the dev.6 mismatch in the real ExtJS fixture using native header
+  defaults, then verify matching height/top alignment and spacing after the fix.
+- Keep existing Tools grouping unchanged. A configurable grouping option is a
+  recommendation for review, not an implemented feature in this candidate.
+
+## 0.7.0-dev.6 — Unreleased main-workspace integration
+
+- Move Toolkit immediately left of global Documentation; the button toggles the
+  workspace while remaining available across resource navigation.
+- Fill the central content region with native Features/Reports panels. Keep the
+  server tree, top bar and task log available; follow native region resizing.
+- Preserve the native view, card selection and mounted console iframe underneath.
+  Temporarily make that view inert; never reparent, hide or destroy it on toggle.
+  Cancel pending clipboard intent and block console actions while covered.
+- Return to Proxmox restores the existing view. Back to Toolkit returns to
+  Reports. Resource navigation, logout, Escape and page hiding clean up the
+  workspace and cancel collection. Save & Reload still explicitly reloads.
+- Verify 372 Node tests and a real ExtJS/Chrome fixture, including unchanged
+  iframe document/terminal and a real local WebSocket across repeated toggles.
+  Live Firefox/Proxmox console preservation remains pending.
+
+## 0.7.0-dev.5 — Unreleased naming, permissions and report navigation
+
+- Generate versioned names for both editions, including Proxmox Toolkit
+  0.7.0-dev.5; keep the historical `homelab` namespace and settings keys.
+- Remove redundant GM_info / GM.info grant declarations; retain automatic
+  manager information access and the nine grants used for clipboard, settings,
+  menu fallback and page integration. Document each capability and update identity.
+- Parse generated candidates during the build before emitting them.
+- Add a persistent native Back to Toolkit / Close footer to every report.
+  Back returns to the Reports tab and cancels active collection without saving
+  settings or reloading. Verify all report routes and a narrow scrolled layout.
+- The maintainer traced the reported dev.4 syntax error to a manual naming edit;
+  no syntax defect was reproduced in the generated dev.4 artifact.
+
+## 0.7.0-dev.4 — Unreleased report scope correction
+
+- Make blank Maintenance scope assess all visible nodes independently, with
+  a per-node summary and unknown/error evidence preserved.
+- Include guestless nodes in Network Path Explorer; honor explicit node filters
+  in Recovery network collection. Show the resolved report scope.
+- Infer task-detail node from UPID. Explain Compare/task required targets before
+  collecting; remove irrelevant guest filters from task detail and storage.
+- Keep current permissions, request/concurrency limits and cancellation behavior.
+  Explicit invalid node names produce an error, never an automatic broad query.
+
+## 0.7.0-dev.3 — Unreleased placement and defaults refinement
+
+- Place Toolkit immediately before resource Help (to its left).
+- Enable only Copy, Paste Only and Paste & Execute by default in both editions.
+  Existing saved preferences survive upgrades; Restore defaults selects the
+  three-action baseline and requires Save & Reload to apply.
+- Record the supplied dev.2 screenshot's environment and native dark UI evidence
+  without treating it as a complete feature-acceptance campaign.
+
+## 0.7.0-dev.2 — Unreleased toolbar placement correction
+
+- Place Toolkit beside the selected resource's Help button, including the node
+  toolbar with Shell/Bulk Actions. The previous selector incorrectly targeted
+  global Documentation, which shares the Help component type.
+- Recover placement when navigation replaces the resource toolbar. Exclude
+  global Documentation, hidden resources and modal Help.
+- Advance both editions and the diagnostic probe from dev.1 to dev.2. Show the
+  version in the native settings title and manager menu command. Settings persist.
+- Correct the browser fixture to include both Documentation and resource Help,
+  and test resource replacement. Live Firefox/PVE confirmation remains pending.
+
+## 0.7.0-dev.1 — Unreleased configurable catalog
+
+- Consolidate packaging to Toolkit and one Copy & Paste companion. Remove the
+  individual development feature scripts; published assets are unchanged.
+- Add persistent, origin-scoped settings with 22 Toolkit toggles, defaults,
+  Save & Reload, a native settings button beside global Help and a manager fallback.
+- Open native ExtJS settings directly from Toolkit; remove the floating launcher
+  and intermediate home page. Keep enabled management reports on a Reports tab.
+- Order console buttons Copy, Paste Only, Paste & Execute. Recover delayed header
+  loading even with all features disabled, with no header timer after mounting.
+- Implement scoped copy, retained-output search, review/edit/paste without Enter,
+  opt-in embedded VM serial support, and explicit HTTPS origin/proxy-prefix support.
+- Implement ten read-only management reports and Copy Task Report, with local
+  JSON/CSV export, incomplete-data reporting, bounded GET requests and cancellation.
+- Retain existing clipboard safeguards and stable evidence boundaries. Native
+  Firefox/manager/PVE acceptance remains pending; no release is published.
+
+## 0.6.0-dev.2 — Unreleased feature candidate
+
+- Add Paste Only with the shared bounded input lifecycle and no appended Enter.
+- Add exact retained-output export as UTF-8 text or literal fenced Markdown,
+  generic UTC filenames, and bounded local download cleanup.
+- Add explicit-refresh, allowlisted Diagnostics and four explained copy-only
+  diagnostic recipes. No shell probing, automatic execution, or uploads.
+- Generate Toolkit and six optional individual editions from one version;
+  physically omit excluded extraction, clipboard and dispatch capabilities.
+- Group utilities in a native Tools menu, coordinate all clipboard actions,
+  cancel pending writes on teardown/lease loss, and preserve 500 ms recovery.
+- Record local checks, review and manual acceptance separately. No release,
+  publication, live browser acceptance, or expansion of stable 0.5.0 evidence.
+
+
 ## 0.6.0-dev.1 — Unreleased synchronized editions
 
 - Generate Toolkit, Copy Console, and Paste & Execute from one shared source

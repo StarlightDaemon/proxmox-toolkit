@@ -2,13 +2,127 @@
 
 ## Current status
 
-The development checkout contains synchronized **0.6.0-dev.1** Toolkit,
-Copy-only, and Paste-only editions. These generated runtimes change toolbar
-grouping and cross-script clipboard coordination. Their evidence is separate
-from stable 0.5.0 below. No new live Firefox, OS clipboard, or Proxmox acceptance
-is claimed. See [Editions](EDITIONS.md) for installation and version policy.
+**0.7.0 is the maintainer-approved stable promotion of 0.7.0-dev.8.** On
+2026-11-02 the maintainer reported the last tested version looked good and
+explicitly requested it become the new stable. Promotion changes generated
+version/name identity and descriptions, with no new runtime behavior. This
+accepts the exercised workflow; detailed report/API permissions, actual clipboard
+contents, migration/serial/proxy and full browser/manager qualification remain
+open. The dev.N observations below retain their original evidence scope.
 
-### Three-edition local verification — 2026-11-02
+Stable promotion was locally verified with Node.js 24.18.0: all 375 tests pass,
+with zero failures, cancellations or skips. Build/static checks, local links,
+metadata, pinned-xterm integrity and whitespace pass. Shared-source hashes are
+unchanged from dev.8, and both generated bodies differ only in generated version
+identity and development-description metadata. The real ExtJS/Chrome fixture
+passes again; desktop/narrow screenshots were inspected. Its sandbox launch
+failed at Crashpad startup; an isolated elevated rerun passed. This does not add
+live Firefox, userscript-manager, OS clipboard or Proxmox API observations.
+
+Dev.8 implements the approved six-category layout, inline report launchers,
+wrapped navigation and paginated settings. All 375 Node tests pass. The real
+ExtJS fixture checks category ownership, every setting reachable through paging,
+unclipped cards/tabs, fixed footer actions, unsaved draft round-trips, all eleven
+report return routes and the preserved console connection. Viewports include
+1280-class desktop, 800x844 and 640x700 with the server tree/task log present.
+This is local synthetic evidence. The maintainer subsequently reports dev.8's
+layout looks solid, the Toolkit toggle is correctly placed and functional, and
+the main UI frame is replaced as intended in the continuing live environment.
+This is scoped UI workflow feedback; detailed report, clipboard, console-session
+and compatibility-matrix acceptance remains pending.
+
+Dev.7 corrects the global launcher's sizing/spacing after the maintainer's dev.6
+screenshot and positive report of the workspace/button/exercised tools. The
+browser fixture now applies native north-container x-plain defaults and asserts
+Toolkit's x-btn base, matching Documentation UI/scale, equal height/top and 5px
+gap. This assertion reproduced the dev.6 defect before the fix and passes now.
+The screenshot was inspected. Live Firefox/dark-theme confirmation of dev.7
+remains pending; the positive dev.6 feedback does not certify every feature.
+
+The maintainer reported no Toolkit button beside Help in the dev.1 handoff.
+Source review found the selector targeted global Documentation instead. Dev.2
+corrects that placement. The installed script hash and live browser were not
+accessible during this review, so resolution on the maintainer's instance is
+still pending at that review. The subsequent supplied dev.2 screenshot confirms
+the native dark settings UI is rendered and displays the expected script identity.
+It shows PVE 9.2.3, node daemon1 kernel 7.0.12-1-pve (PMX 7.0.12-1, x86_64),
+Firefox 159.0 (64-bit) and Violentmonkey 2.50.0. It also shows Inventory enabled
+as well as the three clipboard actions. This is limited screenshot evidence,
+not an end-to-end action/report pass; dev.3 still requires a live recheck.
+The maintainer subsequently confirmed these environment version numbers and
+reported blank-scope report failures in live testing. Dev.4 fixes the contradictory
+preflight scope requirement; live resolution remains pending.
+Bulk Actions is native PVE functionality.
+
+The current **0.7.0** catalog has only **Toolkit** and **Copy & Paste**.
+Toolkit exposes 22 toggles; the lightweight edition exposes three clipboard
+actions. All newly added features default off in Toolkit. See
+[catalog acceptance](CATALOG-ACCEPTANCE.md) for current hashes and live scenarios.
+
+The maintainer traced the dev.4 syntax-error report to a manual naming edit.
+The generated artifact passed parsing. Dev.5 generates names with versions and
+removes two redundant manager-info grants; live manager verification is pending.
+It also adds a return footer to every report after the maintainer reported no
+way back from Inventory and Maintenance.
+
+The supplied dev.5 screenshot shows the native dark settings and Toolkit left
+of resource Help. The maintainer then approved moving Toolkit to Documentation
+and filling the central workspace while preserving the mounted console. Dev.6
+implements that change; no live dev.6 acceptance has yet occurred.
+
+Local Node.js 24.18.0 regression verification passes **375 tests**, zero failures
+or skips. These include settings/feature inactivity, read-only API bounds,
+report semantics, configuration/credential omissions, and new console tools.
+Earlier individual-edition tests were replaced with consolidated-edition and
+Toolkit-toggle scenarios; test counts are not a cross-version coverage score.
+
+An isolated **Headless Chrome 155.0.8059.85** fixture uses real **ExtJS
+7.0.0.168** and its Crisp theme, with mocked PVE workspace, GM storage and API
+data. It distinguishes global Documentation from resource Help, checks global
+launcher placement/toggling and versioned settings, 22 toggles/three defaults,
+saved all-off state, origin scope, lazy inventory, blank-scope preflight including
+guestless nodes, specific-target hints without requests, text-only values, narrow layout,
+Escape and repeated-open/report-redraw component cleanup. Screenshots were
+inspected. Pinned public Proxmox fixture assets are fetched only for development
+using `node tools/fetch-ui-fixture.cjs`; run `node tools/browser-smoke.cjs` after
+that. It verifies Back to Toolkit on all eleven reports, category-tab return with draft preservation,
+active request cancellation, no component leaks and footer visibility after
+scrolling at an 800px viewport with a 240px server tree. Dev.5's earlier fixture
+used a 390px modal; that is historical evidence. Dev.6 serves pinned fixture
+assets and an iframe on loopback HTTP, with a real local WebSocket. Ten repeated
+toggle/return cycles preserve the exact iframe/document, terminal marker object,
+native card and open socket with one connection and no reconnect. The same socket
+survives the report campaign. Bounds follow viewport/tree/task-log resize; covered
+content is inert while surrounding regions stay usable. Resource changes, tree
+clicks, logout-style clearing, Escape and render failure clean up; there are no
+uncaught browser exceptions. This is synthetic console evidence, not live xterm
+input/session acceptance. Shipped scripts load no dependencies. This is real ExtJS rendering evidence,
+not live PVE integration, actual installed light/dark themes, Firefox/manager
+compartments, OS clipboard or API permission acceptance. No browser CPU/latency
+claim is made.
+
+Operation counts retain one scan interval and one component query per visible
+console scan for each installed edition, zero console discovery when all actions
+are disabled, and zero report requests during idle scans. API tests exercise at
+most three concurrent GETs, 400 dispatched-request cap, 15-second cancellation,
+8 MiB per-response and 32 MiB aggregate limits. Fixture integrity and deterministic
+build/static checks are separate from execution and live acceptance.
+
+### Historical 0.6.0-dev.2 seven-edition local verification — 2026-11-02
+
+The development checkout contains synchronized **0.6.0-dev.2** Toolkit and
+six individual editions. Paste Only, Console Export, Diagnostics and Recipes
+are implemented locally. They remain unreleased and require new live acceptance;
+stable 0.5.0 evidence below does not qualify these changed runtimes.
+
+All **329 tests pass** under Node.js 24.18.0, with zero failures/skips.
+The [feature review](FEATURE-REVIEW.md) records local checks, fixed findings,
+capability boundaries and measured operation counts. The
+[manual acceptance plan](FEATURE-ACCEPTANCE.md) identifies exact candidate hashes
+and pending Firefox + Violentmonkey cases. No new OS clipboard, browser download,
+rendered paste, native UI or live Proxmox acceptance is claimed.
+
+### Historical 0.6.0-dev.1 three-edition local verification — 2026-11-02
 
 All **221 tests passed**, zero failures/skips, under Node.js 24.18.0.
 This includes the 180 existing regressions plus 41 edition/version/capability,
@@ -32,7 +146,7 @@ New clipboard/toolbar/manager-boundary behavior still needs live acceptance.
 | Copy-only | 20,881 | `2db5a72a5a961c52d3bcd0953c1537e2879430fc0200a8667f3374925b5f9beb` |
 | Paste-only | 22,900 | `73ad841a01bd8723068c748542fbd67dc3d12c82e3e5e4b341b1cbc943c81d03` |
 
-**Proxmox Toolkit 0.5.0 is stable.** Firefox + Violentmonkey
+**Historical stable Proxmox Toolkit 0.5.0.** Firefox + Violentmonkey
 remains the primary target. Its executable runtime is unchanged from
 0.5.0-dev.1 and 0.5.0-rc.1; only userscript version/description metadata changed
 for promotion. On 2026-11-01 the maintainer reconfirmed that the current version

@@ -8,11 +8,12 @@ const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'proxmox-toolkit.user.js'), 'utf8');
 const version = source.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
 assert.equal(version, manifest.version, 'Toolkit follows the shared release manifest');
-assert.match(source, /^\/\/ @name\s+Proxmox Toolkit$/m, 'Product name');
+assert.equal(source.match(/^\/\/ @name\s+(.+)$/m)?.[1], `Proxmox Toolkit ${version}`, 'Versioned product name');
 // Size/hash identify the candidate; efficiency is reviewed through runtime work
 // and resource lifetimes, without a source-size threshold (see DECISIONS.md).
 assert.deepEqual([...source.matchAll(/^\/\/ @grant\s+(\S+)$/gm)].map(m => m[1]).sort(),
-    ['GM.info', 'GM.setClipboard', 'GM_info', 'GM_setClipboard', 'unsafeWindow']);
+    ['GM.setClipboard', 'GM_setClipboard', 'unsafeWindow',
+        'GM_getValue', 'GM_setValue', 'GM_registerMenuCommand', 'GM.getValue', 'GM.setValue', 'GM.registerMenuCommand'].sort());
 assert.ok(!/^\/\/ @(?:require|resource|connect|updateURL|downloadURL)\b/m.test(source), 'No implicit runtime dependencies or update channel');
 const managerProbe = fs.readFileSync(path.join(root, 'tools', 'probe-manager.user.js'), 'utf8');
 for (const edition of manifest.editions) {

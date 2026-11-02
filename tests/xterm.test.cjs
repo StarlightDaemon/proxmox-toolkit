@@ -65,7 +65,7 @@ test('real xterm strips terminal escape styling without evaluating displayed tex
         assert.equal(extract(term).text, '<script>');
     });
 });
-for (const edition of ['toolkit', 'copy']) test(`${edition} installed copy handler works with the real xterm buffer`, async () => {
+for (const edition of ['toolkit', 'copy-paste']) test(`${edition} installed copy handler works with the real xterm buffer`, async () => {
     await fixture({ cols: 5 }, async term => {
         await write(term, 'abcd界\r\nnext');
         const view = consoleView();
@@ -91,7 +91,7 @@ test('renderer-free xterm emits bracketed paste data before its missing-textarea
     });
 });
 
-for (const edition of ['toolkit', 'paste']) test(`${edition} real-xterm partial paste failure is not followed by Enter or retry`, async () => {
+for (const edition of ['toolkit', 'copy-paste']) for (const action of ['Paste Only', 'Paste & Execute']) test(`${edition} ${action} real-xterm partial paste failure is not followed by Enter or retry`, async () => {
     await fixture({}, async term => {
         await write(term, '\x1b[?2004h');
         const sent = [];
@@ -99,8 +99,27 @@ for (const edition of ['toolkit', 'paste']) test(`${edition} real-xterm partial 
         const view = consoleView();
         view.frame.contentWindow.term = term;
         const h = host({ views: [view], edition, readClipboard: () => Promise.resolve('echo toolkit\n') });
-        await h.paste();
+        await h.action(action).handler();
         assert.deepEqual(sent, ['\x1b[200~echo toolkit\x1b[201~']);
-        assert.match(h.created.find(button => button.text === 'Paste & Execute').tooltip, /partially sent; inspect console/);
+        assert.match(h.action(action).tooltip, /partially sent; inspect console/);
+    });
+});
+
+for (const alternate of [false, true]) test(`real xterm export equals Copy bytes, alternate=${alternate}`, async () => {
+    await fixture({ cols: 5 }, async term => {
+        if (alternate) await write(term, 'retained\x1b[?1049h\x1b[H');
+        await write(term, 'abcd界\r\n<script>`````\r\n\r\n😀');
+        const view = consoleView();
+        view.frame.contentWindow.term = term;
+        const h = host({ views: [view] });
+        await h.click();
+        h.action('Export Console').handler();
+        h.action('Download plain text').handler();
+        assert.deepEqual(Buffer.from(await h.downloads[0].blob.arrayBuffer()), Buffer.from(h.copied[0], 'utf8'));
+        h.action('Download Markdown').handler();
+        const markdown = await h.downloads[1].blob.text();
+        assert.equal(markdown, '``````\n' + h.copied[0] + '\n``````\n');
+        h.events.pagehide();
+        assert.equal(h.blobs.size, 0);
     });
 });

@@ -1,6 +1,437 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-02: repository rename and edition development
+## Latest checkpoint — 2026-11-02: stable 0.7.0 promotion
+
+The maintainer accepted the last tested 0.7.0-dev.8 runtime as the new stable and
+explicitly authorized pushing/publishing it. Work proceeds in the verified
+`E:\Citadel\proxmox-toolkit` checkout, origin
+`https://github.com/StarlightDaemon/proxmox-toolkit.git`. Created local branch
+`codex/release-0.7.0` from `codex/standalone-editions` at
+`5a245c95aa114ec8d4114808857517206f2d54ad`, preserving all accumulated
+implementation files and intentional deletions. Remote main was
+`edfb35efa93c248daa6dcb22cc6709a779e264fa`, an ancestor of the release branch.
+Both old and new folders still exist; the old folder was left untouched.
+
+Verified the old GitHub repository URL returns 301 to proxmox-toolkit followed
+by 200. GitHub reported no open issues or active repository rulesets at preflight.
+Keep the old repository name unused to preserve the redirect.
+
+Both editions and the probe now use 0.7.0. Shared source, registry and generator
+hashes match the saved dev.8 baseline; generated outputs match dev.8 exactly
+after version/name replacement and removal of the development-description
+prefix. No runtime logic, defaults, grants, settings keys or host rules changed.
+Current installation, edition, catalog, design, usage, testing and maintenance
+documents now describe stable 0.7.0. Earlier release and development records
+remain historical. Stable hashes are in CATALOG-ACCEPTANCE.md.
+
+Local verification completed with Node.js 24.18.0:
+
+- `node tools/build.cjs --check` and `node tools/check.cjs` pass.
+- `node tools/fetch-xterm.cjs` verifies the pinned cached fixture.
+- `node --test --test-isolation=none --test-reporter=tap tests/*.test.cjs`:
+  375 pass, zero failures, cancellations or skips.
+- `node tools/browser-smoke.cjs`: real ExtJS 7.0.0.168 / Chrome 155.0.8059.85
+  passes category/report navigation, preserved console document/socket, cleanup,
+  cancellation and narrow layouts. Desktop/narrow screenshots inspected. Initial
+  sandbox launch failed at Crashpad startup; isolated elevated rerun passed.
+- `git diff --check` passes. Logs and pre-promotion artifacts are retained under
+  ignored `.cache/release-0.7.0`.
+
+Publication target is main plus tag/release v0.7.0, marked Latest with exactly
+the Toolkit and Copy & Paste userscripts attached. Remote CI, tag/release state
+and uploaded asset digests must be verified separately from the local results.
+The maintainer's practical acceptance does not close detailed clipboard/report,
+serial/proxy, migration, package-version or cross-browser checks. Open Loops now
+also records Tools-menu grouping and versioned handoff copies as proposals, and
+the duplicate-folder cleanup as separately authorized housekeeping.
+
+## Previous checkpoint — 2026-11-02: new checkout path verified
+
+Resumed in `E:\Citadel\proxmox-toolkit`. Origin remains
+`https://github.com/StarlightDaemon/proxmox-toolkit.git`, branch
+`codex/standalone-editions`, HEAD
+`5a245c95aa114ec8d4114808857517206f2d54ad`. Before any repository mutation,
+all 61 recorded file entries, origin, branch, HEAD and exact short status matched
+`.cache/directory-rename-baseline.json`. The pasted handoff also matched this
+record byte-for-byte. Existing modifications, untracked files and deletions were
+preserved; neither candidate was regenerated.
+
+The old `E:\Citadel\proxmox-copy-console` directory still exists with repository
+contents, so a completed same-parent rename cannot be claimed. This session left
+that directory intact and made the new checkout's linked worktree self-contained.
+Ran `git worktree repair E:\Citadel\proxmox-toolkit\.cache\ol-01-review`;
+the initial sandbox attempt could not write `.git`, and the approved elevated
+retry succeeded. Both worktree paths and the linked tree's common Git directory
+now resolve under the new root. The linked branch remains `codex/ol-01-review`
+at `c9219895b259c91f934dcdc350f4a08db66ebae9`, with clean short status.
+The old directory's worktree pointers still reference its own old root.
+
+Verification from the new root with Node.js 24.18.0:
+
+- `node tools/build.cjs --check`: both 0.7.0-dev.8 editions match generation.
+- `node tools/check.cjs`: 27 JavaScript files, 158 local Markdown links,
+  metadata and versions pass.
+- `node tools/fetch-xterm.cjs`: cached pinned fixture integrity verified.
+- `node --test --test-isolation=none --test-reporter=tap tests/*.test.cjs`:
+  375 pass, zero failures, cancellations or skips. Local output is retained in
+  `.cache/directory-rename-tests.tap`.
+
+Toolkit remains 131,409 bytes, SHA-256
+`2b4e08d2660543b10c2618bab85dd2079574986ec55ead472ecf26b99d3b7a92`;
+Copy & Paste remains 55,914 bytes, SHA-256
+`3fbb236391e38a3c0a3440ffa2871d5851cb654e5595dd2f655bdaad8e8a60ca`.
+The real ExtJS browser fixture was not rerun in this session; its earlier result
+remains historical local evidence. Live Firefox/Violentmonkey/Proxmox acceptance
+remains pending beyond the maintainer's scoped UI feedback. Stable 0.5.0 and
+runtime/version are unchanged. No commit, remote update, release, publication,
+project creation or shortcut changes were performed. Tools-menu grouping and
+versioned handoff copies remain proposals. The next evidence step remains the
+live catalog campaign, not additional unapproved runtime work.
+
+## Previous checkpoint — 2026-11-02: directory rename handoff (planned)
+
+The maintainer reports dev.8 looks solid: the layout makes sense, Toolkit toggles
+in the intended location, and the main UI frame is replaced as intended. This is
+live UI workflow feedback, not acceptance of every report, clipboard scenario or
+the full compatibility matrix. Stable 0.5.0 remains unchanged; no release or
+promotion was authorized. No runtime changes or version bump accompany this handoff.
+
+Recommended folder: `E:\Citadel\proxmox-toolkit`.
+Recommended project display name: **Proxmox Toolkit**.
+Current folder: `E:\Citadel\proxmox-copy-console`.
+The destination did not exist when checked. The rename and new project setup
+have NOT been performed. This turn prepares the plan only.
+
+### Identity and state to preserve
+
+- Origin: `https://github.com/StarlightDaemon/proxmox-toolkit.git` (already renamed).
+- Branch: `codex/standalone-editions`.
+- HEAD: `5a245c95aa114ec8d4114808857517206f2d54ad`.
+- Extensive modified AND untracked implementation files are intentional. Preserve
+  them, existing deletions, `.git`, `.cache`, and other hidden/ignored contents.
+  Do not clone over this directory, reset, clean, prune worktrees or rebuild it
+  from HEAD. The current candidate is not represented by HEAD alone.
+- Main `.git` is a directory. A linked worktree exists at `.cache/ol-01-review`,
+  branch `codex/ol-01-review`, HEAD
+  `c9219895b259c91f934dcdc350f4a08db66ebae9`; its working tree was clean.
+  Its `.git` pointer contains the OLD absolute directory, so repair is required
+  after moving the containing main checkout.
+- `.cache/directory-rename-baseline.json` records the pre-move identity, status
+  and hashes of tracked/untracked non-ignored files, including this handoff.
+  Ignored files are not hashed by this snapshot; preserve the entire directory.
+
+### Move sequence for the maintainer / next agent
+
+1. Finish/save editor work and stop repository-local tasks. Close tabs/terminals
+   holding the old directory. Recheck destination absence and repository identity.
+2. Rename the existing folder in Explorer from `proxmox-copy-console` to
+   `proxmox-toolkit`. This is a same-parent directory rename, not a fresh clone or
+   selective copy. Alternatively, from a PowerShell window outside the repository:
+
+   ```powershell
+   Set-Location -LiteralPath 'E:\Citadel'
+   if (Test-Path -LiteralPath 'E:\Citadel\proxmox-toolkit') {
+       throw 'Destination already exists; inspect it before proceeding.'
+   }
+   Rename-Item -LiteralPath 'E:\Citadel\proxmox-copy-console' -NewName 'proxmox-toolkit' -ErrorAction Stop
+   git -C 'E:\Citadel\proxmox-toolkit' worktree repair 'E:\Citadel\proxmox-toolkit\.cache\ol-01-review'
+   ```
+
+3. Create/open the project **Proxmox Toolkit** using the renamed folder. Start
+   the next chat there with this handoff and AGENTS.md. Do not continue filesystem
+   writes from an old chat whose workspace root still points at the old location.
+4. Verify origin, branch, HEAD and `git status --short` against the baseline;
+   compare file hashes before regenerating anything. Run `git worktree list
+   --porcelain` and `git -C .cache/ol-01-review status --short` to confirm both
+   worktree paths resolve under the new root and the linked tree stays clean.
+5. Run `node tools/build.cjs --check`, `node tools/check.cjs`, and
+   `node --test --test-isolation=none tests/*.test.cjs` from the new root. Previous
+   dev.8 results: 375 Node tests, build/static checks and real ExtJS browser
+   fixture passed. These have not yet been rerun in the renamed directory.
+6. Record completion here only after those checks. Update active local shortcuts
+   as needed. Historical old repository paths, stable asset names, probe labels
+   and release records are intentional; do not globally replace the old name.
+
+Tooling uses repository-relative paths / `__dirname`; the inspected active build
+and fixture tooling contains no dependency on the old checkout root. Ignored
+browser cache files may contain old transient paths and can be regenerated by
+their existing fixture commands if needed. Preserve the linked worktree.
+
+### Resume context
+
+Toolkit and Copy & Paste are the only shipped development editions, both
+0.7.0-dev.8. Edit shared `src/` and `tools/features.cjs`; generate with
+`node tools/build.cjs`. Never hand-edit generated userscripts. Keep the six
+category tabs, inline report launchers, draft-preserving Back navigation, fixed
+footer, global Documentation-adjacent toggle and underlying console intact.
+Only Copy, Paste Only and Paste & Execute default on. Settings keys stay stable.
+
+Primary live environment: PVE 9.2.3, daemon1 kernel 7.0.12-1-pve, Firefox 159.0
+(64-bit), Violentmonkey 2.50.0. Retain the distinction between maintainer UI
+feedback, synthetic local tests and untested report/manager scenarios.
+
+Remaining proposals, not implementation approvals: configurable Tools-menu
+grouping and versioned handoff copies to address Codex's file-review experience.
+No change to file-review controls is established. Commit/push/merge/release and
+publication remain separate authority boundaries. No new chat/project has been
+created by this agent, and no message has been sent to another agent.
+
+## Previous checkpoint — 2026-11-02: dev.8 category settings
+
+Repository StarlightDaemon/proxmox-toolkit, branch codex/standalone-editions,
+starting HEAD 5a245c95aa114ec8d4114808857517206f2d54ad verified. Existing work
+preserved. User approved six categories, inline reports, visible footer and
+console preservation for dev.8. No commit, remote update or publication.
+
+Implemented native Console, Inventory, Recovery, Troubleshooting, Maintenance
+and Integration tabs, with Diagnostics/Recipes regrouped. Checkbox/report cards
+share a draft; all eleven report returns select their category and retain unsaved
+values. Saved flags still gate reports. Proxy errors select Integration. Tabs
+wrap and resize/activation-driven pagination keeps settings within the content
+area, without new idle timers. Native controls remain mounted across settings
+pages, then are destroyed on exit. The footer and underlying console stay intact.
+
+Both generated editions and probe are 0.7.0-dev.8. All 375 Node tests pass;
+real ExtJS/Chrome fixture covers category clicks, every paginated feature, draft
+round-trips, footer/card/tab geometry at desktop/800/640 widths, all report return
+routes, request cancellation, no component leaks, and one unchanged console
+iframe/document/terminal marker/WebSocket through repeated toggles. Screenshots
+and build/static checks accompany the handoff. Live Firefox 159.0 + Violentmonkey
+2.50.0 + PVE 9.2.3 acceptance remains pending.
+
+The previously proposed configurable Tools grouping remains a separate open
+proposal. No change was made to Codex file-review behavior or handoff filenames.
+
+## Previous checkpoint — 2026-11-02: dev.7 global launcher styling
+
+Verified repository/ref/start unchanged; preserved all earlier work. Maintainer
+reports dev.6's workspace, button function and exercised tools appear to work,
+but supplied a screenshot of undersized, poorly spaced Toolkit beside
+Documentation. This is scoped live feedback, not full catalog/matrix acceptance.
+
+Root cause: the global north container supplies x-plain child defaults, while
+Toolkit retained default-toolbar/proxmox-inline-button styling from its old
+location. Explicit baseCls x-btn now resists that inherited default; UI and scale
+follow Documentation, with matching 0 5 0 0 margin and no old inline class.
+Both generated editions/probe advance to 0.7.0-dev.7. No new grants or UI polling.
+
+The real ExtJS fixture now models native north defaults. Its new geometry/style
+assertion fails against dev.6 and passes after the fix. All 372 Node tests and
+the browser workspace/report/console-preservation checks pass; corrected screenshot
+inspected. Build/static checks pass. Live dark-theme/Firefox sizing recheck is
+pending. No commit, push or publication.
+
+Grouping recommendation only: retain the three clipboard actions inline, group
+all extra console utilities under Tools by default, and offer one persisted
+grouped/inline preference. Reports stay in the workspace. Not implemented yet.
+
+## Previous checkpoint — 2026-11-02: dev.6 main workspace and global toggle
+
+Maintainer approved the reviewed plan: Toolkit beside global Documentation,
+central workspace content, surrounding tree/header/task log preserved, toggle
+return without losing the console. Repository/ref/start remain
+StarlightDaemon/proxmox-toolkit, codex/standalone-editions,
+5a245c95aa114ec8d4114808857517206f2d54ad; prior work preserved.
+
+Native Ext.panel.Panel renders as an unmanaged absolutely positioned sibling in
+#content. Native cards remain mounted, active and laid out. No iframe reparent,
+hide, reload or native view destruction occurs during toggling. Temporary inert
+and aria-hidden values are restored exactly; clipboard intent is cancelled and
+console resolution blocked while covered. Content resize listeners size the
+panel without polling; native mutation/tree-click listeners, page lifecycle and
+Escape close/dispose it. No global method patching or new grants. Documentation
+is selected by north-region/workspace ownership; resource Help is excluded.
+Return to Proxmox restores the view; Back to Toolkit returns to Reports.
+Explicit resource navigation and Save & Reload retain native replacement/reload
+semantics and are not promised to preserve a console.
+
+Verification: 372 Node tests pass, including lifecycle, accessibility restoration,
+resize without timers, partial setup failure and pending input cancellation.
+Real ExtJS 7.0.0.168 / Chrome 155.0.8059.85 fixture passes: exact central bounds,
+surrounding regions, repeated cleanup, every report route, cancellation, resize,
+Escape, resource navigation and logout. A same-origin iframe with a real local
+WebSocket retains its document, terminal marker and open socket over ten toggle
+cycles and report navigation, with no reconnect. Screenshots inspected; no
+uncaught browser exceptions. This does not establish live Firefox compartments,
+actual PVE/xterm session preservation or API/clipboard correctness.
+
+Both editions/probe are 0.7.0-dev.6; hashes in catalog acceptance. No commits,
+remote changes or publication. Live dev.6 campaign remains pending.
+
+## Previous checkpoint — 2026-11-02: dev.5 naming, grants and report navigation
+
+Repository/ref/start remain StarlightDaemon/proxmox-toolkit,
+codex/standalone-editions, 5a245c95aa114ec8d4114808857517206f2d54ad.
+Preserved prior uncommitted work. The maintainer traced the reported dev.4 syntax
+error to a manual naming edit; the exact generated files passed parsing and all
+364 then-current tests. Dev.5 generates versioned edition names and parses each
+output before writing. Removed redundant GM_info/GM.info grant declarations;
+retained their runtime reads, the nine used grants, historical namespace and
+settings keys. Installation docs explain every grant and name-based identity.
+
+The maintainer also reported no return navigation after Inventory/Maintenance.
+All eleven report windows now have a native bottom-docked Back to Toolkit and
+Close footer. Back destroys the report, cancels collection and opens the Reports
+tab without writing settings, reloading or automatically collecting again.
+
+Verification: 365 Node tests pass. The real ExtJS/Chrome fixture passes all prior
+checks plus return navigation for every report, component cleanup, active-fetch
+cancellation and narrow/scrolled footer visibility; screenshot inspected. The
+first sandbox browser launch could not start Crashpad; the isolated rerun outside
+the sandbox succeeded. A fixture-only scroll simulation was corrected to use DOM
+scrolling after Ext.Component returned no scroller. No live Firefox/manager or
+Proxmox acceptance is inferred. No commit, remote update or publication.
+
+## Previous checkpoint — 2026-11-02: dev.4 blank report scopes
+
+The maintainer confirmed the screenshot's environment versions and reported live
+report failures on empty selection (notably Maintenance). The UI promised blank
+Node meant the visible cluster, but the model required exactly one node.
+Dev.4 removes that mismatch: independent per-node preflights cover all visible
+nodes by default, including guestless nodes, with shared evidence fetched once.
+Unreadable node checks remain unknown. Explicit filters narrow; invalid nodes
+never broaden collection. Network includes guestless nodes and Recovery honors
+its node filter for network collection. Task detail infers its node from UPID;
+Compare and task-detail requirements are explained/validated before requests.
+
+Verification: 364 Node tests pass; the real-ExtJS fixture renders blank-scope
+Maintenance for two nodes including a guestless one, and verifies required-target
+errors issue no requests. Screenshot inspected. Build/static/whitespace checks
+pass. Both editions/probe are 0.7.0-dev.4. Live report correctness remains
+unconfirmed; no commit, remote update or publication.
+
+## Previous checkpoint — 2026-11-02: dev.3 placement/defaults and screenshot evidence
+
+Maintainer supplied a dev.2 screenshot and requested Toolkit immediately left
+of resource Help, with only Copy, Paste Only and Paste & Execute default on.
+Implemented in shared source and rebuilt both editions/probe at 0.7.0-dev.3.
+Saved settings remain intact; Restore defaults selects the new baseline.
+
+Screenshot environment: PVE 9.2.3; node daemon1 kernel 7.0.12-1-pve, PMX
+7.0.12-1, x86_64; Firefox 159.0 (64-bit); Violentmonkey 2.50.0; Toolkit
+0.7.0-dev.2. Native dark Settings is visible. Inventory is checked alongside
+the three clipboard actions. This records screenshot identity/rendering only,
+not live clipboard/report acceptance or testing of the new dev.3 runtime.
+
+Local verification: 348 Node tests and the real-ExtJS Chrome fixture pass; build,
+static and whitespace checks pass. The fixture verifies left-of-Help placement
+after resource replacement and three fresh defaults. Existing six-action console
+regressions now explicitly use saved opt-in settings; fresh defaults and stored
+preference preservation have separate coverage. No commit, push or publication.
+
+## Previous checkpoint — 2026-11-02: dev.2 Help placement correction
+
+The maintainer reported no Toolkit beside Help and noticed the unchanged dev.1
+version. Source review found the prior selector targeted global Documentation,
+which shares proxmoxHelpButton with resource Help. Corrected to the visible
+config panel's own Help in its top action toolbar, excluding global Documentation
+and modal/hidden Help. Resource destruction/navigation restores placement.
+Bulk Actions is defined by PVE.node.Config and is not implemented by Toolkit.
+
+Both editions and the probe now follow **0.7.0-dev.2**; settings titles and manager
+commands expose it. Settings keys are unchanged. Future testing handoffs must
+advance the shared development revision. Local tests: 348 pass; real ExtJS
+fixture checks both native button locations and resource replacement. Build,
+static and whitespace checks pass. No live browser was available through the
+desktop tools; the installed candidate and live resolution remain unverified.
+No commits, remote updates or publication.
+
+## Previous checkpoint — 2026-11-02: native header and settings (placement corrected in dev.2)
+
+The edition button now follows global Help and opens Settings directly. Native
+ExtJS windows, tabs, checkboxes, fields and buttons inherit the installed theme.
+The floating entry and home page are removed. Reports remain on a Reports tab;
+console actions appear Copy, Paste Only, Paste & Execute. Header discovery
+recovers late startup even with all features off and stops retrying once mounted.
+
+Local evidence: 345 Node tests pass. The isolated Chrome fixture now renders real
+ExtJS 7.0.0.168/Crisp with mocked workspace/GM/API data, including native placement,
+saving, report access, narrow layout, Escape and component cleanup; screenshots
+inspected. This does not qualify live PVE themes or Firefox/manager compartments.
+Build/static/whitespace checks pass. Still local and uncommitted at 0.7.0-dev.1;
+no remote, commit or release changes. See [acceptance](CATALOG-ACCEPTANCE.md).
+
+## Previous checkpoint — 2026-11-02: configurable catalog, consolidated editions
+
+Implemented locally at **0.7.0-dev.1** on `codex/standalone-editions`, starting
+HEAD `5a245c95aa114ec8d4114808857517206f2d54ad` plus the existing uncommitted
+0.6.0-dev.2 work. Toolkit now has 22 feature toggles; the only companion is
+Copy & Paste (three toggleable clipboard actions). The maintainer explicitly
+superseded individual-feature packaging during implementation. All old development
+individual artifacts were removed; stable tags/releases and their identities
+were not changed.
+
+Settings use manager storage, origin/edition isolation, defaults and Save & Reload.
+The six deferred console/integration/report ideas and ten management tools are
+implemented. Management collection uses bounded, cancellable same-origin GETs;
+reports distinguish evidence, omissions and unknowns. New Toolkit features are
+off by default. See [catalog](CATALOG.md), [implementation record](CATALOG-DEVELOPMENT.md),
+and [current acceptance](CATALOG-ACCEPTANCE.md).
+
+Local verification: 338 Node tests pass, zero failures/skips. Cached pinned xterm
+fixture verified. Headless Chrome 155.0.8059.85 exercised the settings and inventory
+DOM using synthetic PVE/GM/API data; screenshots inspected. No live PVE access,
+Firefox/manager qualification or actual clipboard/file contents are claimed.
+The final record in CATALOG-DEVELOPMENT includes build/static/whitespace checks.
+
+Next evidence step: run the pending Firefox + Violentmonkey scratch campaign,
+including actual installed package versions, report permissions/API results,
+serial/proxy integration, new native panels and migration from old script entries.
+All work remains local and uncommitted. No commit, push, PR, merge or publication.
+
+## Previous checkpoint — 2026-11-02: seven-edition feature implementation
+
+Implemented locally at synchronized **0.6.0-dev.2**: Paste Only, Console Export,
+Diagnostics and Diagnostic Recipes, plus the four new individual editions.
+Toolkit includes all six actions; utility actions use a native Tools menu.
+Shared source/generator, expanded regressions, current docs, implementing-agent
+review and a precise pending acceptance campaign are complete. See
+[review](FEATURE-REVIEW.md) and [candidate hashes/manual plan](FEATURE-ACCEPTANCE.md).
+
+Exact baseline: origin StarlightDaemon/proxmox-toolkit, branch
+codex/standalone-editions, starting HEAD
+5a245c95aa114ec8d4114808857517206f2d54ad. Preserved the handoff and existing
+OPEN-LOOPS/index/development-record edits. The final worktree is uncommitted;
+HEAD alone does not identify these runtimes. No live Proxmox command or recipe,
+commit, remote ref, PR, merge, tag, release or publication action occurred.
+
+Final verification on Node.js 24.18.0: node tools/build.cjs and --check passed;
+node tools/check.cjs passed 23 JavaScript parses, 136 local Markdown links,
+metadata and synchronized versions; node tools/fetch-xterm.cjs verified the
+cached pinned fixture (no download); node --test --test-isolation=none
+tests/*.test.cjs passed **329/329**, zero failures/skips; git diff --check passed.
+The final implementing-agent review fixed privacy/unknown-value, lifecycle and
+redundant discovery issues documented in FEATURE-REVIEW. Earlier waves remain
+chronological records. Next action is maintainer-operated Firefox +
+Violentmonkey scratch acceptance using exact candidate hashes; all new live cases
+remain pending. Stable 0.5.0 and its historical acceptance are unchanged.
+
+
+## Previous checkpoint — 2026-11-02: selected feature implementation handoff
+
+The maintainer selected Paste Only, Console Export, Diagnostics, and a
+Diagnostic Recipe Picker and requested a grouped handoff for another agent to
+implement and review. [The handoff](FEATURE-EXPANSION-HANDOFF.md) defines the
+outcomes, behavior defaults, shared capability/edition boundaries, staged work,
+regression and efficiency requirements, final review, and manual acceptance.
+The other six researched ideas are deferred in OPEN-LOOPS and the handoff.
+
+Preparation verified origin `StarlightDaemon/proxmox-toolkit`, branch
+`codex/standalone-editions`, and HEAD
+`edfb35efa93c248daa6dcb22cc6709a779e264fa`. Active uncommitted edition development
+was present and changing concurrently. Preserve it and reconcile the latest
+baseline before implementation. This wave adds planning documentation only;
+it does not implement features, change versions, commit, publish, or qualify a
+new runtime. The implementing agent must record actual checks and acceptance
+separately from the earlier stable evidence.
+
+Handoff verification: `node tools/check.cjs` passed parsing/metadata/version
+checks for the current development tree and validated 117 local Markdown links.
+Documentation whitespace checks passed. These checks validate the planning
+changes and current source structure; no runtime test suite or live Proxmox
+acceptance was run for this handoff.
+
+## Previous checkpoint — 2026-11-02: repository rename and edition development
 
 The maintainer authorized renaming the existing repository to
 `StarlightDaemon/proxmox-toolkit`, updating links and local origin, and checking
@@ -516,3 +947,82 @@ paste/execution acceptance has occurred.
 
 Upstream master sources describe the inspected upstream implementation, not proof
 of the locally installed Proxmox package. Keep installed-version checks separate.
+
+## Feature wave 1 — 2026-11-02: baseline and Paste Only
+
+Reconciled local origin `https://github.com/StarlightDaemon/proxmox-toolkit.git`,
+branch `codex/standalone-editions`, HEAD
+`5a245c95aa114ec8d4114808857517206f2d54ad`. Edition development is now committed;
+preserved the existing handoff and OPEN-LOOPS/index/checkpoint edits. No branch
+switch, commit, or remote mutation. Node 24.18.0 baseline: generation check,
+source/metadata/link check, cached pinned-xterm integrity and all 221 tests pass.
+Usage read: 54% of the available weekly window; no reset consumed.
+
+Selected next synchronized version 0.6.0-dev.2. Shared input lifecycle now accepts
+Paste Only independently of `term.input`; Enter dispatch is physically excluded
+from that edition. Added final pre-dispatch validation and deterministic marker
+ordering. Input-stage tests cover normalization, Unicode, limits, bracketed paste,
+denial, partial send, timeout, hide/show, navigation, replacement, teardown and
+lease loss, alongside the existing Paste & Execute regressions. Toolkit test
+indices were updated to select the intended action after adding a third button.
+Four generated editions are an intermediate build; export/diagnostics/recipes
+and full seven-edition review follow. No live acceptance or release is implied.
+
+## Feature wave 2 — 2026-11-02: export and native utility infrastructure
+
+Added a native Tools menu in Toolkit and standalone utility controls, native
+read-only text panels, Plain text/Markdown export and temporary Blob URL cleanup.
+Export takes one activation snapshot through Copy's exact extractor, works with
+retained disconnected output, and reports download intent only. Text is UTF-8
+with no added newline; Markdown fences exceed all backtick runs. Names are UTC
+and generic. Panel opening/browsing holds no clipboard lease.
+
+The evolving seven-edition build passes the 240-test regression suite after
+updating assertions for the intentional larger toolbar/menu and diagnostic-only
+availability with a missing frame. Focused feature tests then pass 29/29,
+including ten export cases for snapshot identity, literal text, alternate/empty/
+ambiguous buffers, failure cleanup and pagehide. More diagnostics, recipes,
+real-xterm export and expanded edition tests follow. No live browser/file-save
+acceptance. The 500 ms recovery interval is unchanged.
+
+## Feature waves 3 and 4 — 2026-11-02: diagnostics and recipes
+
+Implemented explicit-open/refresh, allowlisted schema-1 diagnostics; the native
+panel can integrate when the terminal is missing. Shared resolver reason codes
+cover context/ownership/ambiguity. Clipboard API presence is never described as
+permission approval; conditional bracketed-paste status is separate. Report
+copying and static recipe copying share Copy's completion/timeout contract and
+the cross-edition lease. Write cancellation now clears the watchdog on teardown,
+loss of ownership and navigation, without claiming to undo a dispatched write.
+
+Verified catalogue syntax against Proxmox's pveversion discussion, GNU df/uname
+manuals and the systemd systemctl manual. GNU -h uses powers of 1024; systemctl
+--failed requires systemd 233 or later. Picker shows prerequisites and exact
+commands, copies without newline, refuses node-only entries in LXC and stale/
+ambiguous targets, and never probes or sends terminal input. References and
+platform limits will be retained in Usage.
+
+All 304 local tests pass at this checkpoint, including every diagnostic reason
+code, seeded-secret omission, permission/read/input non-use, recipe copy contracts,
+all-six-individual ordering/overlap, cross-edition leases, and pinned real-xterm
+export-byte comparisons. Renderer-free xterm still provides partial-send evidence,
+not proof of successful rendered paste. Usage remains 54% in the reported window.
+Final defect review, documentation, candidate hashes and acceptance plan follow.
+
+## Final review wave — 2026-11-02
+
+Separate implementing-agent review completed; no independent reviewer was used.
+Added panel construction failure/teardown tests, strict Firefox menu/panel callback
+checks, pre-event navigation refusal, unknown-count and nonprimitive-identity
+regressions, open-panel idle counts, and six-individual operation counts. Removed
+redundant discovery from clipboard-busy presentation; dispatch checks remain
+fresh. Final 329 tests, deterministic generation, metadata/source/link checks,
+cached pinned-fixture verification and whitespace checks pass as recorded above.
+All seven exact hashes are in FEATURE-ACCEPTANCE; Toolkit is 53,737 bytes, SHA-256
+3899cad5a4f5b1e8ea2a5525a41dfdc58a1719bbeae830bafd69491dcfadee39.
+
+Current guides, manifest, generated editions, tests and review/acceptance records
+are updated. No changes to historical release files/tags or acceptance claims.
+No decision or local implementation blocker remains; live Firefox/Violentmonkey
+clipboard/download/native UI and Proxmox acceptance is the next separate step.
+All six deferred features remain deferred. Work is local and uncommitted.

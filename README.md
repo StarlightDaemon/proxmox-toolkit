@@ -1,21 +1,23 @@
 # Proxmox Toolkit
 
-[![Version](https://img.shields.io/badge/version-0.5.0-0969da)](https://github.com/StarlightDaemon/proxmox-toolkit/releases/latest)
+[![Version](https://img.shields.io/badge/version-0.7.0-0969da)](https://github.com/StarlightDaemon/proxmox-toolkit/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-2da44e)](LICENSE)
 
-Native **Copy** and **Paste & Execute** buttons for Proxmox node shells and LXC consoles.
+Native clipboard tools and configurable read-only management reports for Proxmox VE.
 
 - **Copy** captures retained scrollback or the active alternate screen as plain text, joining wrapped lines.
+- **Paste Only** pastes clipboard text without appending Enter.
 - **Paste & Execute** reads clipboard text, pastes it into the current console, and sends Enter.
+- **Toolkit** provides 22 feature toggles across six categories, including console utilities and management reports. Only the three clipboard actions default on.
 
-One userscript, with no build step, runtime dependencies, or server installation. It uses the console's existing connection and stores no transcripts or clipboard history.
+Choose one edition: **Toolkit** for all features, or **Copy & Paste** for the three clipboard actions. Each is one userscript with no user build step, runtime dependencies, or server installation. Settings are saved locally by the manager; transcripts and clipboard history are not stored by the script.
 
-**[Install](#install)** · [Usage guide](docs/USAGE.md) · [Release notes](https://github.com/StarlightDaemon/proxmox-toolkit/releases/tag/v0.5.0)
+**[Install](#install)** · [Usage guide](docs/USAGE.md) · [GitHub repository](https://github.com/StarlightDaemon/proxmox-toolkit) · [Release notes](https://github.com/StarlightDaemon/proxmox-toolkit/releases/tag/v0.7.0)
 
 ## Install
 
 1. Open your userscript manager; **Firefox + Violentmonkey** is the primary tested combination.
-2. Copy the complete [stable script file](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.5.0/proxmox-copy-console.user.js), including its userscript header, into a new entry or replace your existing entry. Confirm `@version 0.5.0`.
+2. Copy the complete [Toolkit script](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.7.0/proxmox-toolkit.user.js) or [Copy & Paste script](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.7.0/proxmox-copy-paste.user.js), including its userscript header, into your manager entry. When updating, replace the code in the existing entry to retain its settings. Confirm `@version 0.7.0`.
 3. **Replace** the supplied `https://*:8006/*` include rule with your trusted host, for example `https://pve.example.net:8006/*`. Adding a narrow rule beside the broad rule does not restrict access.
 4. Save, keep one entry enabled in one manager, reload Proxmox, and open a node **Shell** or LXC **Console**. Disable the old **Proxmox Copy Console** entry if you created a separate Toolkit entry.
 
@@ -29,14 +31,16 @@ Click **Copy**, then paste into your editor. Check copied output before sharing;
 
 The [usage guide](docs/USAGE.md) explains text handling, feedback, cancellation, and troubleshooting. After uncertain or partial input, inspect the console before retrying.
 
+Click **Toolkit** immediately left of global **Documentation** to select features or open reports. Toggle again or choose **Return to Proxmox** to restore the preserved console. **Save & Reload** explicitly reloads the page.
+
 ## Compatibility
 
-Targets current stable **Proxmox VE** through its main HTTPS interface on port **8006**, with embedded node Shell and LXC xterm consoles. Firefox + Violentmonkey has maintainer-reported practical acceptance for Toolkit 0.5.0; see [compatibility and test evidence](docs/TESTING.md) for other combinations and coverage limits.
+Targets current stable **Proxmox VE** through its main HTTPS interface on port **8006**, with embedded node Shell and LXC xterm consoles. The maintainer approved the tested 0.7.0-dev.8 runtime for stable 0.7.0. Firefox + Violentmonkey remains the primary target; detailed report, clipboard and cross-browser qualification remains tracked in [Testing](docs/TESTING.md).
 
-Standalone windows, noVNC/SPICE, PDM remote consoles, and custom proxy ports are outside supported scope.
+Standalone windows, noVNC/SPICE and PDM remote consoles are outside scope. Toolkit's VM serial and custom HTTPS origin/proxy options require explicit opt-in and environment-specific verification; see [catalog setup](docs/CATALOG.md).
 
 ## Documentation
 
-The repository is now **proxmox-toolkit**; the old address redirects here. Three synchronized editions—Toolkit, Copy Console, and Paste & Execute—are available as **0.6.0-dev.1 development candidates** on [the editions branch](https://github.com/StarlightDaemon/proxmox-toolkit/tree/codex/standalone-editions). See [edition selection and development](docs/EDITIONS.md). These changed runtimes await live acceptance; 0.5.0 remains the accepted stable all-in-one release.
+The old **proxmox-copy-console** GitHub address redirects to **proxmox-toolkit**. See the [catalog guide](docs/CATALOG.md), [edition selection](docs/EDITIONS.md), [remaining live checks](docs/CATALOG-ACCEPTANCE.md), and [maintenance register](docs/OPEN-LOOPS.md). Historical 0.5.0 remains available for rollback with its original filename and release assets.
 
 See the [documentation index](docs/README.md) for the guides, design, test records, and contributor references.

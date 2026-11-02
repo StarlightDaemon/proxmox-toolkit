@@ -1,14 +1,18 @@
 // ==UserScript==
-// @name         Proxmox Toolkit
+// @name         Proxmox Toolkit 0.7.0
 // @namespace    homelab
-// @version      0.6.0-dev.1
-// @description  Development candidate: Copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles.
+// @version      0.7.0
+// @description  Configurable console tools and read-only management reports for Proxmox VE.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
-// @grant        GM_info
 // @grant        GM.setClipboard
-// @grant        GM.info
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
+// @grant        GM.getValue
+// @grant        GM.setValue
+// @grant        GM.registerMenuCommand
 // @license      MIT
 // @homepageURL  https://github.com/StarlightDaemon/proxmox-toolkit
 // @supportURL   https://github.com/StarlightDaemon/proxmox-toolkit/issues
@@ -32,19 +36,32 @@
     const PASTE_TOOLTIP = 'Paste clipboard text, remove trailing line breaks, then send Enter to this console';
     const PASTE_UNAVAILABLE = 'Paste unavailable: a connected console and browser clipboard reading are required';
     const UNAVAILABLE = 'Console unavailable or ambiguous';
-    const ACTIONS = [
-        { text: 'Copy', icon: COPY_ICON, tooltip: COPY_TOOLTIP, unavailable: UNAVAILABLE, handler: copyConsole, marker: 'pveCopyConsoleButton' },
-        { text: 'Paste & Execute', icon: 'fa fa-play', tooltip: PASTE_TOOLTIP, unavailable: PASTE_UNAVAILABLE, handler: pasteAndExecute, marker: 'pveToolkitPasteButton', pasteAction: true }
+    let ACTIONS = [
+        { id: 'COPY', text: 'Copy', icon: COPY_ICON, tooltip: COPY_TOOLTIP, unavailable: UNAVAILABLE, handler: copyConsole, marker: 'pveCopyConsoleButton' },
+        { id: 'PASTE_ONLY', text: 'Paste Only', icon: 'fa fa-paste', tooltip: 'Paste clipboard text without appending Enter', unavailable: PASTE_UNAVAILABLE, handler: pasteClipboard, marker: 'pveToolkitPasteOnlyButton', pasteAction: true },
+        { id: 'PASTE', text: 'Paste & Execute', icon: 'fa fa-play', tooltip: PASTE_TOOLTIP, unavailable: PASTE_UNAVAILABLE, handler: pasteClipboard, marker: 'pveToolkitPasteButton', pasteAction: true, execute: true },
+        { id: 'EXPORT', text: 'Export Console', icon: 'fa fa-download', tooltip: 'Download retained output as text or Markdown', unavailable: UNAVAILABLE, handler: openExport, marker: 'pveToolkitExportButton', utility: true, noClipboard: true },
+        { id: 'DIAGNOSTICS', text: 'Diagnostics', icon: 'fa fa-info-circle', tooltip: 'Inspect current integration prerequisites', unavailable: UNAVAILABLE, handler: openDiagnostics, marker: 'pveToolkitDiagnosticsButton', utility: true, noClipboard: true, withoutConsole: true },
+        { id: 'RECIPES', text: 'Recipes', icon: 'fa fa-list', tooltip: 'Review and copy a diagnostic command', unavailable: UNAVAILABLE, handler: openRecipes, marker: 'pveToolkitRecipesButton', utility: true, noClipboard: true },
+        { id: 'SCOPED', text: 'Scoped Copy', icon: 'fa fa-crop', tooltip: 'Copy viewport or last N lines', unavailable: UNAVAILABLE, handler: openScopedCopy, marker: 'pveToolkitScopedButton', utility: true, noClipboard: true },
+        { id: 'FIND', text: 'Find in Scrollback', icon: 'fa fa-search', tooltip: 'Search a retained output snapshot', unavailable: UNAVAILABLE, handler: openFind, marker: 'pveToolkitFindButton', utility: true, noClipboard: true },
+        { id: 'REVIEW', text: 'Review & Paste', icon: 'fa fa-edit', tooltip: 'Read, review and edit clipboard text before pasting', unavailable: PASTE_UNAVAILABLE, handler: pasteClipboard, marker: 'pveToolkitReviewButton', pasteAction: true, review: true, utility: true }
     ];
+    const ACTION_ORDER = ['pveCopyConsoleButton', 'pveToolkitPasteOnlyButton', 'pveToolkitPasteButton',
+        'pveToolkitToolsButton', 'pveToolkitExportButton', 'pveToolkitDiagnosticsButton', 'pveToolkitRecipesButton',
+        'pveToolkitScopedButton', 'pveToolkitFindButton', 'pveToolkitReviewButton'];
     const CLIPBOARD_LOCK = 'data-proxmox-toolkit-clipboard';
     const controls = new Map();
+    const panels = new Set();
+    const downloads = new Set();
     let clipboardLease = null;
     let clipboardPending = false;
+    let pendingWrite = null;
     let pendingPaste = null;
     let lastWarning = -Infinity;
 
     // Include globs vary between managers; validate the actual URL as well.
-    if (window.top !== window.self || location.protocol !== 'https:' || location.port !== '8006') return;
+    if (window.top !== window.self || location.protocol !== 'https:') return;
     const page = typeof unsafeWindow !== 'undefined' ? unsafeWindow : (window.wrappedJSObject || window);
 
     function pageOptions(options) {
@@ -103,12 +120,16 @@
     function consoleIdentity(anchor) {
         if (!anchor || anchor.destroyed || !anchor.isVisible(true)) return null;
         const type = anchor.consoleType;
-        if (!['shell', 'lxc'].includes(type) || !anchor.nodename) return null;
-        if (type === 'lxc' && !anchor.vmid) return null;
-        return { type, node: String(anchor.nodename), vmid: String(anchor.vmid) };
+        const node = anchor.nodename;
+        const allowed = ['shell', 'lxc'];
+        if (featureEnabled('SERIAL')) allowed.push('kvm');
+        if (!allowed.includes(type) || typeof node !== 'string' || !node) return null;
+        const vmid = type !== 'shell' ? anchor.vmid : undefined;
+        if (type !== 'shell' && (!vmid || !['string', 'number'].includes(typeof vmid))) return null;
+        return { type, node, vmid: String(vmid) };
     }
 
-    function matchesIdentity(frame, identity) {
+    function matchesIdentity(frame, identity, observation) {
         try {
             // Read the loaded URL, not a stale src attribute after migration/reload.
             const url = new URL(frame.contentWindow.location.href);
@@ -118,18 +139,22 @@
                 params.get('console') === identity.type &&
                 params.get('node') === identity.node &&
                 !params.has('remote') &&
-                (identity.type !== 'lxc' || params.get('vmid') === identity.vmid);
+                (identity.type === 'shell' || params.get('vmid') === identity.vmid);
         } catch {
+            if (observation) observation.inaccessibleFrames++;
             return false;
         }
     }
 
-    function resolveConsole(anchor, anchors) {
-        if (document.hidden) return null;
+    function resolveConsole(anchor, anchors, observation) {
+        const fail = reason => { if (observation) observation.reason = reason; return null; };
+        if (observation) Object.assign(observation, { anchorCount: null, matchingFrames: null, inaccessibleFrames: null, reason: null });
+        if (toolkitDialog) return fail('TOOLKIT_OPEN');
+        if (document.hidden) return fail('DOCUMENT_HIDDEN');
         const identity = consoleIdentity(anchor);
-        if (!identity) return null;
+        if (!identity) return fail('CONTEXT_INELIGIBLE');
         const toolbar = anchor.up('toolbar');
-        if (!toolbar?.items?.items.includes(anchor)) return null;
+        if (!toolbar?.items?.items.includes(anchor)) return fail('OWNER_UNAVAILABLE');
         const candidates = anchors || page.Ext.ComponentQuery.query('pveConsoleButton');
         let anchorCount = 0;
         // Iterate locally: page-array methods cannot invoke sandbox callbacks
@@ -137,20 +162,24 @@
         for (const item of candidates) {
             if (!item.destroyed && item.up('toolbar') === toolbar) anchorCount++;
         }
-        if (anchorCount !== 1) return null;
+        if (observation) observation.anchorCount = anchorCount;
+        if (anchorCount !== 1) return fail(anchorCount > 1 ? 'ANCHOR_AMBIGUOUS' : 'CONSOLE_MISSING');
         const owner = toolbar?.ownerCt;
         const root = owner?.getEl()?.dom;
-        if (!root || owner.destroyed || toolbar.destroyed) return null;
+        if (!root || owner.destroyed || toolbar.destroyed) return fail('OWNER_UNAVAILABLE');
         const matches = [];
+        if (observation) observation.inaccessibleFrames = 0;
         for (const frame of root.querySelectorAll('iframe')) {
-            if (!isVisibleElement(frame) || !matchesIdentity(frame, identity)) continue;
+            if (!isVisibleElement(frame) || !matchesIdentity(frame, identity, observation)) continue;
             matches.push(frame);
         }
         // Even an initializing second frame makes ownership ambiguous.
-        if (matches.length !== 1) return null;
+        if (observation) observation.matchingFrames = matches.length;
+        if (matches.length !== 1) return fail(matches.length > 1 ? 'CONSOLE_AMBIGUOUS' :
+            observation?.inaccessibleFrames ? 'FRAME_INACCESSIBLE' : 'CONSOLE_MISSING');
         const frame = matches[0];
         const term = getTerminalFromFrame(frame);
-        return term ? { frame, term, toolbar } : null;
+        return term ? { frame, term, toolbar } : fail('TERMINAL_API_UNAVAILABLE');
     }
 
     function canReadClipboard() {
@@ -162,7 +191,8 @@
         const events = page.Ext?.GlobalEvents;
         if (!current || current.toolbar !== state.toolbar ||
             typeof events?.on !== 'function' || typeof events.un !== 'function' ||
-            typeof current.term.paste !== 'function' || typeof current.term.input !== 'function' ||
+            typeof current.term.paste !== 'function' ||
+            (state.execute && typeof current.term.input !== 'function') ||
             current.term.options?.disableStdin) return null;
         for (const wrapped of [false, true]) {
             try {
@@ -268,16 +298,19 @@
         return result && { ...result, alternateScreen };
     }
 
-    function writeClipboard(text) {
+    function writeClipboard(text, state) {
         return new Promise((resolve, reject) => {
             let settled = false;
             const finish = (result, error) => {
                 if (settled) return;
                 settled = true;
                 clearTimeout(timer);
+                if (pendingWrite === operation) pendingWrite = null;
                 if (error) reject(error);
                 else resolve(result);
             };
+            const operation = { state, href: location.href, cancel: () => finish({ cancelled: true }) };
+            pendingWrite = operation;
             const timer = setTimeout(() => finish({ timedOut: true }), CLIPBOARD_TIMEOUT_MS);
             try {
                 const legacy = typeof GM_setClipboard === 'function';
@@ -342,7 +375,7 @@
         state.available = available;
         const button = state.button;
         if (button.destroyed) return;
-        const disabled = !available || (busy && !state.busy);
+        const disabled = !available || (busy && !state.busy && !state.noClipboard);
         if (button.disabled !== disabled) button.setDisabled(disabled);
         if (!state.feedbackTimer && !state.busy) {
             setTooltip(state, available ? state.tooltip : state.unavailable);
@@ -352,11 +385,22 @@
     function updateAvailability(group, available, current, busy = clipboardBusy()) {
         group.available = available;
         for (const action of group.actions) {
-            let ready = available;
+            let ready = action.withoutConsole ? !document.hidden && !!consoleIdentity(action.anchor) : available;
             if (action.pasteAction) {
                 try { ready = available && canReadClipboard() && !!inputSession(action, current); } catch { ready = false; }
             }
             updateAction(action, ready, busy);
+        }
+    }
+
+    function showClipboardBusy() {
+        // This transition only changes presentation. Do not rediscover every
+        // input action to disable it; action dispatch and scans validate freshly.
+        for (const group of controls.values()) {
+            for (const action of group.actions) updateAction(action, action.available, true);
+        }
+        for (const panel of panels) {
+            for (const action of panel.actions) updateAction(action, action.available, true);
         }
     }
 
@@ -393,9 +437,40 @@
         }
     }
 
+    async function copyText(state, text, label, current, focusedElement) {
+        if (state.button.destroyed || document.hidden || !acquireClipboard()) return;
+        try {
+            state.busy = true;
+            clearTimeout(state.feedbackTimer);
+            state.feedbackTimer = null;
+            showClipboardBusy();
+            state.button.setIconCls('fa fa-spinner');
+            setTooltip(state, current ? 'Copying console buffer' : 'Copying');
+            const status = await writeClipboard(text, state);
+            if (status.cancelled || !clipboardOwned()) {
+                feedback(state, 'Clipboard operation cancelled; write may still complete', 'fa fa-exclamation-triangle');
+            } else if (status.timedOut) {
+                feedback(state, 'Clipboard completion not confirmed; inspect clipboard before retrying',
+                    'fa fa-exclamation-triangle');
+            } else {
+                const message = status.confirmed
+                    ? `Copied ${label}`
+                    : `Sent ${label}; clipboard unconfirmed`;
+                feedback(state, message, status.confirmed ? 'fa fa-check' : 'fa fa-info-circle');
+                if (current) restoreFocus(state, current, focusedElement);
+            }
+        } catch {
+            // Never log terminal text or page-supplied exception messages.
+            try { feedback(state, 'Clipboard write failed', 'fa fa-exclamation-triangle'); } catch { /* Destroyed UI. */ }
+        } finally {
+            state.busy = false;
+            releaseClipboard();
+            installForCurrentConsole();
+        }
+    }
+
     async function copyConsole(state) {
         if (clipboardBusy() || state.button.destroyed) return;
-        let failure = 'Console extraction failed';
         try {
             const current = resolveConsole(state.anchor);
             if (!current || current.toolbar !== state.toolbar) {
@@ -404,51 +479,25 @@
                 return;
             }
             const result = extractFullConsole(current.term);
-            if (!result || !result.text) {
-                feedback(state, result ? 'Console buffer is empty' : 'Console buffer unavailable',
-                    'fa fa-exclamation-triangle');
+            if (!result?.text) {
+                feedback(state, result ? 'Console buffer is empty' : 'Console buffer unavailable', 'fa fa-exclamation-triangle');
                 return;
             }
-            const focusedElement = document.activeElement;
-            if (!acquireClipboard()) return;
-            state.busy = true;
-            clearTimeout(state.feedbackTimer);
-            state.feedbackTimer = null;
-            for (const control of controls.values()) updateAvailability(control, control.available);
-            state.button.setIconCls('fa fa-spinner');
-            setTooltip(state, 'Copying console buffer');
-            failure = 'Clipboard write failed';
-            const status = await writeClipboard(result.text);
-            if (status.timedOut) {
-                feedback(state, 'Clipboard completion not confirmed; inspect clipboard before retrying',
-                    'fa fa-exclamation-triangle');
-            } else {
-                const scope = result.alternateScreen ? 'alternate screen' : 'retained buffer';
-                const message = status.confirmed
-                    ? `Copied ${result.logicalLines} lines (${scope})`
-                    : `Sent ${result.logicalLines} lines (${scope}); clipboard unconfirmed`;
-                feedback(state, message, status.confirmed ? 'fa fa-check' : 'fa fa-info-circle');
-                restoreFocus(state, current, focusedElement);
-            }
+            const scope = result.alternateScreen ? 'alternate screen' : 'retained buffer';
+            await copyText(state, result.text, `${result.logicalLines} lines (${scope})`, current, document.activeElement);
         } catch {
-            // Never log terminal text or page-supplied exception messages.
-            try { feedback(state, failure, 'fa fa-exclamation-triangle'); } catch { /* Destroyed UI. */ }
-        } finally {
-            state.busy = false;
-            releaseClipboard();
-            installForCurrentConsole();
+            feedback(state, 'Console extraction failed', 'fa fa-exclamation-triangle');
         }
     }
-
-    async function pasteAndExecute(state) {
+    async function pasteClipboard(state, staged) {
         if (clipboardBusy() || state.button.destroyed) return;
         let operation, timer, hideEvents, hideHandler;
         let failure = 'Paste unavailable; nothing sent';
         try {
             // A page-callable ExtJS callback is not itself proof of a user gesture.
-            if (!canReadClipboard() || !navigator.userActivation.isActive ||
+            if ((!staged && !canReadClipboard()) || !navigator.userActivation?.isActive ||
                 document.hidden || !document.hasFocus()) {
-                feedback(state, 'Click Paste & Execute in the active tab; nothing sent', 'fa fa-exclamation-triangle');
+                feedback(state, 'Activate paste in the active tab; nothing sent', 'fa fa-exclamation-triangle');
                 return;
             }
             const current = inputSession(state);
@@ -456,6 +505,7 @@
                 feedback(state, PASTE_UNAVAILABLE, 'fa fa-exclamation-triangle');
                 return;
             }
+            if (staged && !reviewSessionMatches(state, staged.captured)) return;
             if (!acquireClipboard()) return;
             const focusedElement = document.activeElement;
             const cancelled = new Promise(resolve => {
@@ -472,14 +522,14 @@
             state.busy = true;
             clearTimeout(state.feedbackTimer);
             state.feedbackTimer = null;
-            for (const control of controls.values()) updateAvailability(control, control.available);
+            showClipboardBusy();
             state.button.setIconCls('fa fa-spinner');
             setTooltip(state, 'Reading clipboard; approve the browser Paste prompt if shown');
             timer = setTimeout(cancelPaste, PASTE_TIMEOUT_MS);
             failure = 'Clipboard read failed or permission denied; nothing sent';
             // Start the read in the activation call stack. Never read during polling,
             // retry through another API, or export the clipboard promise to the page.
-            const reading = Promise.resolve(navigator.clipboard.readText()).then(text => ({ text }));
+            const reading = staged ? Promise.resolve({ text: staged.text }) : Promise.resolve(navigator.clipboard.readText()).then(text => ({ text }));
             const result = await Promise.race([reading, cancelled]);
             if (result.cancelled || !sameInputSession(operation, true)) {
                 feedback(state, 'Paste cancelled or expired; nothing sent', 'fa fa-exclamation-triangle');
@@ -490,17 +540,29 @@
                 feedback(state, prepared.error, 'fa fa-exclamation-triangle');
                 return;
             }
+            if (state.review && !staged) {
+                openReview(state, prepared.text, current);
+                feedback(state, 'Review text before pasting; nothing sent', 'fa fa-info-circle');
+                return;
+            }
             // There is no await between the final checks, paste, and Enter. Once
             // dispatch starts, failure is uncertainty: never automatically retry.
             failure = 'Input may be partially sent; inspect console before retrying';
-            current.term.paste(prepared.text);
             if (!sameInputSession(operation, true)) {
-                feedback(state, 'Session changed after paste; Enter not sent', 'fa fa-exclamation-triangle');
+                feedback(state, 'Paste cancelled or expired; nothing sent', 'fa fa-exclamation-triangle');
                 return;
             }
-            current.term.input('\r');
-            feedback(state, 'Text and Enter sent; command result is shown in the console', 'fa fa-check');
+            current.term.paste(prepared.text);
+            if (!sameInputSession(operation, true)) {
+                feedback(state, state.execute ? 'Session changed after paste; Enter not sent' :
+                    'Session changed after paste; text may be sent; no Enter appended', 'fa fa-exclamation-triangle');
+                return;
+            }
+            if (state.execute) current.term.input('\r');
+            feedback(state, state.execute ? 'Text and Enter sent; command result is shown in the console' :
+                'Text sent; no Enter appended', 'fa fa-check');
             restoreFocus(state, current, focusedElement);
+            if (staged) closePanel(state.panel);
         } catch {
             try { feedback(state, failure, 'fa fa-exclamation-triangle'); } catch { /* Destroyed UI. */ }
         } finally {
@@ -513,15 +575,315 @@
         }
     }
 
+    // Build native children separately: never clone native objects through Firefox.
+    function openPanel(state, title, text) {
+        if (state.button.destroyed || document.hidden) return null;
+        closePanel(state.panel);
+        const Ext = page.Ext;
+        const panel = { state, children: [], actions: [], href: location.href };
+        panels.add(panel);
+        state.panel = panel;
+        try {
+            panel.window = Ext.create('Ext.window.Window', pageOptions({
+                title, width: Math.min(620, Math.max(240, window.innerWidth - 32)),
+                height: Math.min(460, Math.max(200, window.innerHeight - 32)),
+                layout: 'fit', modal: true, closeAction: 'destroy', constrain: true,
+            }));
+            panel.window.on('destroy', pageOptions({ handler: () => closePanel(panel) }).handler);
+            panel.body = Ext.create('Ext.form.field.TextArea', pageOptions({
+                readOnly: true, value: text, fieldLabel: title, hideLabel: true,
+                ariaLabel: title, selectOnFocus: false,
+            }));
+            panel.children.push(panel.body);
+            panel.window.add(panel.body);
+            panel.footer = Ext.create('Ext.toolbar.Toolbar', pageOptions({ dock: 'bottom', enableOverflow: true }));
+            panel.children.push(panel.footer);
+            panel.window.addDocked(panel.footer);
+            panel.window.show();
+            return panel;
+        } catch {
+            closePanel(panel);
+            feedback(state, 'Panel unavailable', 'fa fa-exclamation-triangle');
+            return null;
+        }
+    }
+
+    function panelButton(panel, text, handler, clipboard = false) {
+        const action = { anchor: panel.state.anchor, toolbar: panel.state.toolbar,
+            text, tooltip: text, unavailable: 'Clipboard unavailable', icon: 'fa fa-copy',
+            available: true, panel, noClipboard: !clipboard };
+        action.button = page.Ext.create('Ext.button.Button', pageOptions({
+            text, tooltip: text, handler: () => {
+                if (panel.closed || action.button.destroyed) return;
+                if (panel.href !== location.href || document.hidden) { closePanel(panel); return; }
+                try { return handler(action); }
+                catch { feedback(action, 'Action unavailable', 'fa fa-exclamation-triangle'); }
+            },
+        }));
+        panel.children.push(action.button);
+        panel.actions.push(action);
+        action.lastTooltip = text;
+        panel.footer.add(action.button);
+        return action;
+    }
+
+    function closePanel(panel) {
+        if (!panel || panel.closed) return;
+        panel.closed = true;
+        panels.delete(panel);
+        if (panel.state.panel === panel) panel.state.panel = null;
+        if (pendingWrite?.state.panel === panel) pendingWrite.cancel();
+        for (const download of [...downloads]) if (download.state.panel === panel) cleanDownload(download);
+        for (const action of panel.actions) clearTimeout(action.feedbackTimer);
+        // ExtJS owns attached children. Destroy only survivors after their owner.
+        if (panel.window && !panel.window.destroyed && !panel.window.destroying) panel.window.destroy();
+        for (const child of panel.children) {
+            if (!child.destroyed && !child.destroying) child.destroy();
+        }
+        try { panel.dispose?.(); } catch { /* Disposed native controls. */ }
+    }
+
+    function closePanels() { for (const panel of [...panels]) closePanel(panel); }
+
+    function exportContent(text, markdown) {
+        if (!markdown) return text;
+        let longest = 2;
+        for (const run of text.matchAll(/`+/g)) longest = Math.max(longest, run[0].length);
+        const fence = '`'.repeat(longest + 1);
+        return `${fence}\n${text}\n${fence}\n`;
+    }
+
+    function cleanDownload(download) {
+        clearTimeout(download.timer);
+        downloads.delete(download);
+        try { download.anchor?.remove(); } catch { /* Detached document. */ }
+        try { if (download.url) URL.revokeObjectURL(download.url); } catch { /* Teardown. */ }
+    }
+
+    function requestDownload(state, text, markdown) {
+        const download = { state };
+        downloads.add(download);
+        try {
+            const data = exportContent(text, markdown);
+            download.url = URL.createObjectURL(new Blob([data], { type: markdown ? 'text/markdown;charset=utf-8' : 'text/plain;charset=utf-8' }));
+            download.anchor = document.createElement('a');
+            download.anchor.href = download.url;
+            const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+            download.anchor.download = `proxmox-console-${stamp}.${markdown ? 'md' : 'txt'}`;
+            download.anchor.hidden = true;
+            document.body.appendChild(download.anchor);
+            download.anchor.click();
+            // Retain the URL briefly for asynchronous browser consumption.
+            download.anchor.remove();
+            download.timer = setTimeout(() => cleanDownload(download), 1000);
+            feedback(state, 'Download requested', 'fa fa-info-circle');
+        } catch {
+            cleanDownload(download);
+            feedback(state, 'Download request failed', 'fa fa-exclamation-triangle');
+        }
+    }
+
+    function openExport(state) {
+        if (state.button.destroyed || document.hidden) return;
+        try {
+            const current = resolveConsole(state.anchor);
+            if (!current || current.toolbar !== state.toolbar) {
+                feedback(state, UNAVAILABLE, 'fa fa-exclamation-triangle');
+                return;
+            }
+            let snapshot = extractFullConsole(current.term);
+            if (!snapshot?.text) {
+                feedback(state, snapshot ? 'Console buffer is empty' : 'Console buffer unavailable', 'fa fa-exclamation-triangle');
+                return;
+            }
+            const panel = openPanel(state, 'Export Console',
+                'Snapshot captured from the retained console output.\nPlain text is the default format. Markdown uses a literal code block.\nOutput may contain sensitive information.\nDownload requested does not confirm saving to disk.');
+            if (!panel) return;
+            panel.dispose = () => { snapshot = null; };
+            panelButton(panel, 'Download plain text', action => requestDownload(action, snapshot.text, false));
+            panelButton(panel, 'Download Markdown', action => requestDownload(action, snapshot.text, true));
+        } catch {
+            closePanel(state.panel);
+            feedback(state, 'Console export unavailable', 'fa fa-exclamation-triangle');
+        }
+    }
+
+    // Never serialize page objects. Each field below is a fixed primitive or an
+    // allowlisted constant; exceptions are deliberately discarded.
+    function diagnosticReport(state) {
+        const report = {
+            schema: 'proxmox-toolkit-diagnostics/1', version: '0.7.0', edition: 'toolkit',
+            manager: null, context: null, eligible: null,
+            counts: { anchors: null, frames: null, inaccessibleFrames: null },
+            capabilities: { clipboardRead: null, clipboardWrite: null, activationApi: null,
+                hideLifecycle: null, paste: null, input: null, bufferReadable: null },
+            buffer: null, connected: null, stdinEnabled: null, bracketedPaste: null,
+            clipboardBusy: null, reasons: [],
+        };
+        try {
+            const info = typeof GM_info !== 'undefined' ? GM_info : typeof GM !== 'undefined' ? GM.info : undefined;
+            const manager = info?.scriptHandler;
+            if (['Violentmonkey', 'Tampermonkey', 'Greasemonkey', 'FireMonkey'].includes(manager)) report.manager = manager;
+            const nav = typeof navigator !== 'undefined' ? navigator : undefined;
+            report.capabilities.clipboardRead = typeof nav?.clipboard?.readText === 'function';
+            report.capabilities.clipboardWrite = typeof GM_setClipboard === 'function' ||
+                (typeof GM !== 'undefined' && typeof GM.setClipboard === 'function');
+            report.capabilities.activationApi = !!nav?.userActivation;
+            report.capabilities.hideLifecycle = typeof page.Ext?.GlobalEvents?.on === 'function' &&
+                typeof page.Ext?.GlobalEvents?.un === 'function';
+            report.clipboardBusy = clipboardBusy();
+            const identity = consoleIdentity(state.anchor);
+            report.eligible = !!identity;
+            report.context = identity?.type || null;
+            const observation = {};
+            const current = resolveConsole(state.anchor, undefined, observation);
+            report.counts = { anchors: observation.anchorCount, frames: observation.matchingFrames,
+                inaccessibleFrames: observation.inaccessibleFrames };
+            if (observation.reason) report.reasons.push(observation.reason);
+            if (current) {
+                const term = current.term;
+                report.capabilities.paste = typeof term.paste === 'function';
+                report.capabilities.input = typeof term.input === 'function';
+                const buffers = term.buffer;
+                const alternate = !!buffers?.alternate && buffers.active === buffers.alternate;
+                const buffer = alternate ? buffers.active : buffers?.normal || buffers?.active;
+                report.buffer = buffer ? (alternate ? 'alternate' : 'normal') : null;
+                report.capabilities.bufferReadable = !!buffer && typeof buffer.getLine === 'function' &&
+                    Number.isSafeInteger(buffer.length) && buffer.length >= 0;
+                report.stdinEnabled = term.options && typeof term.options.disableStdin === 'boolean' ?
+                    !term.options.disableStdin : term.options ? true : null;
+                report.bracketedPaste = typeof term.modes?.bracketedPasteMode === 'boolean' ?
+                    term.modes.bracketedPasteMode && term.options?.ignoreBracketedPasteMode !== true : null;
+                for (const wrapped of [false, true]) {
+                    try {
+                        const win = current.frame.contentWindow;
+                        const globals = wrapped ? win?.wrappedJSObject : win;
+                        if (globals?.term === term && typeof globals.states?.connected === 'number') {
+                            report.connected = globals.state === globals.states.connected && globals.socket?.readyState === 1;
+                            if (report.connected) break;
+                        }
+                    } catch { /* Try the wrapped compartment; unknown if neither is accessible. */ }
+                }
+                if (!report.capabilities.bufferReadable) report.reasons.push('BUFFER_UNAVAILABLE');
+                if (!report.capabilities.paste) report.reasons.push('PASTE_API_UNAVAILABLE');
+                if (!report.capabilities.input) report.reasons.push('ENTER_API_UNAVAILABLE');
+                if (report.connected === false) report.reasons.push('SESSION_DISCONNECTED');
+                if (report.connected === null) report.reasons.push('SESSION_UNKNOWN');
+                if (report.stdinEnabled === false) report.reasons.push('STDIN_DISABLED');
+            }
+            if (!report.capabilities.clipboardRead) report.reasons.push('CLIPBOARD_READ_UNAVAILABLE');
+            if (!report.capabilities.clipboardWrite) report.reasons.push('CLIPBOARD_WRITE_UNAVAILABLE');
+            if (!report.capabilities.activationApi) report.reasons.push('ACTIVATION_API_UNAVAILABLE');
+            if (!report.capabilities.hideLifecycle) report.reasons.push('HIDE_LIFECYCLE_UNAVAILABLE');
+            if (report.clipboardBusy) report.reasons.push('CLIPBOARD_BUSY');
+        } catch { report.reasons.push('INSPECTION_FAILED'); }
+        return report;
+    }
+
+    function diagnosticSummary(report) {
+        const value = item => item === null ? 'unknown' : String(item);
+        return ['Readiness snapshot; refresh to evaluate again. API presence is not permission approval.',
+            `Context: ${report.context || 'unknown'}; eligible: ${value(report.eligible)}`,
+            `Retained buffer: ${report.buffer || 'unknown'}; readable: ${value(report.capabilities.bufferReadable)}`,
+            `Connected: ${value(report.connected)}; stdin enabled: ${value(report.stdinEnabled)}`,
+            `Paste API: ${value(report.capabilities.paste)}; Enter API: ${value(report.capabilities.input)} (Paste & Execute only)`,
+            `Clipboard read API: ${value(report.capabilities.clipboardRead)}; write API: ${value(report.capabilities.clipboardWrite)}`,
+            `User activation API: ${value(report.capabilities.activationApi)}; hide lifecycle: ${value(report.capabilities.hideLifecycle)}`,
+            `Bracketed paste: ${value(report.bracketedPaste)} (required only for multiline text/tabs)`,
+            `Reasons: ${report.reasons.join(', ') || 'none observed'}`,
+            'No permission test, command, buffer extraction, or upload is performed.'].join('\n\n');
+    }
+
+    function openDiagnostics(state) {
+        try {
+            let report = diagnosticReport(state);
+            const panel = openPanel(state, 'Diagnostics', diagnosticSummary(report));
+            if (!panel) return;
+            panel.dispose = () => { report = null; };
+            panelButton(panel, 'Refresh', () => {
+                report = diagnosticReport(state);
+                panel.body.setValue(diagnosticSummary(report));
+            });
+            panelButton(panel, 'Copy diagnostic report', action => copyText(action, JSON.stringify(report, null, 2), 'diagnostic report'), true);
+        } catch {
+            closePanel(state.panel);
+            feedback(state, 'Diagnostics unavailable', 'fa fa-exclamation-triangle');
+        }
+    }
+
+    const RECIPES = [
+        { name: 'PVE package versions', command: 'pveversion -v', nodeOnly: true,
+            explanation: 'Node Shell only. Lists installed PVE package versions. Requires the PVE pveversion utility and relevant access.' },
+        { name: 'Filesystem capacity', command: 'df -h',
+            explanation: 'Node or Linux LXC. Human-readable mounted filesystem usage (powers of 1024). Requires a GNU/coreutils-compatible df; other implementations may differ.' },
+        { name: 'Kernel and system identity', command: 'uname -a',
+            explanation: 'Node or Linux LXC. Kernel and system identity. Requires uname; available fields vary. Output can disclose host details.' },
+        { name: 'Failed systemd units', command: 'systemctl --failed --no-pager',
+            explanation: 'Node or systemd-based Linux LXC. Lists failed units without a pager. Requires systemd 233 or later, a running accessible system manager and relevant access; many containers do not use systemd.' },
+    ];
+
+    function openRecipes(state) {
+        try {
+            let original = resolveConsole(state.anchor);
+            let identity = consoleIdentity(state.anchor);
+            if (!original || original.toolbar !== state.toolbar || !identity) {
+                feedback(state, UNAVAILABLE, 'fa fa-exclamation-triangle');
+                return;
+            }
+            const href = original.frame.contentWindow.location.href;
+            let selected = 0;
+            const describe = () => {
+                const recipe = RECIPES[selected];
+                return `${selected + 1} / ${RECIPES.length}: ${recipe.name}\n\n${recipe.command}\n\n${recipe.explanation}\n\n` +
+                    (recipe.nodeOnly && identity.type !== 'shell' ? 'Unavailable in LXC.\n\n' : '') +
+                    'Context identifies the owned console, not its active program, distribution or privilege. No tool is probed. Inspect the destination and command yourself. Read-only commands can disclose system information. Copy does not send input.';
+            };
+            const panel = openPanel(state, 'Diagnostic Recipes', describe());
+            if (!panel) return;
+            panel.dispose = () => { original = null; identity = null; };
+            let copy;
+            const select = delta => {
+                selected = (selected + delta + RECIPES.length) % RECIPES.length;
+                panel.body.setValue(describe());
+                updateAction(copy, !RECIPES[selected].nodeOnly || identity.type === 'shell');
+            };
+            panelButton(panel, 'Previous', () => select(-1));
+            panelButton(panel, 'Next', () => select(1));
+            copy = panelButton(panel, 'Copy command', action => {
+                try {
+                    const current = resolveConsole(state.anchor);
+                    const liveIdentity = consoleIdentity(state.anchor);
+                    if (!current || !liveIdentity || current.frame !== original.frame || current.term !== original.term ||
+                        current.toolbar !== original.toolbar || current.frame.contentWindow.location.href !== href ||
+                        liveIdentity.type !== identity.type || liveIdentity.node !== identity.node || liveIdentity.vmid !== identity.vmid ||
+                        (RECIPES[selected].nodeOnly && liveIdentity.type !== 'shell')) {
+                        feedback(action, 'Recipe context changed or unavailable; reopen Recipes', 'fa fa-exclamation-triangle');
+                        return;
+                    }
+                    return copyText(action, RECIPES[selected].command, 'command');
+                } catch { feedback(action, 'Recipe context unavailable', 'fa fa-exclamation-triangle'); }
+            }, true);
+            updateAction(copy, identity.type === 'shell');
+        } catch {
+            closePanel(state.panel);
+            feedback(state, 'Recipes unavailable', 'fa fa-exclamation-triangle');
+        }
+    }
+
     function removeControl(group) {
         if (group.removing) return;
         group.removing = true;
+        if (pendingWrite && group.actions.includes(pendingWrite.state)) pendingWrite.cancel();
         if (pendingPaste && group.actions.includes(pendingPaste.state)) cancelPaste();
         if (controls.get(group.toolbar) === group) controls.delete(group.toolbar);
         for (const action of group.actions) {
+            closePanel(action.panel);
             clearTimeout(action.feedbackTimer);
             action.feedbackTimer = null;
             if (action.button && !action.button.destroyed && !action.button.destroying) action.button.destroy();
+        }
+        for (const component of [group.toolsButton, group.menu]) {
+            if (component && !component.destroyed && !component.destroying) component.destroy();
         }
     }
 
@@ -540,23 +902,38 @@
             for (const spec of ACTIONS) {
                 const action = { anchor, toolbar, ...spec };
                 group.actions.push(action);
-                action.button = Ext.create('Ext.button.Button', pageOptions({
+                let menu = false;
+                menu = !!spec.utility;
+                if (menu && !group.menu) {
+                    group.menu = Ext.create('Ext.menu.Menu', pageOptions({}));
+                    group.toolsButton = Ext.create('Ext.button.Button', pageOptions({
+                        text: 'Tools', iconCls: 'fa fa-wrench', tooltip: 'Console utilities',
+                    }));
+                    group.toolsButton.pveToolkitToolsButton = true;
+                    group.toolsButton.setMenu(group.menu);
+                    group.toolsButton.on('destroy', pageOptions({ handler: () => removeControl(group) }).handler);
+                    toolbar.insert(toolbar.items.items.indexOf(anchor) + 1 + group.actions.length - 1, group.toolsButton);
+                }
+                action.button = Ext.create(menu ? 'Ext.menu.Item' : 'Ext.button.Button', pageOptions({
                     text: spec.text, iconCls: spec.icon, tooltip: spec.tooltip,
                     handler: () => spec.handler(action),
                 }));
                 action.lastTooltip = action.tooltip;
                 action.button[spec.marker] = true;
+                // Menu markers live on their owning toolbar button too; another
+                // sandbox need not traverse page menu objects to detect overlap.
+                if (menu) group.toolsButton[spec.marker] = true;
                 action.button.on('destroy', pageOptions({ handler: () => removeControl(group) }).handler);
+                if (menu) { group.menu.add(action.button); continue; }
                 let index = toolbar.items.items.indexOf(anchor) + 1;
-                if (spec.pasteAction) {
-                    for (const item of toolbar.items.items) {
-                        if (!item.destroyed && item.pveCopyConsoleButton) index++;
-                    }
+                for (const item of toolbar.items.items.slice(index)) {
+                    if (!item.destroyed && ACTION_ORDER.some((marker, rank) =>
+                        rank < ACTION_ORDER.indexOf(spec.marker) && item[marker])) index++;
                 }
                 toolbar.insert(index, action.button);
             }
             controls.set(toolbar, group);
-            updateAvailability(group, true, current);
+            updateAvailability(group, !!current, current);
         } catch (error) {
             removeControl(group);
             throw error;
@@ -565,7 +942,10 @@
     }
 
     function installForCurrentConsole() {
+        if (!ACTIONS.length) return;
         if (document.hidden) {
+            closePanels();
+            pendingWrite?.cancel();
             cancelPaste();
             return;
         }
@@ -591,10 +971,11 @@
                         removeControl(state);
                         state = null;
                     }
-                    const current = resolveConsole(anchor, anchors);
+                    const observation = {};
+                    const current = resolveConsole(anchor, anchors, observation);
                     if (pendingPaste?.state.anchor === anchor) pendingConsole = current;
                     if (state) updateAvailability(state, !!current, current, busy);
-                    else if (current) {
+                    else if (current || (observation.anchorCount === 1 && ACTIONS.some(action => action.withoutConsole))) {
                         if (!hasConflict(toolbar)) createControl(Ext, anchor, toolbar, current);
                     }
                 } catch {
@@ -614,14 +995,1080 @@
             }
             warnInstall();
         } finally {
+            if (pendingWrite && (!clipboardOwned() || pendingWrite.state.button.destroyed ||
+                pendingWrite.href !== location.href)) pendingWrite.cancel();
+            for (const panel of [...panels]) {
+                try {
+                    if (panel.href !== location.href || panel.state.button.destroyed || (panel.valid && !panel.valid()) ||
+                        !panel.state.anchor.isVisible(true)) closePanel(panel);
+                    else for (const action of panel.actions) updateAction(action, action.available, busy);
+                } catch { closePanel(panel); }
+            }
             validatePendingPaste(pendingConsole);
         }
     }
 
+function scopedConsole(term, mode, count) {
+    const b = term?.buffer?.active || term?.buffer?.normal;
+    if (!b || !Number.isSafeInteger(b.length)) return null;
+    if (mode === 'viewport') {
+        if (!Number.isSafeInteger(b.viewportY) || !Number.isSafeInteger(term.rows)) return null;
+        const start = Math.max(0, b.viewportY), end = Math.min(b.length, start + term.rows);
+        const result = extractBuffer({ length: end - start, getLine: y => y >= 0 && start + y < end ? b.getLine(start + y) : undefined }, term.cols);
+        return result && { ...result, scope: 'visible viewport; wrapped edges may be partial' };
+    }
+    const result = extractFullConsole(term);
+    if (!result || !Number.isSafeInteger(count) || count < 1 || count > 10000) return null;
+    const lines = result.text.split('\n').slice(-count);
+    return { text: lines.join('\n'), logicalLines: lines.length, scope: `last ${count} retained logical lines` };
+}
+function openScopedCopy(state) {
+    if (!resolveConsole(state.anchor)) return;
+    const panel = openPanel(state, 'Scoped Copy', 'Viewport copies only visible physical rows, joining wraps within those edges. Last N uses retained logical lines. The current buffer is captured when you choose Copy.');
+    if (!panel) return;
+    const count = page.Ext.create('Ext.form.field.Number', pageOptions({ fieldLabel: 'Last N lines', value: 100, minValue: 1, maxValue: 10000, allowDecimals: false }));
+    panel.children.push(count); panel.footer.add(count);
+    for (const [label, mode] of [['Copy viewport', 'viewport'], ['Copy last N lines', 'last']]) panelButton(panel, label, async action => {
+        const current = resolveConsole(state.anchor);
+        if (!current || current.toolbar !== state.toolbar) return;
+        const result = scopedConsole(current.term, mode, Number(count.getValue()));
+        if (!result?.text) { feedback(action, 'Scope unavailable or empty', 'fa fa-exclamation-triangle'); return; }
+        await copyText(action, result.text, `${result.logicalLines} lines (${result.scope})`);
+    }, true);
+}
+function findConsoleLines(text, query, matchCase = false) {
+    if (!query || query.length > 1024) return [];
+    const needle = matchCase ? query : query.toLocaleLowerCase();
+    const matches = [];
+    for (const [index, line] of text.split('\n').entries()) {
+        if ((matchCase ? line : line.toLocaleLowerCase()).includes(needle)) matches.push({ line: index + 1, text: line });
+        if (matches.length === 500) break;
+    }
+    return matches;
+}
+function openFind(state) {
+    const current = resolveConsole(state.anchor), snapshot = current && extractFullConsole(current.term);
+    if (!snapshot) return;
+    let text = snapshot.text, found = [], index = 0;
+    const panel = openPanel(state, 'Find in Scrollback', 'Search a retained-output snapshot. Literal text search; up to 500 matching logical lines. Reopen to capture newer output.');
+    if (!panel) return;
+    const query = page.Ext.create('Ext.form.field.Text', pageOptions({ fieldLabel: 'Find', maxLength: 1024, enforceMaxLength: true }));
+    panel.children.push(query); panel.footer.add(query);
+    const show = () => panel.body.setValue(found.length ? `${index + 1} of ${found.length} matches (maximum 500)\nLogical line ${found[index].line}\n\n${found[index].text}` : 'No matches in this snapshot.');
+    panelButton(panel, 'Find', () => { found = findConsoleLines(text, String(query.getValue() || '')); index = 0; show(); });
+    panelButton(panel, 'Previous', () => { if (found.length) index = (index + found.length - 1) % found.length; show(); });
+    panelButton(panel, 'Next', () => { if (found.length) index = (index + 1) % found.length; show(); });
+    panel.dispose = () => { text = ''; found = []; };
+}
+function reviewSessionMatches(state, captured) {
+    const current = inputSession(state);
+    return !!current && current.frame === captured.frame && current.term === captured.term && current.socket === captured.socket && current.href === captured.href;
+}
+function openReview(state, text, captured) {
+    const panel = openPanel(state, 'Review & Paste — no Enter appended', text);
+    if (!panel) return;
+    panel.body.setReadOnly(false);
+    const hideEvents = page.Ext.GlobalEvents;
+    panel.valid = () => reviewSessionMatches(state, captured);
+    const onHide = pageOptions({ handler: () => { if (!panel.valid()) closePanel(panel); } }).handler;
+    hideEvents.on('hide', onHide);
+    const expiry = setTimeout(() => closePanel(panel), 300000);
+    panel.dispose = () => { clearTimeout(expiry); hideEvents.un('hide', onHide); text = ''; captured = null; };
+    panelButton(panel, 'Paste reviewed text', action => {
+        if (!panel.valid()) { closePanel(panel); return; }
+        return pasteClipboard(action, { text: panel.body.getValue(), captured });
+    }, true);
+}
+
+    // Persistent settings and native Proxmox UI. Included in configurable editions.
+const FEATURE_CATALOG = [{"id":"COPY","name":"Copy","group":"Console","defaultOn":true,"description":"Copy retained console output to the clipboard."},{"id":"PASTE_ONLY","name":"Paste Only","group":"Console","defaultOn":true,"description":"Paste clipboard text without appending Enter."},{"id":"PASTE","name":"Paste & Execute","group":"Console","defaultOn":true,"description":"Paste clipboard text, then send Enter."},{"id":"EXPORT","name":"Console Export","group":"Console","defaultOn":false,"description":"Download retained output as text or Markdown."},{"id":"DIAGNOSTICS","name":"Toolkit Diagnostics","group":"Troubleshooting","defaultOn":false,"description":"Inspect console integration from the Tools menu."},{"id":"RECIPES","name":"Diagnostic Recipes","group":"Troubleshooting","defaultOn":false,"description":"Copy explained diagnostic commands from Tools."},{"id":"SCOPED","name":"Scoped Copy","group":"Console","defaultOn":false,"description":"Copy the viewport or a chosen number of recent lines."},{"id":"FIND","name":"Find in Scrollback","group":"Console","defaultOn":false,"description":"Search a snapshot of retained console output."},{"id":"REVIEW","name":"Review & Paste","group":"Console","defaultOn":false,"description":"Review and edit clipboard text before pasting."},{"id":"SERIAL","name":"VM serial consoles","group":"Integration","defaultOn":false,"description":"Allow clipboard tools in configured VM serial consoles."},{"id":"CUSTOM_PORT","name":"Custom HTTPS origin / proxy path","group":"Integration","defaultOn":false,"description":""},{"id":"INVENTORY","name":"Inventory & Report Builder","group":"Inventory","defaultOn":false,"description":""},{"id":"COMPARE","name":"Guest Configuration Compare","group":"Inventory","defaultOn":false,"description":""},{"id":"BACKUPS","name":"Backup Coverage & Recovery Gaps","group":"Recovery","defaultOn":false,"description":""},{"id":"TASKS","name":"Task Failure Investigator","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"TASK_REPORT","name":"Copy Task Report","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"SNAPSHOTS","name":"Snapshot Age & Review Ledger","group":"Recovery","defaultOn":false,"description":""},{"id":"STORAGE","name":"Storage Reference & Unused-Disk Inspector","group":"Inventory","defaultOn":false,"description":""},{"id":"MAINTENANCE","name":"Node Maintenance Preflight","group":"Maintenance","defaultOn":false,"description":""},{"id":"NETWORK","name":"Network Path Explorer","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"GUEST_HEALTH","name":"Guest Integration Health Check","group":"Maintenance","defaultOn":false,"description":""},{"id":"RECOVERY","name":"Recovery Manifest & Rebuild Checklist","group":"Recovery","defaultOn":false,"description":""}];
+const SETTINGS_KEY = `proxmox-toolkit:toolkit:settings:1:${location.origin}`;
+let runtimeSettings;
+let settingsLoadError = false;
+let toolkitDialog, toolkitLauncher, dialogDispose;
+let settingsDraft;
+let launcherTimer, launcherDelay = 250, launcherStopped = false;
+const localDownloads = new Set();
+function defaultSettings() {
+    return { schema: 1, features: Object.fromEntries(FEATURE_CATALOG.map(f => [f.id, f.defaultOn])), apiPrefix: '/' };
+}
+function normalizeSettings(value) {
+    const result = defaultSettings();
+    if (!value || value.schema !== 1 || !value.features || typeof value.features !== 'object') return result;
+    for (const f of FEATURE_CATALOG) if (typeof value.features[f.id] === 'boolean') result.features[f.id] = value.features[f.id];
+    if (typeof value.apiPrefix === 'string' && /^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(value.apiPrefix)) result.apiPrefix = value.apiPrefix;
+    return result;
+}
+function featureEnabled(id) { return runtimeSettings?.features[id] === true; }
+function nodeElement(tag, text, parent, attributes = {}) {
+    const el = document.createElement(tag);
+    if (text !== undefined) el.textContent = text;
+    for (const [key, value] of Object.entries(attributes)) el.setAttribute(key, String(value));
+    if (parent) parent.appendChild(el);
+    return el;
+}
+function nativeChild(parent, type, config) {
+    const child = page.Ext.create(type, pageOptions(config));
+    try { parent.add(child); } catch (error) { child.destroy(); throw error; }
+    return child;
+}
+function localButton(text, parent, handler) {
+    const button = page.Ext.create('Ext.button.Button', pageOptions({ text, margin: '4 6 4 0', handler }));
+    toolkitDialog.children.push(button);
+    button.render(parent);
+    return button;
+}
+function clearLocalContent(parent) {
+    for (const button of toolkitDialog?.children || []) {
+        if (!button.destroyed && parent.contains(button.getEl()?.dom)) button.destroy();
+    }
+    if (toolkitDialog) toolkitDialog.children = toolkitDialog.children.filter(button => !button.destroyed);
+    parent.replaceChildren();
+}
+function localField(label, parent, value = '', type = 'text') {
+    const wrap = nodeElement('label', label, parent);
+    const input = nodeElement('input', undefined, wrap, { type, class: 'x-form-field x-form-text x-form-text-default' });
+    input.value = value;
+    return input;
+}
+function closeToolkitDialog(restoreFocus = true, keepDraft = false) {
+    if (!keepDraft) settingsDraft = null;
+    const old = toolkitDialog;
+    toolkitDialog = null;
+    dialogDispose?.();
+    dialogDispose = null;
+    if (!old) return;
+    for (const cleanup of old.cleanup) cleanup();
+    for (const child of old.children) if (!child.destroyed && !child.destroying) child.destroy();
+    if (!old.panel.destroyed && !old.panel.destroying) old.panel.destroy();
+    if (restoreFocus && !document.hidden && !toolkitLauncher?.destroyed) toolkitLauncher?.focus();
+}
+function createToolkitWorkspace(title) {
+    if (!page.PVE || !page.Ext?.create || document.hidden) return null;
+    toolkitDialog?.captureDraft?.();
+    closeToolkitDialog(false, true);
+    // Opening settings/reports cancels console intent without undoing sent input.
+    cancelPaste();
+    pendingWrite?.cancel();
+    closePanels();
+    try {
+        const workspace = toolkitLauncher?.up('pveStdWorkspace');
+        const content = workspace?.child('#content');
+        if (!content || content.destroyed || !content.isVisible(true) || !content.items.items.length) return null;
+        const win = page.Ext.create('Ext.panel.Panel', pageOptions({
+            title, layout: 'fit', border: false, pveToolkitWorkspace: true,
+            width: content.getWidth(), height: content.getHeight(),
+            style: { position: 'absolute', top: '0', left: '0', zIndex: 10 },
+        }));
+        const session = { panel: win, children: [], cleanup: [] };
+        toolkitDialog = session;
+        // Render as an unmanaged sibling in #content. Never call setContent,
+        // switch its card layout, hide a PVE component or reparent an iframe.
+        win.render(content.getEl().dom);
+        const listen = (target, event, callback) => {
+            const handler = pageOptions({ handler: callback }).handler;
+            target.on(event, handler);
+            session.cleanup.push(() => { if (!target.destroyed) target.un(event, handler); });
+        };
+        const leave = () => { if (toolkitDialog === session) closeToolkitDialog(false); };
+        for (const event of ['beforeadd', 'beforeremove', 'beforedestroy']) listen(content, event, leave);
+        const tree = workspace.down('pveResourceTree');
+        if (tree) listen(tree, 'itemclick', leave);
+        listen(content, 'resize', () => win.setSize(content.getWidth(), content.getHeight()));
+        for (const item of content.items.items) {
+            const el = item.getEl()?.dom;
+            if (!el) continue;
+            const inert = el.getAttribute('inert'), aria = el.getAttribute('aria-hidden');
+            // Move focus before marking the old view inaccessible. Inert does
+            // not unload the iframe or stop its existing connection.
+            win.focus();
+            el.setAttribute('inert', ''); el.setAttribute('aria-hidden', 'true');
+            session.cleanup.push(() => {
+                if (inert === null) el.removeAttribute('inert'); else el.setAttribute('inert', inert);
+                if (aria === null) el.removeAttribute('aria-hidden'); else el.setAttribute('aria-hidden', aria);
+            });
+        }
+        const root = win.getEl().dom;
+        const escape = event => {
+            if (event.key === 'Escape' && !event.defaultPrevented) {
+                event.preventDefault(); event.stopPropagation(); closeToolkitDialog();
+            }
+        };
+        root.addEventListener('keydown', escape);
+        session.cleanup.push(() => root.removeEventListener('keydown', escape));
+        win.on('destroy', pageOptions({ handler: () => {
+            if (toolkitDialog?.panel === win) closeToolkitDialog();
+        } }).handler);
+        return win;
+    } catch { closeToolkitDialog(); return null; }
+}
+function openToolkitDialog(title, category) {
+    const win = createToolkitWorkspace(title);
+    if (!win) return null;
+    let root;
+    try {
+        root = nodeElement('div', undefined, document.body, {
+            id: 'pve-toolkit-report-toolkit', class: 'pve-toolkit-report',
+        });
+        // contentEl lets ExtJS place DOM content inside its scrolling layout target.
+        nativeChild(win, 'Ext.Component', { contentEl: root.id, padding: 12,
+            cls: 'x-panel-body x-panel-body-default', scrollable: true });
+        // Dock navigation outside report content so long results cannot hide it.
+        const footer = page.Ext.create('Ext.toolbar.Toolbar', pageOptions({ dock: 'bottom', enableOverflow: true }));
+        win.addDocked(footer);
+        nativeChild(footer, 'Ext.button.Button', { text: 'Back to Toolkit', iconCls: 'fa fa-arrow-left',
+            handler: () => openToolkitSettings(category) });
+        nativeChild(footer, 'Ext.toolbar.Fill', {});
+        nativeChild(footer, 'Ext.button.Button', { text: 'Return to Proxmox', handler: () => closeToolkitDialog() });
+        win.show();
+        // Scope layout rules only; colors/fonts come from the installed PVE theme.
+        nodeElement('style', `.pve-toolkit-report [hidden]{display:none!important}
+            .pve-toolkit-report label{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;flex-wrap:wrap}
+            .pve-toolkit-report input{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report input[type=checkbox]{appearance:auto;width:auto}
+            .pve-toolkit-report p{line-height:1.5;margin:8px 0}
+            .pve-toolkit-report table{border-collapse:collapse;display:block;max-height:50vh;overflow:auto;width:100%;margin-top:12px}
+            .pve-toolkit-report th,.pve-toolkit-report td{border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent);padding:7px;text-align:left;vertical-align:top;min-width:110px;max-width:420px;overflow-wrap:anywhere;white-space:pre-wrap}
+            .pve-toolkit-report pre{white-space:pre-wrap;overflow-wrap:anywhere}
+            .pve-toolkit-report .status{font-weight:600}`, root);
+        return root;
+    } catch { root?.remove(); closeToolkitDialog(); return null; }
+}
+function scheduleToolkitLauncher() {
+    if (launcherStopped || document.hidden || launcherTimer || (toolkitLauncher && !toolkitLauncher.destroyed)) return;
+    launcherTimer = setTimeout(() => {
+        launcherTimer = null;
+        mountToolkitLauncher();
+    }, launcherDelay);
+    launcherDelay = Math.min(8000, launcherDelay * 2);
+}
+function mountToolkitLauncher() {
+    if (launcherStopped || document.hidden || (toolkitLauncher && !toolkitLauncher.destroyed)) return;
+    try {
+        if (!page.PVE || !page.Ext?.ComponentQuery || !document.body) return;
+        const candidates = [];
+        // Identify global Documentation structurally, without translated labels.
+        for (const help of page.Ext.ComponentQuery.query('proxmoxHelpButton')) {
+            const owner = help.ownerCt;
+            const workspace = help.up?.('pveStdWorkspace');
+            if (!help.destroyed && !owner?.destroyed && !workspace?.destroyed && workspace &&
+                owner?.region === 'north' && owner.ownerCt === workspace &&
+                owner.items?.items.includes(help) && help.isVisible(true) &&
+                !help.up('window')) candidates.push(help);
+        }
+        if (candidates.length !== 1) return;
+        const help = candidates[0], header = help.ownerCt;
+        for (const child of header.items.items) if (!child.destroyed && child.pveToolkitSettingsButton === 'toolkit') {
+            toolkitLauncher = child; return;
+        }
+        const button = page.Ext.create('Ext.button.Button', pageOptions({
+            text: 'toolkit' === 'toolkit' ? 'Toolkit' : 'Copy & Paste',
+            iconCls: 'fa fa-cog x-btn-icon-el-default-toolbar-small', tooltip: 'Proxmox Toolkit settings',
+            // The north container defaults children to x-plain. Explicitly
+            // retain the native button base class, as Documentation does.
+            baseCls: 'x-btn', ui: help.ui || 'default', scale: help.scale || 'small',
+            margin: '0 5 0 0',
+            handler: () => { if (toolkitDialog) closeToolkitDialog(); else openToolkitSettings(); },
+        }));
+        button.pveToolkitSettingsButton = 'toolkit';
+        try {
+            header.insert(header.items.items.indexOf(help), button);
+            toolkitLauncher = button;
+            button.on('destroy', pageOptions({ handler: () => {
+                if (toolkitLauncher === button) { closeToolkitDialog(false); toolkitLauncher = null; launcherDelay = 250; scheduleToolkitLauncher(); }
+            } }).handler);
+            header.updateLayout?.();
+            clearTimeout(launcherTimer); launcherTimer = null; launcherDelay = 250;
+        } catch { button.destroy(); toolkitLauncher = null; }
+    } catch { /* Recover after the workspace becomes available. */ }
+    finally { scheduleToolkitLauncher(); }
+}
+function localDownload(text, extension, mime = 'text/plain;charset=utf-8') {
+    let url, anchor, timer;
+    const cleanup = () => {
+        clearTimeout(timer); anchor?.remove();
+        if (url) URL.revokeObjectURL(url);
+        localDownloads.delete(cleanup);
+    };
+    try {
+        url = URL.createObjectURL(new Blob([text], { type: mime }));
+        anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `proxmox-toolkit-${new Date().toISOString().replace(/[:.]/g, '-')}.${extension}`;
+        document.body.appendChild(anchor);
+        localDownloads.add(cleanup);
+        anchor.click(); anchor.remove();
+        timer = setTimeout(cleanup, 1000);
+    } catch (error) { cleanup(); throw error; }
+}
+function openToolkitSettings(section) {
+    const win = createToolkitWorkspace('Proxmox Toolkit 0.7.0 settings');
+    if (!win) return;
+    try {
+        const draft = settingsDraft || normalizeSettings(runtimeSettings);
+        const tabs = nativeChild(win, 'Ext.tab.Panel', { border: false, deferredRender: false,
+            tabBar: { layout: { type: 'table', columns: 6 } } });
+        const boxes = new Map();
+        const categories = new Map();
+        const pagers = [];
+        let prefix;
+        const order = ['Console', 'Inventory', 'Recovery', 'Troubleshooting', 'Maintenance', 'Integration'];
+        for (const group of order.filter(name => FEATURE_CATALOG.some(f => f.group === name))) {
+            const form = nativeChild(tabs, 'Ext.form.Panel', { title: group, bodyPadding: 8,
+                border: false, layout: 'column', scrollable: false });
+            categories.set(group, form);
+            const cards = [];
+            for (const f of FEATURE_CATALOG.filter(f => f.group === group)) {
+                const card = nativeChild(form, 'Ext.panel.Panel', { layout: 'anchor', height: 104,
+                    bodyPadding: 8, margin: '0 8 8 0', border: true, pveToolkitFeature: f.id });
+                cards.push(card);
+                boxes.set(f.id, nativeChild(card, 'Ext.form.field.Checkbox', {
+                    boxLabel: f.name, checked: draft.features[f.id], name: f.id, anchor: '100%',
+                    boxLabelStyle: 'white-space:normal', margin: '0 0 4 0',
+                }));
+                if (f.description) nativeChild(card, 'Ext.form.field.Display', {
+                    hideLabel: true, margin: 0, value: f.description, anchor: '100%',
+                });
+                if (REPORT_IDS.includes(f.id)) {
+                    nativeChild(card, 'Ext.button.Button', { text: 'Open report', tooltip: f.name,
+                        pveToolkitReport: f.id, disabled: !featureEnabled(f.id), handler: () => openCatalogReport(f.id) });
+                    nativeChild(card, 'Ext.form.field.Display', { hideLabel: true, margin: 0,
+                        value: featureEnabled(f.id) ? 'Collects data only after Run report.' : 'Enable, then Save & Reload to open.' });
+                }
+                if (f.id === 'CUSTOM_PORT') prefix = nativeChild(card, 'Ext.form.field.Text', {
+                    fieldLabel: 'Proxy path prefix', labelWidth: 110, anchor: '100%', value: draft.apiPrefix,
+                    emptyText: '/', allowBlank: false,
+                });
+            }
+            const pager = page.Ext.create('Ext.toolbar.Toolbar', pageOptions({ dock: 'bottom', enableOverflow: true }));
+            form.addDocked(pager);
+            let index = 0, size = 1, updating = false;
+            const previous = nativeChild(pager, 'Ext.button.Button', { text: 'Previous',
+                handler: () => { index--; arrange(); } });
+            const position = nativeChild(pager, 'Ext.toolbar.TextItem', { text: '' });
+            const next = nativeChild(pager, 'Ext.button.Button', { text: 'Next',
+                handler: () => { index++; arrange(); } });
+            // Resize-driven pagination: no timers, observers or repeated discovery.
+            const arrange = () => {
+                if (updating || !form.rendered || !form.isVisible(true)) return;
+                updating = true;
+                try {
+                    const width = form.body.getWidth() - 16;
+                    const columns = width >= 720 ? 2 : 1;
+                    const available = form.body.getHeight() - 16;
+                    size = Math.max(1, Math.floor(available / 112)) * columns;
+                    const pages = Math.ceil(cards.length / size);
+                    index = Math.max(0, Math.min(index, pages - 1));
+                    page.Ext.suspendLayouts();
+                    try {
+                        cards.forEach((card, i) => {
+                            card.setWidth(Math.floor(width / columns) - 8);
+                            card.setHidden(i < index * size || i >= (index + 1) * size);
+                        });
+                        previous.setDisabled(index === 0); next.setDisabled(index === pages - 1);
+                        position.setText(`Page ${index + 1} of ${pages}`);
+                    } finally { page.Ext.resumeLayouts(true); }
+                } finally { updating = false; }
+            };
+            for (const event of ['resize', 'activate']) form.on(event, pageOptions({ handler: arrange }).handler);
+            pagers.push(arrange);
+        }
+        const readDraft = () => ({ schema: 1, apiPrefix: prefix ? prefix.getValue() : '/',
+            features: Object.fromEntries([...boxes].map(([id, box]) => [id, !!box.getValue()])) });
+        toolkitDialog.captureDraft = () => { settingsDraft = readDraft(); };
+        const notices = page.Ext.create('Ext.panel.Panel', pageOptions({ dock: 'bottom', border: false, bodyPadding: '0 8' }));
+        win.addDocked(notices);
+        const status = nativeChild(notices, 'Ext.form.field.Display', { hideLabel: true, margin: 0, value: settingsLoadError ?
+            'Stored settings could not be loaded. Features are inactive until you save a configuration.' :
+            'Changes apply after Save & Reload. Only Copy, Paste Only and Paste & Execute default on.' });
+        if (categories.has('Integration')) {
+            const help = page.Ext.create('Ext.panel.Panel', pageOptions({ dock: 'top', border: false, bodyPadding: '0 8' }));
+            categories.get('Integration').addDocked(help);
+            nativeChild(help, 'Ext.form.field.Display', { hideLabel: true, margin: 0,
+                value: 'Custom origins also need an exact HTTPS include rule in your userscript manager. Use / or /pve/. Disabling features does not remove bundled code or permissions.' });
+        }
+        const footer = page.Ext.create('Ext.toolbar.Toolbar', pageOptions({ dock: 'bottom', enableOverflow: true }));
+        win.addDocked(footer);
+        nativeChild(footer, 'Ext.button.Button', { text: 'Restore defaults', handler: () => {
+            const defaults = defaultSettings();
+            for (const [id, box] of boxes) box.setValue(defaults.features[id]);
+            prefix?.setValue('/'); status.setValue('Defaults selected. Save & Reload to apply.');
+        } });
+        nativeChild(footer, 'Ext.toolbar.Fill', {});
+        nativeChild(footer, 'Ext.button.Button', { text: 'Return to Proxmox', handler: () => closeToolkitDialog() });
+        const save = nativeChild(footer, 'Ext.button.Button', { text: 'Save & Reload', iconCls: 'fa fa-check', handler: async () => {
+            const value = readDraft(), { apiPrefix } = value;
+            if (!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(apiPrefix)) { status.setValue('Use a path such as / or /pve/, with a trailing slash and no query, host or traversal.'); tabs.setActiveTab(categories.get('Integration')); return; }
+            if (apiPrefix !== '/' && !value.features.CUSTOM_PORT) { status.setValue('Enable custom origin / proxy support for a non-root prefix.'); tabs.setActiveTab(categories.get('Integration')); return; }
+            save.setDisabled(true);
+            try {
+                if (typeof GM_setValue === 'function') await GM_setValue(SETTINGS_KEY, value);
+                else if (typeof GM !== 'undefined' && typeof GM.setValue === 'function') await GM.setValue(SETTINGS_KEY, value);
+                else throw Error('storage unavailable');
+                location.reload();
+            } catch {
+                if (!win.destroyed && !win.destroying) {
+                    status.setValue('Settings could not be saved. Current configuration is unchanged.');
+                    save.setDisabled(false);
+                }
+            }
+        } });
+        const resizeTabs = () => {
+            if (!tabs.rendered) return;
+            const bar = tabs.getTabBar(), layout = bar.getLayout();
+            const columns = Math.max(1, Math.min(categories.size, Math.floor(tabs.getWidth() / 155)));
+            if (layout.columns !== columns) { layout.columns = columns; bar.updateLayout(); }
+            for (const arrange of pagers) arrange();
+        };
+        tabs.on('resize', pageOptions({ handler: resizeTabs }).handler);
+        tabs.setActiveTab(categories.get(section) || categories.get('Console'));
+        win.show();
+        resizeTabs();
+    } catch { closeToolkitDialog(); }
+}
+function initializeSettings(start) {
+    const finish = value => {
+        runtimeSettings = normalizeSettings(value);
+        if (value && (value.schema !== 1 || !value.features || typeof value.features !== 'object')) settingsLoadError = true;
+        if (settingsLoadError) for (const key of Object.keys(runtimeSettings.features)) runtimeSettings.features[key] = false;
+        try {
+            if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings);
+            else if (typeof GM !== 'undefined' && typeof GM.registerMenuCommand === 'function')
+                Promise.resolve(GM.registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings)).catch(() => {});
+        } catch { /* The header entry works without a manager menu command. */ }
+        mountToolkitLauncher();
+        window.addEventListener('hashchange', () => { closeToolkitDialog(); mountToolkitLauncher(); });
+        window.addEventListener('pagehide', () => {
+            launcherStopped = true; clearTimeout(launcherTimer); launcherTimer = null;
+            closeToolkitDialog(); for (const cleanup of [...localDownloads]) cleanup();
+        });
+        window.addEventListener('pageshow', () => { launcherStopped = false; mountToolkitLauncher(); });
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) { closeToolkitDialog(); clearTimeout(launcherTimer); launcherTimer = null; }
+            else mountToolkitLauncher();
+        });
+        start();
+    };
+    try {
+        if (typeof GM_getValue === 'function') finish(GM_getValue(SETTINGS_KEY, null));
+        else if (typeof GM !== 'undefined' && typeof GM.getValue === 'function')
+            Promise.resolve(GM.getValue(SETTINGS_KEY, null)).then(finish, () => { settingsLoadError = true; finish(null); });
+        else finish(null);
+    } catch { settingsLoadError = true; finish(null); }
+}
+
+    // Pure report logic. Included at build time; no runtime module loader.
+const CatalogModel = (() => {
+    const array = value => Array.isArray(value) ? value : [];
+    const scalar = value => ['string', 'number', 'boolean'].includes(typeof value) ? value : null;
+    const pick = (value, keys) => Object.fromEntries(keys.map(key => [key, scalar(value?.[key])]));
+    const part = value => encodeURIComponent(String(value));
+    const guestPath = g => `/nodes/${part(g.node)}/${g.type}/${part(g.vmid)}`;
+    const split = value => typeof value === 'string' ? value.split(/[;,\s]+/).filter(Boolean) : [];
+    function scopeError(id, options = {}) {
+        const ids = [...new Set(split(options.vmids))];
+        if (id === 'COMPARE' && ids.length !== (options.baseline ? 1 : 2))
+            return 'Select two visible guest IDs, or one guest and an exported configuration baseline.';
+        if (id === 'TASK_REPORT') {
+            const node = String(options.node || '').trim();
+            const taskNode = String(options.upid || '').trim().match(/^UPID:([^:]+):.+/)?.[1];
+            if (!taskNode) return 'Enter a complete UPID; its owning node is detected automatically.';
+            if (node && node !== taskNode) return 'The UPID must belong to the selected owning node.';
+        }
+        return null;
+    }
+    const fields = value => Object.fromEntries(String(value ?? '').split(',').map((entry, i) => {
+        const at = entry.indexOf('=');
+        return at < 0 ? [i === 0 ? 'volume' : entry, i === 0 ? entry : true] : [entry.slice(0, at), entry.slice(at + 1)];
+    }));
+    const diskKey = key => /^(?:scsi|sata|ide|virtio|unused|mp)\d+$/.test(key) || ['rootfs', 'efidisk0', 'tpmstate0'].includes(key);
+    const configKey = key => diskKey(key) || /^(?:net|ipconfig|hostpci|usb|serial)\d+$/.test(key) ||
+        ['name', 'hostname', 'cores', 'sockets', 'cpu', 'memory', 'balloon', 'bios', 'machine', 'ostype', 'scsihw',
+            'boot', 'bootdisk', 'onboot', 'startup', 'agent', 'tags', 'protection', 'numa', 'unprivileged', 'features'].includes(key);
+    function safeConfig(config) {
+        return Object.fromEntries(Object.entries(config || {}).filter(([k, v]) => configKey(k) && scalar(v) !== null));
+    }
+    function configDiff(left, right, ignoreIdentity = true) {
+        const clean = value => {
+            const out = { ...value };
+            for (const key of ['digest', 'description', 'cipassword', 'sshkeys', 'args', 'hookscript', 'cicustom']) delete out[key];
+            if (ignoreIdentity) {
+                for (const key of ['name', 'hostname', 'vmgenid', 'smbios1']) delete out[key];
+                for (const key of Object.keys(out)) if (/^net\d+$/.test(key))
+                    out[key] = String(out[key]).replace(/([a-z0-9_-]+=)[0-9a-f]{2}(?::[0-9a-f]{2}){5}/ig, '$1<MAC>');
+            }
+            return out;
+        };
+        const a = clean(left), b = clean(right);
+        return [...new Set([...Object.keys(a), ...Object.keys(b)])].sort()
+            .filter(key => JSON.stringify(a[key]) !== JSON.stringify(b[key]))
+            .map(key => ({ setting: key, left: a[key] ?? null, right: b[key] ?? null }));
+    }
+    function mounts(config, type) {
+        return Object.entries(config || {}).filter(([k]) => diskKey(k)).map(([key, raw]) => {
+            const f = fields(raw), volume = String(f.volume ?? f.file ?? '');
+            const unused = key.startsWith('unused');
+            const external = type === 'lxc' && volume.startsWith('/');
+            const excluded = unused || f.media === 'cdrom' || (type === 'lxc' && key !== 'rootfs' ? external || f.backup !== '1' : f.backup === '0');
+            return { key, volume, unused, excluded, reason: unused ? 'Unused attachment' :
+                f.media === 'cdrom' ? 'Installation media' : external ? 'External bind/device mount' : excluded ? 'Backup disabled' : 'Included by configuration' };
+        });
+    }
+    function coverage(guest, jobs) {
+        if (!Array.isArray(jobs)) return 'unknown';
+        let unknown = false;
+        for (const j of jobs) {
+            if (j.enabled === 0 || j.enabled === false || j.enabled === '0') continue;
+            if (j.node && j.node !== guest.node) continue;
+            if (split(j.exclude).includes(String(guest.vmid))) continue;
+            if (j['exclude-tags'] || j['include-tags'] || j['tag-filter']) { unknown = true; continue; }
+            if (j.pool) {
+                if (guest.pool == null) unknown = true;
+                else if (guest.pool === j.pool) return 'scheduled';
+                continue;
+            }
+            if (j.all === 1 || j.all === true || j.all === '1' || split(j.vmid).includes(String(guest.vmid))) return 'scheduled';
+        }
+        return unknown ? 'unknown selection' : 'no matching visible job';
+    }
+    function csv(rows, columns) {
+        const cell = v => {
+            let s = typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '');
+            if (/^[\s]*[=+@-]/.test(s) || /^[\t\r\n]/.test(s)) s = `'${s}`;
+            return `"${s.replace(/"/g, '""')}"`;
+        };
+        return [columns.map(cell).join(','), ...rows.map(r => columns.map(k => cell(r[k])).join(','))].join('\r\n');
+    }
+    function networkPaths(guest, config, networks) {
+        const byName = new Map(array(networks).map(n => [n.iface, n]));
+        const walk = (name, seen = new Set()) => {
+            if (seen.has(name)) return [{ interface: name, state: 'cycle' }];
+            const n = byName.get(name);
+            if (!n) return [{ interface: name, state: 'not visible / external' }];
+            const next = new Set(seen).add(name);
+            const ports = split(n.bridge_ports || n.slaves || n.bond_slaves || n['vlan-raw-device']);
+            return [{ ...pick(n, ['iface', 'type', 'mtu', 'active', 'bridge_vlan_aware', 'vlan-id']),
+                upstream: ports.map(p => walk(p, next)) }];
+        };
+        return Object.entries(config || {}).filter(([k]) => /^net\d+$/.test(k)).map(([nic, raw]) => {
+            const f = fields(raw);
+            return { vmid: guest.vmid, node: guest.node, nic, bridge: f.bridge ?? null, vlan: f.tag ?? null,
+                trunks: f.trunks ?? null, mtu: f.mtu ?? null, configuredPath: f.bridge ? walk(f.bridge) : [],
+                connectivity: 'Not tested; physical switches and guest routing are outside this report' };
+        });
+    }
+    async function run(id, read, options = {}) {
+        options = { ...options, node: String(options.node || '').trim(), upid: String(options.upid || '').trim() };
+        const invalidScope = scopeError(id, options);
+        if (invalidScope) throw Error(invalidScope);
+        if (id === 'TASK_REPORT' && !options.node) options.node = options.upid.split(':')[1];
+        const report = { schema: 'proxmox-toolkit-report/1', feature: id, collectedAt: new Date().toISOString(),
+            scope: 'Visible resources in this PVE origin; permission filtering can hide resources without an error',
+            rows: [], issues: [], notes: [] };
+        const cache = new Map();
+        async function get(path, query = {}) {
+            const key = path + JSON.stringify(query);
+            if (!cache.has(key)) cache.set(key, (async () => {
+                const r = await read(path, query);
+                if (r.error) report.issues.push({ path, reason: r.error });
+                if (r.error) return null;
+                const objectExpected = /\/config$|\/agent\/network-get-interfaces$|\/tasks\/[^/]+\/status$/.test(path);
+                if (!r.data || (objectExpected ? typeof r.data !== 'object' || Array.isArray(r.data) : !Array.isArray(r.data))) {
+                    report.issues.push({ path, reason: 'Unexpected or missing API data shape' }); return null;
+                }
+                return r.data;
+            })());
+            return cache.get(key);
+        }
+        const resources = await get('/cluster/resources');
+        const visibleGuests = array(resources).filter(r => ['qemu', 'lxc'].includes(r.type) && /^\d+$/.test(String(r.vmid)) && typeof r.node === 'string');
+        const allGuests = visibleGuests.slice(0, 2000);
+        if (visibleGuests.length > 2000) report.issues.push({ path: '/cluster/resources', reason: '2,000-guest limit reached; inventory is incomplete' });
+        const visibleNodes = [...new Set([...array(resources).filter(r => r.type === 'node').map(r => r.node || r.id?.replace(/^node\//, '')), ...allGuests.map(g => g.node)].filter(Boolean))];
+        const nodes = visibleNodes.slice(0, 100);
+        if (visibleNodes.length > 100) report.issues.push({ path: '/cluster/resources', reason: '100-node limit reached; report is incomplete' });
+        if (options.node && resources !== null && !visibleNodes.includes(options.node))
+            throw Error(id === 'TASK_REPORT' ? 'The task’s owning node is not visible to this account. Choose a task on a visible node.' :
+                'The selected node is not visible to this account. Clear Node to use all visible nodes, or enter a visible node name.');
+        const wantedNodes = options.node ? visibleNodes.filter(n => n === options.node) : nodes;
+        const selected = [...new Set(split(options.vmids))];
+        const guests = allGuests.filter(g => (!options.node || g.node === options.node) && (!selected.length || selected.includes(String(g.vmid))));
+        report.selection = { node: options.node || null, nodes: wantedNodes, vmids: selected, visibleGuests: visibleGuests.length, selectedGuests: guests.length };
+        report.scope = id === 'TASK_REPORT' ? `One task on node ${options.node}; log collection limits and permissions apply.` :
+            `${options.node ? `Node ${options.node}` : 'All visible nodes'}; ${selected.length ? `guest IDs ${selected.join(', ')}` : 'all visible guests'}. Permission filtering and collection limits can leave gaps.`;
+        if (resources === null) { report.notes.push('Resource discovery failed; the requested scope could not be resolved.'); return report; }
+        if (!wantedNodes.length) report.notes.push('No nodes are visible to this account; no node checks could be collected.');
+        for (const vmid of selected) if (!guests.some(g => String(g.vmid) === vmid))
+            report.issues.push({ path: '/cluster/resources', reason: `Guest ${vmid} is not visible in the selected scope or falls outside the collection limit` });
+        const configs = new Map();
+        async function config(g) {
+            const key = `${g.node}/${g.type}/${g.vmid}`;
+            if (!configs.has(key)) configs.set(key, get(`${guestPath(g)}/config`, { current: 1 }));
+            return configs.get(key);
+        }
+        // Work is scheduled in small waves as well as limited by the transport.
+        async function each(items, action) {
+            for (let offset = 0; offset < items.length; offset += 3) await Promise.all(items.slice(offset, offset + 3).map(action));
+        }
+        const identity = g => pick(g, ['vmid', 'name', 'node', 'type', 'status', 'tags', 'pool']);
+        async function visibleBackups() {
+            const backups = [];
+            await each(nodes, async node => {
+                const stores = await get(`/nodes/${part(node)}/storage`, { content: 'backup', enabled: 1 });
+                if (stores !== null && !Array.isArray(stores)) report.issues.push({ path: node, reason: 'Unexpected storage-list shape' });
+                await each(array(stores), async s => {
+                    if (!s.active) { report.issues.push({ path: `${node}/${s.storage}`, reason: 'Backup storage inactive' }); return; }
+                    const content = await get(`/nodes/${part(node)}/storage/${part(s.storage)}/content`, { content: 'backup' });
+                    for (const b of array(content)) if (b.content === 'backup') backups.push({ ...b, storage: s.storage, storageNode: node });
+                });
+            });
+            return backups;
+        }
+        function newestBackup(backups, g) {
+            return backups.filter(b => String(b.vmid) === String(g.vmid)).sort((a, b) => b.ctime - a.ctime)[0];
+        }
+        if (id === 'INVENTORY') {
+            await each(guests, async g => {
+                const c = await config(g);
+                report.rows.push({ ...identity(g), configuredMemoryMiB: c?.memory ?? null, configuredCores: c?.cores ?? null,
+                    configuredSockets: c?.sockets ?? null, observedMemoryBytes: g.mem ?? null, observedCPUFraction: g.cpu ?? null,
+                    disks: c ? mounts(c, g.type) : null,
+                    networks: c ? Object.fromEntries(Object.entries(c).filter(([k]) => /^net\d+$/.test(k))) : null,
+                    configurationAvailable: !!c });
+            });
+        } else if (id === 'COMPARE') {
+            const pair = selected.map(v => guests.find(g => String(g.vmid) === v)).filter(Boolean);
+            if (options.baseline ? pair.length !== 1 : pair.length !== 2) throw Error('Select two visible guest IDs, or one guest and an exported configuration baseline.');
+            const a = await config(pair[0]), b = options.baseline || await config(pair[1]);
+            if (!a || !b) throw Error('Both configurations must be readable.');
+            report.rows = configDiff(a, b, options.ignoreIdentity !== false);
+            report.baselines = pair.map(identity);
+            report.currentConfiguration = safeConfig(a);
+            report.pending = [];
+            await each(pair, async g => {
+                const pending = await get(`${guestPath(g)}/pending`);
+                report.pending.push({ ...identity(g), changes: array(pending).filter(p => configKey(p.key) && (p.pending !== undefined || p.delete)).map(p => pick(p, ['key', 'value', 'pending', 'delete'])) });
+            });
+            report.notes.push('Current configurations compared. Pending changes are listed separately. Credentials and free-form descriptions are omitted.');
+        } else if (id === 'SNAPSHOTS') {
+            await each(guests, async g => {
+                const snaps = await get(`${guestPath(g)}/snapshot`);
+                if (snaps === null) report.rows.push({ ...identity(g), snapshot: null, state: 'unknown' });
+                for (const s of array(snaps).filter(s => s.name !== 'current')) {
+                    const ageDays = Number.isFinite(s.snaptime) ? Math.floor((Date.now() / 1000 - s.snaptime) / 86400) : null;
+                    report.rows.push({ ...identity(g), snapshot: s.name, description: scalar(s.description), parent: scalar(s.parent),
+                        created: s.snaptime ?? null, ageDays, review: ageDays === null ? 'unknown' : ageDays >= (options.ageDays || 30) });
+                }
+            });
+            report.notes.push('Age is a review prompt, not a deletion recommendation. Reclaimable space is not estimated.');
+        } else if (['TASKS', 'TASK_REPORT'].includes(id)) {
+            if (id === 'TASK_REPORT') {
+                if (!options.upid || !options.node || !wantedNodes.length || !options.upid.startsWith(`UPID:${options.node}:`)) throw Error('Enter the owning node and its complete UPID.');
+                const base = `/nodes/${part(options.node)}/tasks/${part(options.upid)}`;
+                report.status = await get(`${base}/status`);
+                const lines = await get(`${base}/log`, { start: 0, limit: 5000 });
+                report.rows = array(lines).map(l => ({ line: l.n, text: String(l.t ?? ''), errorLine: /\b(error|failed|fatal)\b/i.test(l.t || '') }));
+                report.notes.push('First 5,000 log lines maximum; inspect the native task viewer for longer logs. Review identifiers and log text before sharing.');
+            } else {
+                const query = { limit: 500, source: 'all', since: Math.floor(Date.now() / 1000) - (options.days || 7) * 86400 };
+                if (options.failuresOnly) query.errors = 1;
+                if (options.taskType) query.typefilter = options.taskType;
+                if (selected.length === 1) query.vmid = selected[0];
+                await each(wantedNodes, async node => {
+                    const tasks = await get(`/nodes/${part(node)}/tasks`, query);
+                    if (array(tasks).length === 500) report.issues.push({ path: node, reason: '500-task limit reached; narrow the time range' });
+                    for (const t of array(tasks)) if (!selected.length || selected.includes(String(t.id)))
+                        report.rows.push({ ...pick(t, ['upid', 'id', 'type', 'status', 'starttime', 'endtime']), node });
+                });
+                report.rows.sort((a, b) => b.starttime - a.starttime);
+                report.notes.push('Retention and permissions limit history. Group backup tasks may lack a guest ID and are omitted by guest filters. Use Copy Task Report with a row’s node and UPID to inspect its log.');
+            }
+        } else if (id === 'BACKUPS') {
+            const jobs = await get('/cluster/backup');
+            const backups = await visibleBackups();
+            const tasks = [];
+            await each(nodes, async node => tasks.push(...array(await get(`/nodes/${part(node)}/tasks`, { limit: 500, typefilter: 'vzdump', source: 'all' }))));
+            await each(guests, async g => {
+                const c = await config(g);
+                const found = newestBackup(backups, g);
+                const recent = tasks.filter(t => String(t.id) === String(g.vmid)).sort((a, b) => b.starttime - a.starttime)[0];
+                report.rows.push({ ...identity(g), coverage: coverage(g, jobs), newestVisibleBackup: found ? pick(found, ['ctime', 'volid', 'storage', 'storageNode']) : null,
+                    backupAgeDays: found && Number.isFinite(found.ctime) ? Math.floor((Date.now() / 1000 - found.ctime) / 86400) : null,
+                    excludedAttachments: c ? mounts(c, g.type).filter(m => m.excluded) : null,
+                    latestVisibleGuestBackupTask: recent ? pick(recent, ['starttime', 'status']) : null,
+                    restoreTested: 'unknown', verification: 'unknown' });
+            });
+            report.notes.push('Backup identity is matched by VMID within this origin; reused IDs can refer to earlier guests. A found backup is not proof of successful restore. External copies, PBS verification, group-task outcomes and retention gaps may be invisible.');
+        } else if (id === 'STORAGE') {
+            const refs = new Map(), globalRefs = new Map();
+            let complete = true;
+            await each(allGuests, async g => {
+                const c = await config(g);
+                if (!c) { complete = false; return; }
+                for (const m of mounts(c, g.type)) {
+                    const key = `${g.node}/${m.volume}`;
+                    if (!refs.has(key)) refs.set(key, []);
+                    refs.get(key).push({ vmid: g.vmid, ...m });
+                    if (!globalRefs.has(m.volume)) globalRefs.set(m.volume, []);
+                    globalRefs.get(m.volume).push({ node: g.node, vmid: g.vmid, ...m });
+                }
+            });
+            await each(wantedNodes, async node => {
+                const stores = await get(`/nodes/${part(node)}/storage`, { enabled: 1 });
+                await each(array(stores), async s => {
+                    const contents = await get(`/nodes/${part(node)}/storage/${part(s.storage)}/content`);
+                    for (const v of array(contents).filter(v => ['images', 'rootdir'].includes(v.content))) {
+                        const localRefs = refs.get(`${node}/${v.volid}`) || [];
+                        const sharedRefs = s.shared ? globalRefs.get(v.volid) || [] : [];
+                        const matches = s.shared ? sharedRefs : localRefs;
+                        report.rows.push({ node, storage: s.storage, volume: v.volid, provisionedBytes: v.size ?? null,
+                            parentVolume: scalar(v.parent), references: matches, state: matches.some(r => !r.unused) ? 'attached' : matches.length ? 'marked unused' : 'no visible current-config reference',
+                            safeToDelete: 'not determined', currentConfigScanComplete: complete });
+                    }
+                });
+            });
+            report.notes.push('No-reference volumes are candidates for investigation only. Snapshot, template, linked-clone, hidden-resource and external references are not exhaustively resolved. Provisioned size is not reclaimable capacity.');
+        } else if (id === 'MAINTENANCE') {
+            report.clusterStatus = await get('/cluster/status');
+            const ha = await get('/cluster/ha/resources');
+            report.haStatus = await get('/cluster/ha/status/current');
+            const backups = await visibleBackups();
+            const checks = new Map();
+            await each(wantedNodes, async node => {
+                const activeTasks = await get(`/nodes/${part(node)}/tasks`, { source: 'active', limit: 500 });
+                if (array(activeTasks).length === 500) report.issues.push({ path: node, reason: '500-active-task limit reached; task evidence is incomplete' });
+                const stores = await get(`/nodes/${part(node)}/storage`);
+                const otherNodes = array(resources).filter(r => r.type === 'node' && (r.node || r.id?.replace(/^node\//, '')) !== node)
+                    .map(r => ({ ...pick(r, ['node', 'status', 'maxmem', 'mem', 'cpu', 'maxcpu']), observedFreeMemoryBytes: Number.isFinite(r.maxmem) && Number.isFinite(r.mem) ? r.maxmem - r.mem : null }));
+                checks.set(node, { node, activeTasks, storageAvailable: stores !== null,
+                    selectedGuests: guests.filter(g => g.node === node).length, otherNodes,
+                    shared: new Map(array(stores).map(s => [s.storage, !!s.shared])) });
+            });
+            report.nodePreflights = wantedNodes.map(node => {
+                const { shared, ...check } = checks.get(node); return check;
+            });
+            if (wantedNodes.length === 1) {
+                report.activeTasks = checks.get(wantedNodes[0]).activeTasks;
+                report.otherNodes = checks.get(wantedNodes[0]).otherNodes;
+            }
+            await each(guests, async g => {
+                const check = checks.get(g.node);
+                if (!check) return; // Node cap: never infer a check for an uncollected node.
+                const c = await config(g);
+                const h = array(ha).find(h => h.sid === `${g.type === 'qemu' ? 'vm' : 'ct'}:${g.vmid}`);
+                const backup = newestBackup(backups, g);
+                report.rows.push({ ...identity(g), ha: ha === null ? 'unknown' : h ? h.state : 'not HA managed',
+                    latestVisibleBackup: backup ? pick(backup, ['ctime', 'volid', 'storage']) : null,
+                    localOrUnknownVolumes: c ? mounts(c, g.type).filter(m => !check.shared.get(m.volume.split(':')[0])) : null,
+                    passthrough: c ? Object.entries(c).filter(([k]) => /^(hostpci|usb)\d+$/.test(k)) : null,
+                    guestAgentConfigured: c ? scalar(c.agent) : null, migration: 'requires native checks' });
+            });
+            report.notes.push('Each selected node is assessed independently, including nodes with no visible guests. This is not a plan to take every node offline together.');
+            report.notes.push('Backup evidence is limited to visible artifacts matched by VMID, not a tested restore. Observed free memory is not placement capacity. Native migration validation, HA rules, quorum and external service dependencies still govern the operation. No migration or reboot is performed.');
+        } else if (id === 'NETWORK') {
+            const net = new Map();
+            await each(wantedNodes, async n => net.set(n, await get(`/nodes/${part(n)}/network`)));
+            await each(guests, async g => report.rows.push(...networkPaths(g, await config(g), net.get(g.node))));
+            report.interfaces = [...net].map(([node, data]) => ({ node, interfaces: data === null ? null : array(data).map(n => pick(n,
+                ['iface', 'type', 'mtu', 'active', 'bridge_ports', 'slaves', 'bond_slaves', 'bridge_vlan_aware', 'bridge_vids', 'vlan-id', 'vlan-raw-device'])) }));
+            const names = [...new Set([...net.values()].flatMap(list => array(list).map(n => n.iface)))];
+            report.interfaceComparison = names.map(iface => ({ iface, nodes: [...net].map(([node, list]) => {
+                const item = array(list).find(n => n.iface === iface);
+                return { node, present: list === null ? null : !!item, mtu: scalar(item?.mtu), vlanAware: scalar(item?.bridge_vlan_aware) };
+            }) }));
+            report.notes.push('Configured topology only. Open vSwitch, SDN, switches and guest routing may require native tools. Compare interfaces by name and MTU across nodes before migration.');
+        } else if (id === 'GUEST_HEALTH') {
+            await each(guests.filter(g => g.type === 'qemu'), async g => {
+                const c = await config(g);
+                const agent = fields(c?.agent);
+                const enabled = c ? agent.enabled === '1' || (agent.enabled === undefined && agent.volume === '1') : null;
+                let response = 'not checked';
+                if (options.checkAgent && enabled && g.status === 'running') {
+                    const interfaces = await get(`${guestPath(g)}/agent/network-get-interfaces`);
+                    response = interfaces === null ? 'unavailable; response not established' : 'responded to network information request';
+                }
+                report.rows.push({ ...identity(g), configured: enabled, responsiveness: response, agentOptions: scalar(c?.agent),
+                    pending: array(await get(`${guestPath(g)}/pending`)).filter(p => ['agent', 'machine', 'bios'].includes(p.key)).map(p => pick(p, ['key', 'value', 'pending', 'delete'])) });
+            });
+            report.notes.push('Responsiveness is an explicit read-only guest-agent information request, not a guest command execution or guarantee of shutdown/backup success.');
+        } else if (id === 'RECOVERY') {
+            await each(guests, async g => { const c = await config(g); report.rows.push({ ...identity(g), configuration: c ? safeConfig(c) : null }); });
+            report.storage = array(await get('/storage')).map(s => pick(s, ['storage', 'type', 'content', 'nodes', 'shared', 'path', 'server', 'export', 'pool', 'vgname', 'thinpool']));
+            report.networks = [];
+            await each(wantedNodes, async node => { const data = await get(`/nodes/${part(node)}/network`); report.networks.push({ node, interfaces: data === null ? null : array(data).map(n => pick(n,
+                ['iface', 'type', 'address', 'netmask', 'gateway', 'cidr', 'bridge_ports', 'slaves', 'bond_slaves', 'mtu', 'bridge_vlan_aware'])) }); });
+            report.ha = await get('/cluster/ha/resources');
+            report.mappings = {};
+            for (const type of ['pci', 'usb']) report.mappings[type] = array(await get(`/cluster/mapping/${type}`)).map(m => ({ id: scalar(m.id), map: array(m.map).filter(v => typeof v === 'string') }));
+            report.checklist = ['Store guest backups separately and test restoration.', 'Back up actual host files and cluster configuration with an appropriate backup tool.',
+                'Preserve encryption keys, credentials, firewall rules, certificates and custom scripts separately.', 'Record external DNS, switch configuration and application dependencies.',
+                'Recreate storage and networking before restoring guests; review startup order.'];
+            report.notes.push('Recovery documentation only. Not a host backup or an executable restore plan. Passwords, tokens, arbitrary arguments and descriptions are omitted.');
+        } else throw Error('Unknown report feature.');
+        return report;
+    }
+    return { run, scopeError, csv, safeConfig, configDiff, mounts, coverage, networkPaths, fields, guestPath };
+})();
+// Node tests load this file directly; this line is omitted from generated scripts.
+
+
+    const REPORT_IDS = ["INVENTORY","COMPARE","BACKUPS","TASKS","TASK_REPORT","SNAPSHOTS","STORAGE","MAINTENANCE","NETWORK","GUEST_HEALTH","RECOVERY"];
+// Each explicit report gets one cancellable client. No timers exist at idle.
+function createReportClient(prefix, controller) {
+    if (!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(prefix)) throw Error('Invalid API prefix');
+    let used = 0, active = 0, bytesUsed = 0;
+    const waiters = [];
+    const began = Date.now();
+    const maxBytes = 8 * 1024 * 1024;
+    const maxTotalBytes = 32 * 1024 * 1024;
+    async function read(path, query = {}) {
+        if (controller.signal.aborted) return { error: 'Cancelled' };
+        if (bytesUsed >= maxTotalBytes) return { error: '32 MiB report response budget reached' };
+        if (used >= 400 || Date.now() - began > 120000) return { error: 'Report request/time budget reached; narrow the selection' };
+        // Only internal absolute API paths. Never accept a remote URL or redirects.
+        if (!/^\/(cluster|nodes|storage|pools)(?:\/|$)/.test(path) || /[?#\\]/.test(path) ||
+            path.split('/').some(p => { try { return ['.', '..'].includes(decodeURIComponent(p)) || /[\/\\]/.test(decodeURIComponent(p)); } catch { return true; } })) return { error: 'Invalid API path' };
+        if (active >= 3) await new Promise(resolve => waiters.push(resolve));
+        if (controller.signal.aborted) { waiters.shift()?.(); return { error: 'Cancelled' }; }
+        if (used >= 400 || Date.now() - began > 120000 || bytesUsed >= maxTotalBytes) {
+            waiters.shift()?.(); return { error: 'Report request/time/byte budget reached; narrow the selection' };
+        }
+        used++;
+        active++;
+        const request = new AbortController();
+        const abort = () => request.abort();
+        controller.signal.addEventListener('abort', abort, { once: true });
+        const timer = setTimeout(abort, 15000);
+        try {
+            const url = new URL(`${prefix}api2/json${path}`, location.origin);
+            for (const [key, value] of Object.entries(query)) url.searchParams.set(key, String(value));
+            const response = await fetch(url.href, { method: 'GET', credentials: 'same-origin', cache: 'no-store', redirect: 'error', signal: request.signal });
+            if (!response.ok) return { error: `HTTP ${response.status}; data unavailable` };
+            const size = Number(response.headers.get('content-length'));
+            if (size > maxBytes) { request.abort(); return { error: 'Response exceeds 8 MiB limit' }; }
+            let text = '';
+            if (response.body?.getReader) {
+                const reader = response.body.getReader(), decoder = new TextDecoder();
+                let bytes = 0;
+                try {
+                    while (true) {
+                        const chunk = await reader.read();
+                        if (chunk.done) break;
+                        bytes += chunk.value.byteLength;
+                        bytesUsed += chunk.value.byteLength;
+                        if (bytes > maxBytes || bytesUsed > maxTotalBytes) { request.abort(); await reader.cancel(); return { error: 'Response exceeds per-request or total byte limit' }; }
+                        text += decoder.decode(chunk.value, { stream: true });
+                    }
+                    text += decoder.decode();
+                } finally { reader.releaseLock(); }
+            } else {
+                text = await response.text();
+                bytesUsed += text.length * 2; // Conservative bound on fallback UTF-16 memory.
+                if (text.length > maxBytes) return { error: 'Response exceeds limit' };
+                if (bytesUsed > maxTotalBytes) return { error: 'Report response budget reached' };
+            }
+            const json = JSON.parse(text);
+            if (!json || !Object.hasOwn(json, 'data')) return { error: 'Unexpected API response' };
+            return controller.signal.aborted ? { error: 'Cancelled' } : { data: json.data };
+        } catch { return { error: controller.signal.aborted ? 'Cancelled' : request.signal.aborted ? 'Request timed out' : 'Request failed or invalid response' }; }
+        finally { clearTimeout(timer); controller.signal.removeEventListener('abort', abort); active--; waiters.shift()?.(); }
+    }
+    return { read, get requests() { return used; } };
+}
+function openCatalogReport(id, initial = {}) {
+    if (!featureEnabled(id) || !REPORT_IDS.includes(id)) return;
+    if ((location.port !== '8006' || runtimeSettings.apiPrefix !== '/') && !featureEnabled('CUSTOM_PORT')) {
+        openToolkitSettings(); return;
+    }
+    const feature = FEATURE_CATALOG.find(f => f.id === id);
+    const panel = openToolkitDialog(feature.name, feature.group);
+    if (!panel) return;
+    let controller, report, baseline = null;
+    dialogDispose = () => { controller?.abort(); report = baseline = null; };
+    nodeElement('p', id === 'COMPARE' ? 'Compare two selected guests, or one guest against an uploaded baseline. A comparison needs explicit targets.' :
+        id === 'TASK_REPORT' ? 'Enter one complete task UPID. Its node is detected automatically; you can also open a task from Task Failure Investigator.' :
+        'Leave scope fields blank to report on all visible resources. Optional filters narrow the report. Closing, navigating or hiding the tab cancels collection.', panel);
+    const node = localField(id === 'TASK_REPORT' ? 'Node (optional; detected from UPID)' : 'Node (blank = all visible nodes)', panel, initial.node || '');
+    const guests = localField(id === 'COMPARE' ? 'Guest IDs (two required; one with a baseline)' : 'Guest IDs (comma-separated; blank = all)', panel, initial.vmids || '');
+    guests.parentNode.hidden = ['TASK_REPORT', 'STORAGE'].includes(id);
+    node.placeholder = id === 'TASK_REPORT' ? 'Detected from UPID' : 'All visible nodes';
+    guests.placeholder = id === 'COMPARE' ? 'For example: 101, 102' : 'All visible guests';
+    const days = localField(id === 'SNAPSHOTS' ? 'Review age in days' : 'Task history days', panel, '7', 'number');
+    days.min = '1'; days.max = '3650';
+    if (id === 'SNAPSHOTS') days.value = '30';
+    days.parentNode.hidden = !['TASKS', 'SNAPSHOTS'].includes(id);
+    const taskType = localField('Task type (optional)', panel);
+    taskType.parentNode.hidden = id !== 'TASKS';
+    const failures = localField('Failures only', panel, '', 'checkbox');
+    failures.parentNode.hidden = id !== 'TASKS';
+    const upid = localField('Complete UPID', panel, initial.upid || '');
+    upid.parentNode.hidden = id !== 'TASK_REPORT';
+    const checkAgent = localField('Check running guest-agent responsiveness', panel, '', 'checkbox');
+    checkAgent.parentNode.hidden = id !== 'GUEST_HEALTH';
+    const ignore = localField('Ignore expected name / MAC differences', panel, '', 'checkbox');
+    ignore.checked = true;
+    ignore.parentNode.hidden = id !== 'COMPARE';
+    if (id === 'COMPARE') {
+        const file = localField('Optional exported configuration JSON baseline', panel, '', 'file');
+        file.accept = '.json,application/json';
+        file.addEventListener('change', async () => {
+            baseline = null;
+            try {
+                if (!file.files[0]) return;
+                if (file.files[0].size > 1024 * 1024) throw Error();
+                const value = JSON.parse(await file.files[0].text());
+                if (!value || typeof value.currentConfiguration !== 'object' || Array.isArray(value.currentConfiguration)) throw Error();
+                if (!panel.isConnected) return;
+                baseline = CatalogModel.safeConfig(value.currentConfiguration);
+                status.textContent = 'Baseline loaded. Select one guest ID for comparison.';
+            } catch { status.textContent = 'Choose a Toolkit configuration export under 1 MiB.'; }
+        });
+    }
+    const status = nodeElement('p', 'No data collected yet.', panel, { role: 'status', 'aria-live': 'polite' });
+    const actions = nodeElement('div', undefined, panel);
+    const result = nodeElement('div', undefined, panel);
+    const run = localButton('Run report', actions, async () => {
+        if (!panel.isConnected || document.hidden) return;
+        if (guests.value.trim() && !/^\d+(?:[\s,;]+\d+)*$/.test(guests.value.trim())) { status.textContent = 'Use numeric guest IDs separated by commas.'; return; }
+        if (!Number.isInteger(Number(days.value)) || Number(days.value) < 1 || Number(days.value) > 3650) { status.textContent = 'Choose 1–3650 days.'; return; }
+        const options = { node: node.value.trim(), vmids: guests.value.trim(), days: Number(days.value), ageDays: Number(days.value),
+            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, baseline };
+        const invalidScope = CatalogModel.scopeError(id, options);
+        if (invalidScope) { status.textContent = invalidScope; return; }
+        controller?.abort(); controller = new AbortController();
+        const thisController = controller;
+        const client = createReportClient(runtimeSettings.apiPrefix, controller);
+        run.setDisabled(true); report = null; clearLocalContent(result);
+        status.textContent = 'Collecting…';
+        try {
+            const collected = await CatalogModel.run(id, client.read, options);
+            if (thisController.signal.aborted || !panel.isConnected) return;
+            report = collected;
+            status.textContent = `${report.selection.nodes.length} nodes in scope; ${report.rows.length} rows; ${report.issues.length} collection issues; ${client.requests} requests. Collected ${report.collectedAt}.`;
+            renderCatalogReport(report, result, id, status);
+        } catch (error) {
+            if (panel.isConnected && !thisController.signal.aborted) status.textContent = error.message;
+        } finally { if (panel.isConnected && controller === thisController) run.setDisabled(false); }
+    });
+    localButton('Cancel collection', actions, () => { controller?.abort(); status.textContent = 'Collection cancelled. Run report to collect again.'; run.setDisabled(false); });
+}
+function renderCatalogReport(report, parent, id, status) {
+    for (const note of [report.scope, ...report.notes]) nodeElement('p', note, parent);
+    if (report.issues.length) nodeElement('pre', JSON.stringify(report.issues, null, 2), parent, { class: 'error' });
+    if (id === 'MAINTENANCE') {
+        nodeElement('h3', 'Per-node preflight', parent);
+        const table = nodeElement('table', undefined, parent, { 'aria-label': 'Per-node preflight', 'data-node-preflights': '' });
+        const head = nodeElement('tr', undefined, nodeElement('thead', undefined, table));
+        for (const label of ['Node', 'Selected visible guests', 'Visible active tasks', 'Storage list']) nodeElement('th', label, head, { scope: 'col' });
+        const body = nodeElement('tbody', undefined, table);
+        for (const check of report.nodePreflights || []) {
+            const row = nodeElement('tr', undefined, body);
+            for (const value of [check.node, check.selectedGuests, check.activeTasks === null ? 'Unknown' : check.activeTasks.length,
+                check.storageAvailable ? 'Collected' : 'Unknown']) nodeElement('td', String(value), row);
+        }
+        nodeElement('p', 'Guest findings follow below. Task details and other-node memory observations are in Additional evidence and the JSON export.', parent);
+    }
+    if (id === 'NETWORK') {
+        nodeElement('h3', 'Configured network paths', parent);
+        const branch = (nodes, owner) => {
+            const list = nodeElement('ul', undefined, owner);
+            for (const n of nodes) {
+                const item = nodeElement('li', `${n.iface || n.interface} — ${n.type || n.state || 'unknown'}${n.mtu ? `; MTU ${n.mtu}` : ''}`, list);
+                for (const upstream of n.upstream || []) branch(upstream, item);
+            }
+        };
+        for (const path of report.rows.slice(0, 100)) {
+            const details = nodeElement('details', undefined, parent);
+            nodeElement('summary', `${path.node} / ${path.vmid} / ${path.nic} → ${path.bridge || 'unknown bridge'}; VLAN ${path.vlan ?? 'untagged / unspecified'}`, details);
+            branch(path.configuredPath, details);
+        }
+        nodeElement('p', 'Expand a path to follow its configured upstream interfaces. First 100 paths shown here; the table and export include all collected paths.', parent);
+    }
+    const filter = localField('Filter rows', parent);
+    const columns = [...new Set(report.rows.flatMap(r => Object.keys(r)))];
+    const choices = nodeElement('details', undefined, parent);
+    nodeElement('summary', 'Columns shown / exported to CSV', choices);
+    const checked = new Map();
+    for (const name of columns) { const box = localField(name, choices, '', 'checkbox'); box.checked = true; checked.set(name, box); }
+    const rows = () => report.rows.filter(r => JSON.stringify(r).toLowerCase().includes(filter.value.toLowerCase()));
+    const selectedColumns = () => columns.filter(c => checked.get(c).checked);
+    localButton('Download JSON', parent, () => {
+        try { localDownload(JSON.stringify(report, null, 2), 'json', 'application/json;charset=utf-8'); status.textContent = 'Download requested; inspect the saved file.'; }
+        catch { status.textContent = 'Download failed.'; }
+    });
+    localButton('Download filtered CSV', parent, () => {
+        try { localDownload(CatalogModel.csv(rows(), selectedColumns()), 'csv', 'text/csv;charset=utf-8'); status.textContent = 'Download requested; inspect the saved file.'; }
+        catch { status.textContent = 'Download failed.'; }
+    });
+    if (id === 'TASK_REPORT') localButton('Copy task report', parent, async () => {
+        if (!parent.isConnected || document.hidden || !acquireClipboard()) return;
+        const state = { button: { destroyed: false } };
+        const previousDispose = dialogDispose;
+        dialogDispose = () => { state.button.destroyed = true; pendingWrite?.cancel(); previousDispose?.(); };
+        try {
+            const outcome = await writeClipboard(JSON.stringify(report, null, 2), state);
+            if (parent.isConnected) status.textContent = outcome.confirmed ? 'Copied task report.' : 'Clipboard unconfirmed; inspect before retrying.';
+        } catch { if (parent.isConnected) status.textContent = 'Clipboard write failed.'; }
+        finally { releaseClipboard(); if (parent.isConnected) dialogDispose = previousDispose; }
+    });
+    const table = nodeElement('table', undefined, parent);
+    const countLabel = nodeElement('p', '', parent);
+    const draw = () => {
+        clearLocalContent(table);
+        const cols = selectedColumns(), visible = rows();
+        const head = nodeElement('tr', undefined, nodeElement('thead', undefined, table));
+        for (const c of cols) nodeElement('th', c, head, { scope: 'col' });
+        const navigable = report.rows.some(r => r.node && (r.type === 'qemu' || r.type === 'lxc'));
+        if (navigable) nodeElement('th', 'Open in PVE', head, { scope: 'col' });
+        if (id === 'TASKS' && featureEnabled('TASK_REPORT')) nodeElement('th', 'Inspect', head, { scope: 'col' });
+        const body = nodeElement('tbody', undefined, table);
+        // Bounded rendering; exports retain all filtered collected rows.
+        for (const row of visible.slice(0, 500)) {
+            const tr = nodeElement('tr', undefined, body);
+            for (const c of cols) nodeElement('td', typeof row[c] === 'object' && row[c] !== null ? JSON.stringify(row[c], null, 2) : String(row[c] ?? 'unknown'), tr);
+            if (navigable) {
+                const cell = nodeElement('td', undefined, tr);
+                if (['qemu', 'lxc'].includes(row.type) && row.vmid) localButton('Open guest', cell, () => {
+                    try {
+                        const workspaces = page.Ext.ComponentQuery.query('pveStdWorkspace');
+                        if (workspaces.length !== 1 || typeof workspaces[0].selectById !== 'function') throw Error();
+                        workspaces[0].selectById(`${row.type}/${row.vmid}`);
+                        closeToolkitDialog();
+                    } catch { status.textContent = 'Native navigation is unavailable; select this guest in the PVE resource tree.'; }
+                });
+            }
+            if (id === 'TASKS' && featureEnabled('TASK_REPORT')) localButton('Inspect log', nodeElement('td', undefined, tr), () => openCatalogReport('TASK_REPORT', { node: row.node, upid: row.upid }));
+        }
+        table.setAttribute('aria-label', `${visible.length} matching rows; showing first ${Math.min(500, visible.length)}`);
+        countLabel.textContent = `${visible.length} matching rows. Showing ${Math.min(500, visible.length)}; CSV includes all matching collected rows.`;
+    };
+    filter.addEventListener('input', draw);
+    for (const box of checked.values()) box.addEventListener('change', draw);
+    draw();
+    const details = nodeElement('details', undefined, parent);
+    nodeElement('summary', 'Additional evidence and checklist', details);
+    const { rows: ignoredRows, ...metadata } = report;
+    nodeElement('pre', JSON.stringify(metadata, null, 2), details);
+}
+
+
+    function startRuntime() {
+    let allowedOrigin = location.port === '8006';
+    allowedOrigin = allowedOrigin || featureEnabled('CUSTOM_PORT');
+    ACTIONS = ACTIONS.filter(action => featureEnabled(action.id));
+    if (!allowedOrigin) return;
+    if (!ACTIONS.length) return;
     // Periodic recovery avoids private router hooks and terminal-output observers.
     setInterval(installForCurrentConsole, SCAN_INTERVAL_MS);
     document.addEventListener('visibilitychange', installForCurrentConsole);
+    window.addEventListener('hashchange', closePanels);
+    window.addEventListener('pagehide', closePanels);
+    window.addEventListener('pagehide', () => { for (const download of [...downloads]) cleanDownload(download); });
+    window.addEventListener('hashchange', () => pendingWrite?.cancel());
+    window.addEventListener('pagehide', () => pendingWrite?.cancel());
     window.addEventListener('hashchange', cancelPaste);
     window.addEventListener('pagehide', cancelPaste);
     installForCurrentConsole();
+    }
+    initializeSettings(startRuntime);
 })();

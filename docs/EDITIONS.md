@@ -1,38 +1,57 @@
 # Editions and shared development
 
-[Overview](../README.md) · [Installation](INSTALL.md) · [Usage](USAGE.md)
+[Overview](../README.md) · [Installation](INSTALL.md) · [Catalog and settings](CATALOG.md)
 
 ## Choose an edition
 
-These are **0.6.0-dev.1 development candidates**, not stable 0.5.0. Changed installation, toolbar lifecycle, and cross-script clipboard coordination require new Firefox + Violentmonkey live acceptance.
+Stable **0.7.0** has exactly two installable files:
 
-| Edition | Installable file | Capabilities |
+| Edition | File | Features |
 | --- | --- | --- |
-| Proxmox Toolkit | [proxmox-toolkit.user.js](../proxmox-toolkit.user.js) | Copy and Paste & Execute; default all-in-one edition. |
-| Proxmox Copy Console | [proxmox-copy-console.user.js](../proxmox-copy-console.user.js) | Copy only; no clipboard-reading or terminal-input code. |
-| Proxmox Paste & Execute | [proxmox-paste-execute.user.js](../proxmox-paste-execute.user.js) | Paste only; no buffer extraction or clipboard-write APIs/grants. |
+| Proxmox Toolkit | [proxmox-toolkit.user.js](../proxmox-toolkit.user.js) | All 22 independently toggleable capabilities. Only Copy, Paste Only and Paste & Execute default on; other tools default off. |
+| Proxmox Copy & Paste | [proxmox-copy-paste.user.js](../proxmox-copy-paste.user.js) | Copy, Paste & Execute and Paste Only, each toggleable and initially enabled. No management API client, export, diagnostic/recipe panels, search/review tools, serial or proxy extension. |
 
-Install **either Toolkit or one/both standalone editions**. Do not combine Toolkit with individual editions. Use the same version and one manager for all active editions. Each file runs independently, with no runtime dependencies or user build step.
+On 2026-11-02 the maintainer replaced the individual-feature edition plan with
+this consolidated model. Individual development userscripts have been removed.
+All utility and management features belong to Toolkit. Shared code and a single
+manifest version remain; both files are independently installable with no runtime
+dependencies or user build step. The maintainer approved the tested dev.8 runtime
+for stable 0.7.0; detailed per-edition and scenario qualification remains in
+[Testing](TESTING.md).
 
-Follow [installation](INSTALL.md), substituting the chosen candidate file and confirming its name and `@version 0.6.0-dev.1`. Replace the broad host rule, disable old entries, save, and reload Proxmox. Expect only the selected controls; Copy remains before Paste when both individual editions are active.
+## Migration
 
-## Migration and filenames
+Both generated names include their shared version from dev.5 onward. Replace
+the code in the existing manager entry when updating, preserving its settings
+and trusted-host rules. Installing a changed name separately can create a
+duplicate with separate settings. See the [namespace and grant audit](INSTALL.md#namespace-and-permission-audit).
 
-The historical v0.5.0 asset `proxmox-copy-console.user.js` is the **all-in-one Toolkit**. In this development line that filename means **Copy only**. Identify installations by `@name`, version, and capabilities, not filename alone.
+Install one edition in one manager. Disable all old individual scripts, including
+Copy Console, Paste & Execute, Paste Only, Console Export, Diagnostics and Recipes.
+Do not install Toolkit and Copy & Paste together, even if their toggles differ.
+Conflict detection is a fallback, not a supported mixed-install configuration.
 
-To keep both actions, replace the existing Toolkit entry with `proxmox-toolkit.user.js`. To switch to individual editions, disable Toolkit first, then install the selected files. Copy keeps `@name Proxmox Copy Console`; Paste uses `@name Proxmox Paste & Execute`. The `homelab` namespace is retained. Keep older entries disabled. To roll back, use the exact [v0.5.0 Toolkit source](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.5.0/proxmox-copy-console.user.js), restore your host rule, and disable candidates.
+Click the edition button beside global Documentation to toggle the native Toolkit
+workspace without recreating the underlying console, or use the
+manager's Toolkit settings command. Settings
+are local to each edition and origin and are not automatically transferred from
+an old individual entry. Reapply exact trusted-host include rules on updates.
 
-## Coexistence and efficiency
+The historical stable 0.5.0 asset `proxmox-copy-console.user.js` remains the
+all-in-one Toolkit at its tag/release. Its published identity is unchanged even
+though that filename is no longer generated. To roll
+back, disable both new editions and restore the exact
+[v0.5.0 script](https://github.com/StarlightDaemon/proxmox-toolkit/blob/v0.5.0/proxmox-copy-console.user.js).
 
-Each edition recognizes the requested action's existing toolbar marker and refuses overlapping installation. This prevents duplicates; mixing overlapping editions is not a supported way to choose which implementation wins. Reload after changing enabled entries.
+## Build and verification
 
-Individual editions coordinate clipboard actions through one DOM attribute containing a random ownership token. No command/clipboard text or privileged callbacks are shared. Only the owner releases its token. Paste rechecks ownership before input; losing it cancels the operation. Page code can interfere with the marker, so it is coordination on a trusted host, not a security boundary. If an extension is terminated while holding it, reload to recover.
-
-Toolkit has one 500 ms scan interval; running both individuals has two. Each script resolves consoles once per synchronous scan and reads the shared busy marker once per scan; hidden ticks do no discovery. Mock operation counts establish work and bounded lifetimes, not browser CPU or latency gains. Toolkit is the more efficient choice when both capabilities are wanted.
-
-## Build and synchronized versions
-
-Edit [src/toolkit.js](../src/toolkit.js), not generated files. [tools/editions.json](../tools/editions.json) owns the version, repository URL, edition names, and feature selection. Feature blocks are removed during generation: excluded capability code is absent, rather than hidden behind runtime settings.
+Edit `src/toolkit.js` and its build-time fragments `src/settings.js`,
+`src/console-extras.js`, `src/catalog-model.js`, and `src/catalog-ui.js`.
+`tools/features.cjs` defines feature IDs, names, groups and Toolkit defaults;
+`tools/editions.json` owns the synchronized version and the two selections.
+Never hand-edit generated userscripts. Excluded utility/management capabilities
+are physically absent from Copy & Paste; disabling a toggle only stops runtime
+activity and does not remove code or revoke grants.
 
 ```sh
 node tools/build.cjs
@@ -40,8 +59,10 @@ node tools/build.cjs --check
 node tools/check.cjs
 node tools/fetch-xterm.cjs
 node --test --test-isolation=none tests/*.test.cjs
+node tools/browser-smoke.cjs
 ```
 
-Toolkit owns the complete release version. Change the manifest once and regenerate **all** editions on every release, including editions with unchanged runtime. The manager probe's version header is stamped too. Never version/release an edition independently. CI rejects stale files and version mismatches; tests check capability boundaries. Record runtime identity separately from version when describing changes and acceptance.
-
-Future accepted features follow the same pattern: shared implementation, an optional standalone edition, and inclusion in Toolkit. Adding an edition does not authorize a feature, release, or compatibility claim.
+The optional browser fixture takes a Chrome/Edge executable path as its first
+argument and uses an isolated headless profile with synthetic PVE data. It is not
+live Proxmox or userscript-manager acceptance. See [Testing](TESTING.md) and the
+[live campaign](CATALOG-ACCEPTANCE.md).

@@ -1,14 +1,18 @@
 // ==UserScript==
 // @name         Proxmox Toolkit - manager probe
 // @namespace    homelab
-// @version      0.6.0-dev.1
+// @version      0.7.0
 // @description  Temporary capability and integration checks. No UI changes, clipboard calls, or terminal text.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
-// @grant        GM_info
 // @grant        GM.setClipboard
-// @grant        GM.info
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
+// @grant        GM.getValue
+// @grant        GM.setValue
+// @grant        GM.registerMenuCommand
 // @run-at       document-idle
 // @noframes
 // @license      MIT
