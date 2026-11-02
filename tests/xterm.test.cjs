@@ -75,3 +75,32 @@ test('installed copy handler works with the real xterm buffer', async () => {
         assert.deepEqual(h.copied, ['abcd界\nnext']);
     });
 });
+
+test('renderer-free xterm emits bracketed paste data before its missing-textarea error; Enter is separate', async () => {
+    await fixture({}, async term => {
+        await write(term, '\x1b[?2004h');
+        const sent = [];
+        term.onData(data => sent.push(data));
+        assert.equal(term.modes.bracketedPasteMode, true);
+        // paste() emits onData before clearing the textarea. This fixture has no
+        // renderer/textarea, so assert that specific limitation rather than
+        // patching private internals or claiming browser paste acceptance.
+        assert.throws(() => term.paste('echo one\necho two'), /Cannot set properties of undefined/);
+        term.input('\r');
+        assert.deepEqual(sent, ['\x1b[200~echo one\recho two\x1b[201~', '\r']);
+    });
+});
+
+test('real-xterm partial paste failure is not followed by Enter or an automatic retry', async () => {
+    await fixture({}, async term => {
+        await write(term, '\x1b[?2004h');
+        const sent = [];
+        term.onData(data => sent.push(data));
+        const view = consoleView();
+        view.frame.contentWindow.term = term;
+        const h = host({ views: [view], readClipboard: () => Promise.resolve('echo toolkit\n') });
+        await h.paste();
+        assert.deepEqual(sent, ['\x1b[200~echo toolkit\x1b[201~']);
+        assert.match(h.created[1].tooltip, /partially sent; inspect console/);
+    });
+});

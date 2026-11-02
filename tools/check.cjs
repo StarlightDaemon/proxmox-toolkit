@@ -6,8 +6,10 @@ const { createHash } = require('node:crypto');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'proxmox-copy-console.user.js'), 'utf8');
 const version = source.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
-assert.equal(version, '0.4.1', 'Update version checks intentionally when preparing a release');
-assert.ok(Buffer.byteLength(source) <= 20 * 1024, 'Review runtime growth before raising the 20 KiB budget');
+assert.equal(version, '0.5.0-rc.1', 'Update version checks intentionally when preparing a release');
+assert.match(source, /^\/\/ @name\s+Proxmox Toolkit$/m, 'Development product name');
+// Size/hash identify the candidate; efficiency is reviewed through runtime work
+// and resource lifetimes, without a source-size threshold (see DECISIONS.md).
 assert.deepEqual([...source.matchAll(/^\/\/ @grant\s+(\S+)$/gm)].map(m => m[1]).sort(),
     ['GM.info', 'GM.setClipboard', 'GM_info', 'GM_setClipboard', 'unsafeWindow']);
 assert.ok(!/^\/\/ @(?:require|resource|connect|updateURL|downloadURL)\b/m.test(source), 'No implicit runtime dependencies or update channel');
@@ -41,5 +43,5 @@ inspect(root);
 for (const name of ['README.md', 'CHANGELOG.md', 'docs/DESIGN.md', 'docs/TESTING.md']) {
     assert.ok(fs.readFileSync(path.join(root, name), 'utf8').includes(version), `${name} must identify the current version`);
 }
-console.log(`Checked ${scripts} JavaScript files, ${links} local Markdown links, metadata, version, and size budget.`);
+console.log(`Checked ${scripts} JavaScript files, ${links} local Markdown links, metadata, and version.`);
 console.log(`Userscript: ${version}, ${Buffer.byteLength(source)} bytes, SHA-256 ${createHash('sha256').update(source).digest('hex')}`);

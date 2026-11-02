@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Proxmox Copy Console
+// @name         Proxmox Toolkit
 // @namespace    homelab
-// @version      0.4.1
-// @description  Copy retained Proxmox node Shell and LXC console text with one native button.
+// @version      0.5.0-rc.1
+// @description  Release candidate: copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
 // @grant        GM_info
@@ -19,15 +19,20 @@
 (() => {
     'use strict';
 
-    const TAG = '[PVE Copy Console]';
+    const TAG = '[Proxmox Toolkit]';
     const SCAN_INTERVAL_MS = 500;
     const FEEDBACK_DURATION_MS = 1500;
     const CLIPBOARD_TIMEOUT_MS = 5000;
+    const PASTE_TIMEOUT_MS = 15000;
+    const MAX_PASTE_LENGTH = 65536;
     const COPY_ICON = 'fa fa-copy';
     const COPY_TOOLTIP = 'Copy the full retained console buffer to the clipboard';
+    const PASTE_TOOLTIP = 'Paste clipboard text, remove trailing line breaks, then send Enter to this console';
+    const PASTE_UNAVAILABLE = 'Paste unavailable: a connected console and browser clipboard reading are required';
     const UNAVAILABLE = 'Console unavailable or ambiguous';
     const controls = new Map();
     let clipboardPending = false;
+    let pendingPaste = null;
     let lastWarning = -Infinity;
 
     // Include globs vary between managers; validate the actual URL as well.
@@ -140,6 +145,72 @@
         return term ? { frame, term, toolbar } : null;
     }
 
+    function canReadClipboard() {
+        return typeof navigator !== 'undefined' &&
+            typeof navigator.clipboard?.readText === 'function' && !!navigator.userActivation;
+    }
+
+    function inputSession(state, current = resolveConsole(state.anchor)) {
+        const events = page.Ext?.GlobalEvents;
+        if (!current || current.toolbar !== state.toolbar ||
+            typeof events?.on !== 'function' || typeof events.un !== 'function' ||
+            typeof current.term.paste !== 'function' || typeof current.term.input !== 'function' ||
+            current.term.options?.disableStdin) return null;
+        for (const wrapped of [false, true]) {
+            try {
+                const win = current.frame.contentWindow;
+                const globals = wrapped ? win?.wrappedJSObject : win;
+                // Proxmox's connection state and socket are page integration points.
+                // A readable retained buffer alone does not establish a live session.
+                const socket = globals?.socket;
+                if (globals?.term !== current.term || typeof globals.states?.connected !== 'number' ||
+                    globals.state !== globals.states.connected || socket?.readyState !== 1) continue;
+                return { ...current, socket, href: win.location.href };
+            } catch { /* Initializing, disconnected, or inaccessible frame. */ }
+        }
+        return null;
+    }
+
+    function sameInputSession(operation, requireFocus = false, resolvedConsole) {
+        if (operation.cancelled || operation.state.button.destroyed || document.hidden ||
+            (requireFocus && !document.hasFocus()) || location.href !== operation.pageHref ||
+            Date.now() >= operation.deadline) return false;
+        const current = inputSession(operation.state, resolvedConsole);
+        const original = operation.current;
+        return !!current && current.frame === original.frame && current.term === original.term &&
+            current.socket === original.socket && current.href === original.href;
+    }
+
+    function cancelPaste() {
+        if (pendingPaste) {
+            pendingPaste.cancelled = true;
+            pendingPaste.cancel();
+        }
+    }
+
+    function validatePendingPaste(resolvedConsole) {
+        if (pendingPaste) {
+            try { if (!sameInputSession(pendingPaste, false, resolvedConsole)) cancelPaste(); } catch { cancelPaste(); }
+        }
+    }
+
+    function preparePaste(text, term) {
+        if (typeof text !== 'string' || !text.length) return { error: 'Clipboard has no text; nothing sent' };
+        if (text.length > MAX_PASTE_LENGTH) return { error: 'Clipboard exceeds 65,536 characters; nothing sent' };
+        // Preserve spaces/Unicode. Reject terminal control bytes and malformed UTF-16
+        // rather than silently changing commands or failing in Proxmox's UTF-8 encoder.
+        if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]/u.test(text) || !text.isWellFormed()) {
+            return { error: 'Clipboard contains unsupported control characters or Unicode; nothing sent' };
+        }
+        text = text.replace(/\r\n?/g, '\n').replace(/\n+$/u, '');
+        if (!text.trim()) return { error: 'Clipboard has no command text; nothing sent' };
+        if (/[\n\t]/u.test(text) && !(term.modes?.bracketedPasteMode === true &&
+            term.options?.ignoreBracketedPasteMode !== true)) {
+            return { error: 'Multiline text and tabs require bracketed paste mode; nothing sent' };
+        }
+        return { text };
+    }
+
     function extractBuffer(buffer, cols) {
         if (!buffer || typeof buffer.getLine !== 'function' ||
             !Number.isSafeInteger(buffer.length) || buffer.length < 0) return null;
@@ -226,15 +297,27 @@
         });
     }
 
-    function updateAvailability(state, available) {
+    function setTooltip(state, message) {
+        if (state.lastTooltip === message) return;
+        state.button.setTooltip(message);
+        state.lastTooltip = message;
+    }
+
+    function updateAvailability(state, available, current) {
         state.available = available;
         const button = state.button;
         if (button.destroyed) return;
         // Keep the initiating button focusable while pending; the handler's
         // global guard blocks repeat writes without losing keyboard focus.
-        button.setDisabled(!available || (clipboardPending && !state.busy));
+        const disabled = !available || (clipboardPending && !state.busy);
+        if (button.disabled !== disabled) button.setDisabled(disabled);
         if (!state.feedbackTimer && !state.busy) {
-            button.setTooltip(available ? COPY_TOOLTIP : UNAVAILABLE);
+            setTooltip(state, available ? state.tooltip : state.unavailable);
+        }
+        if (state.paste) {
+            let ready = false;
+            try { ready = available && canReadClipboard() && !!inputSession(state.paste, current); } catch { /* Unavailable. */ }
+            updateAvailability(state.paste, ready);
         }
     }
 
@@ -243,13 +326,13 @@
         state.feedbackTimer = null;
         if (state.button.destroyed) return;
         state.button.setIconCls(icon);
-        state.button.setTooltip(message);
+        setTooltip(state, message);
         state.feedbackTimer = setTimeout(() => {
             state.feedbackTimer = null;
             if (state.button.destroyed) return;
             try {
-                state.button.setIconCls(COPY_ICON);
-                state.button.setTooltip(state.available ? COPY_TOOLTIP : UNAVAILABLE);
+                state.button.setIconCls(state.icon);
+                setTooltip(state, state.available ? state.tooltip : state.unavailable);
             } catch {
                 // ExtJS may have torn down the view during navigation.
             }
@@ -294,7 +377,7 @@
             state.feedbackTimer = null;
             for (const control of controls.values()) updateAvailability(control, control.available);
             state.button.setIconCls('fa fa-spinner');
-            state.button.setTooltip('Copying console buffer');
+            setTooltip(state, 'Copying console buffer');
             failure = 'Clipboard write failed';
             const status = await writeClipboard(result.text);
             if (status.timedOut) {
@@ -318,30 +401,112 @@
         }
     }
 
-    function removeControl(state) {
-        clearTimeout(state.feedbackTimer);
-        state.feedbackTimer = null;
-        controls.delete(state.toolbar);
-        if (!state.button.destroyed) state.button.destroy();
+    async function pasteAndExecute(state) {
+        if (clipboardPending || state.button.destroyed) return;
+        let operation, timer, hideEvents, hideHandler;
+        let failure = 'Paste unavailable; nothing sent';
+        try {
+            // A page-callable ExtJS callback is not itself proof of a user gesture.
+            if (!canReadClipboard() || !navigator.userActivation.isActive ||
+                document.hidden || !document.hasFocus()) {
+                feedback(state, 'Click Paste & Execute in the active tab; nothing sent', 'fa fa-exclamation-triangle');
+                return;
+            }
+            const current = inputSession(state);
+            if (!current) {
+                feedback(state, PASTE_UNAVAILABLE, 'fa fa-exclamation-triangle');
+                return;
+            }
+            const focusedElement = document.activeElement;
+            const cancelled = new Promise(resolve => {
+                operation = { state, current, pageHref: location.href,
+                    deadline: Date.now() + PASTE_TIMEOUT_MS, cancelled: false,
+                    cancel: () => resolve({ cancelled: true }) };
+            });
+            pendingPaste = operation;
+            // Latch even a hide/show between polling ticks. Ignore page arguments;
+            // an unrelated component hiding leaves the captured session valid.
+            hideHandler = pageOptions({ handler: () => validatePendingPaste() }).handler;
+            hideEvents = page.Ext.GlobalEvents;
+            hideEvents.on('hide', hideHandler);
+            clipboardPending = true;
+            state.busy = true;
+            clearTimeout(state.feedbackTimer);
+            state.feedbackTimer = null;
+            for (const control of controls.values()) updateAvailability(control, control.available);
+            state.button.setIconCls('fa fa-spinner');
+            setTooltip(state, 'Reading clipboard; approve the browser Paste prompt if shown');
+            timer = setTimeout(cancelPaste, PASTE_TIMEOUT_MS);
+            failure = 'Clipboard read failed or permission denied; nothing sent';
+            // Start the read in the activation call stack. Never read during polling,
+            // retry through another API, or export the clipboard promise to the page.
+            const reading = Promise.resolve(navigator.clipboard.readText()).then(text => ({ text }));
+            const result = await Promise.race([reading, cancelled]);
+            if (result.cancelled || !sameInputSession(operation, true)) {
+                feedback(state, 'Paste cancelled or expired; nothing sent', 'fa fa-exclamation-triangle');
+                return;
+            }
+            const prepared = preparePaste(result.text, current.term);
+            if (prepared.error) {
+                feedback(state, prepared.error, 'fa fa-exclamation-triangle');
+                return;
+            }
+            // There is no await between the final checks, paste, and Enter. Once
+            // dispatch starts, failure is uncertainty: never automatically retry.
+            failure = 'Input may be partially sent; inspect console before retrying';
+            current.term.paste(prepared.text);
+            if (!sameInputSession(operation, true)) {
+                feedback(state, 'Session changed after paste; Enter not sent', 'fa fa-exclamation-triangle');
+                return;
+            }
+            current.term.input('\r');
+            feedback(state, 'Text and Enter sent; command result is shown in the console', 'fa fa-check');
+            restoreFocus(state, current, focusedElement);
+        } catch {
+            try { feedback(state, failure, 'fa fa-exclamation-triangle'); } catch { /* Destroyed UI. */ }
+        } finally {
+            clearTimeout(timer);
+            try { if (hideEvents && hideHandler) hideEvents.un('hide', hideHandler); } catch { /* Page teardown. */ }
+            if (pendingPaste === operation) pendingPaste = null;
+            state.busy = false;
+            clipboardPending = false;
+            installForCurrentConsole();
+        }
     }
 
-    function createControl(Ext, anchor, toolbar) {
-        const state = { anchor, toolbar, button: null, available: true, busy: false, feedbackTimer: null };
+    function removeControl(state) {
+        if (state.removing) return;
+        state.removing = true;
+        if (pendingPaste?.state === state.paste) cancelPaste();
+        if (controls.get(state.toolbar) === state) controls.delete(state.toolbar);
+        for (const control of [state, state.paste]) {
+            if (!control) continue;
+            clearTimeout(control.feedbackTimer);
+            control.feedbackTimer = null;
+            if (control.button && !control.button.destroyed && !control.button.destroying) control.button.destroy();
+        }
+    }
+
+    function createControl(Ext, anchor, toolbar, current) {
+        const state = { anchor, toolbar, icon: COPY_ICON, tooltip: COPY_TOOLTIP, unavailable: UNAVAILABLE };
+        state.paste = { anchor, toolbar, icon: 'fa fa-play', tooltip: PASTE_TOOLTIP, unavailable: PASTE_UNAVAILABLE, pasteAction: true };
         try {
-            state.button = Ext.create('Ext.button.Button', pageOptions({
-                text: 'Copy',
-                iconCls: COPY_ICON,
-                tooltip: COPY_TOOLTIP,
-                handler: () => copyConsole(state),
-            }));
+            for (const control of [state, state.paste]) {
+                control.button = Ext.create('Ext.button.Button', pageOptions({
+                    text: control.pasteAction ? 'Paste & Execute' : 'Copy',
+                    iconCls: control.icon,
+                    tooltip: control.tooltip,
+                    handler: () => control.pasteAction ? pasteAndExecute(control) : copyConsole(control),
+                }));
+                control.lastTooltip = control.tooltip;
+                control.button.on('destroy', pageOptions({ handler: () => removeControl(state) }).handler);
+            }
             state.button.pveCopyConsoleButton = true;
-            state.button.on('destroy', pageOptions({ handler: () => {
-                clearTimeout(state.feedbackTimer);
-                if (controls.get(toolbar) === state) controls.delete(toolbar);
-            } }).handler);
+            state.paste.button.pveToolkitPasteButton = true;
             toolbar.insert(toolbar.items.items.indexOf(anchor) + 1, state.button);
+            toolbar.insert(toolbar.items.items.indexOf(anchor) + 2, state.paste.button);
             controls.set(toolbar, state);
-            updateAvailability(state, true);
+            updateAvailability(state, true, current);
         } catch (error) {
             if (state.button) removeControl(state);
             throw error;
@@ -351,7 +516,14 @@
     }
 
     function installForCurrentConsole() {
-        if (document.hidden) return;
+        if (document.hidden) {
+            cancelPaste();
+            return;
+        }
+        // This snapshot lives for this synchronous scan only. Hide events and
+        // checks around input still resolve afresh; null fails closed if the
+        // captured anchor disappears or discovery cannot establish ownership.
+        let pendingConsole = null;
         try {
             const Ext = page.Ext;
             if (!page.PVE || !Ext?.ComponentQuery?.query || !Ext.create) return;
@@ -370,13 +542,14 @@
                         state = null;
                     }
                     const current = resolveConsole(anchor, anchors);
-                    if (state) updateAvailability(state, !!current);
+                    if (pendingPaste?.state.anchor === anchor) pendingConsole = current;
+                    if (state) updateAvailability(state, !!current, current);
                     else if (current) {
                         let existing = false;
                         for (const item of toolbar.items.items) {
                             if (!item.destroyed && item.pveCopyConsoleButton) { existing = true; break; }
                         }
-                        if (!existing) createControl(Ext, anchor, toolbar);
+                        if (!existing) createControl(Ext, anchor, toolbar, current);
                     }
                 } catch {
                     const state = controls.get(toolbar);
@@ -385,19 +558,24 @@
                 }
             }
             for (const state of controls.values()) {
-                if (state.toolbar.destroyed || state.anchor.destroyed || state.button.destroyed) removeControl(state);
+                if (state.toolbar.destroyed || state.anchor.destroyed || state.button.destroyed || state.paste.button.destroyed) removeControl(state);
                 else if (!seen.has(state.toolbar)) updateAvailability(state, false);
             }
         } catch {
+            pendingConsole = null;
             for (const state of controls.values()) {
                 try { updateAvailability(state, false); } catch { /* Destroyed UI. */ }
             }
             warnInstall();
+        } finally {
+            validatePendingPaste(pendingConsole);
         }
     }
 
     // Periodic recovery avoids private router hooks and terminal-output observers.
     setInterval(installForCurrentConsole, SCAN_INTERVAL_MS);
     document.addEventListener('visibilitychange', installForCurrentConsole);
+    window.addEventListener('hashchange', cancelPaste);
+    window.addEventListener('pagehide', cancelPaste);
     installForCurrentConsole();
 })();

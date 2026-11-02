@@ -4,6 +4,75 @@ This file records durable decisions by version. Historical sections preserve the
 
 ## Product scope and simplicity
 
+The maintainer approved **Proxmox Toolkit** and Paste & Execute development on
+2026-09-23. The 0.5.0-rc.1 release candidate adds that console action alongside
+Copy in one userscript. Firefox + Violentmonkey is the primary development and
+acceptance target. The broader name permits modest future additions, but no
+other feature is accepted by implication. Chrome/other-manager qualification
+requires its own evidence; prior copy-only passes do not qualify new input.
+
+On 2026-11-01 the maintainer reported extensive successful testing of
+0.5.0-dev.1 and authorized pushing a release candidate with documentation.
+Promote it to 0.5.0-rc.1 by version/description metadata only. Preserve the tested
+runtime. Record the report as practical workflow acceptance in Firefox 159.0
+(64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and
+per-scenario observations were not supplied.
+Candidate branch publication is authorized; stable promotion, tags/GitHub
+Releases, and remote renaming remain separate.
+
+Keep one readable installable file, no runtime dependencies or build step, and
+shared console targeting/lifecycle. On 2026-10-15 the maintainer removed the
+fixed source-size ceiling and made efficiency the primary structural criterion.
+Review repeated discovery and DOM work, idle behavior, resource lifetimes, and
+the value of added complexity. Prefer readable shared logic; keep correctness
+and input safeguards. Support performance claims with operation counts or
+browser profiling. Report source bytes/hash for candidate identity without a
+size threshold. Avoid speculative frameworks and minification for cosmetic
+size reductions. Remote renaming/publication remains separate.
+
+The October 16 efficiency review confirmed the checker has no source-size gate.
+Reuse resolved ownership only within one synchronous scan, including pending
+paste validation. Keep fresh session resolution around input and on hide events;
+do not trade those checks for fewer calls. Timer/listener lifetimes and hidden
+page behavior are covered by operation-count regressions; browser timing claims
+require browser measurements. The separate clipboard-input length bound is an
+input safeguard, not a source-size policy.
+
+### Accepted for unreleased Toolkit development
+
+- **Use the existing console session.** The new action uses public xterm paste
+  and input APIs. Proxmox's page-level connection state and open socket identify
+  a usable session; never treat a retained buffer as proof of connection. Do not
+  create an SSH session, network API, or alternate transport for this feature.
+- **Read only on activation.** Native `navigator.clipboard.readText()` runs in
+  the userscript activation call stack with its receiver intact. Require browser
+  user activation and an active document; no background reads, history, new GM
+  grants, permission bypass, or native clipboard-write fallback. Firefox's own
+  Paste prompt may appear. One-click behavior is a live acceptance question.
+- **Cancel stale intent.** Keep one read/write action pending. For input, capture
+  the console frame, terminal, socket, loaded URL, and top-page URL; revalidate
+  after the clipboard read and before Enter. Navigation/hiding/teardown and
+  observed session invalidation cancel the operation. Fifteen seconds expires
+  the operation, not the browser clipboard request; late results cannot send.
+- **Define paste plus Enter.** Normalize CRLF/CR, remove trailing line breaks,
+  preserve other text, call `paste(text)`, then `input('\r')` separately. Require
+  effective bracketed-paste mode for multiline text or tabs. Refuse empty or
+  whitespace-only content, other C0/C1/DEL controls, malformed UTF-16, and more
+  than 65,536 UTF-16 code units. These are initial candidate bounds. No routine
+  confirmation dialog, shell quoting/rewriting, or clearing existing input.
+- **Report dispatch honestly.** Success means text and Enter were sent through
+  xterm, not that the shell command succeeded. Partial input cannot be undone;
+  never retry automatically. Keep clipboard/command content out of logs/tooltips.
+- **Migrate the name explicitly.** Candidate @name is Proxmox Toolkit; keep the
+  existing namespace and filename during development. Users replace their entry
+  or disable the old one before enabling a separate candidate. The existing Copy
+  marker prevents two active installations from creating competing toolbars.
+
+### Historical scope through 0.4.1
+
+The following copying-only scope and 20 KiB ceiling describe the stable releases;
+the explicit Toolkit decisions above supersede them for unreleased development.
+
 The product has one job: copy the intended Proxmox console's retained text accurately through one native Copy button. Firefox + Violentmonkey is the maintainer's primary daily homelab combination; Chrome compatibility remains required.
 
 Accept an addition only when it solves a demonstrated problem in that copying workflow and its benefit justifies the code, permissions, interface, and ongoing maintenance it adds. Prioritize correctness, reliable targeting, useful failure feedback, and small compatibility fixes. Optional copying features need evidence of recurring use; a plausible idea alone does not put one on the roadmap.

@@ -2,11 +2,13 @@
 
 ## Repository purpose
 
-`StarlightDaemon/proxmox-copy-console` contains the Proxmox Copy Console userscript and its project documentation.
+`StarlightDaemon/proxmox-copy-console` contains Proxmox Toolkit development and
+the stable Proxmox Copy Console lineage. The maintainer approved the Toolkit
+name and Paste & Execute development; remote renaming/publication is separate.
 
 ## Authoritative project documents
 
-- `proxmox-copy-console.user.js` — stable 0.4.1 on main, preserving the live-tested 0.4.1-dev.1 runtime after maintainer-approved promotion. Preserve the evidence limits in Testing.
+- `proxmox-copy-console.user.js` — Toolkit 0.5.0-rc.1 release candidate, preserving the runtime of maintainer-tested 0.5.0-dev.1. Stable 0.4.1 on main preserves the live-tested 0.4.1-dev.1 runtime. Preserve the evidence limits in Testing; the candidate's practical acceptance does not establish the full compatibility matrix.
 - `README.md` — user-facing project overview.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.
@@ -15,7 +17,17 @@
 - `docs/DESIGN.md` — implementation design represented by the source.
 - `docs/TESTING.md` — current compatibility, verification scenarios, troubleshooting, and evidence boundaries.
 - `docs/OPEN-LOOPS.md` — current follow-up register and completion criteria; completed handoffs are archived.
+- `docs/TOOLKIT-DEVELOPMENT.md` — ordered development record and resume checkpoint. Update after bounded work waves; Firefox + Violentmonkey is the primary development target.
 - `LICENSE` — licensing terms.
+
+## Efficiency
+
+Efficiency is a primary design requirement. There is no fixed source-size limit.
+Review repeated discovery and DOM work, idle behavior, and timer/listener
+lifetimes. Prefer readable shared logic and justified complexity; preserve
+correctness and input safeguards. Use operation counts or browser profiling to
+support efficiency claims. Source bytes and hashes identify candidates rather
+than determine whether they are acceptable.
 
 ## Mutation discipline
 

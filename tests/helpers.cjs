@@ -18,7 +18,9 @@ function row(text, isWrapped = false) {
 }
 function terminal(text = 'retained output') {
     const normal = buffer([row(text)]);
-    return { buffer: { normal, active: normal, alternate: buffer([]) }, focused: 0, focus() { this.focused++; } };
+    return { buffer: { normal, active: normal, alternate: buffer([]) }, focused: 0, focus() { this.focused++; },
+        options: {}, modes: { bracketedPasteMode: true }, sent: [],
+        paste(text) { this.sent.push({ paste: text }); }, input(text) { this.sent.push({ input: text }); } };
 }
 function element(extra = {}) {
     return {
@@ -32,7 +34,8 @@ function element(extra = {}) {
 function consoleView({ type = 'shell', node = 'pve', vmid = 101, text, label = 'Shell' } = {}) {
     const term = terminal(text);
     const url = `https://pve.example:8006/?console=${type}&node=${node}&vmid=${vmid}&xtermjs=1`;
-    const frame = element({ contentWindow: { term, location: { href: url } } });
+    const frame = element({ contentWindow: { term, location: { href: url },
+        states: { connected: 3 }, state: 3, socket: { readyState: 1 } } });
     const frames = [frame];
     const root = element({ querySelectorAll: () => frames });
     const owner = { getEl: () => ({ dom: root }) };
@@ -48,11 +51,11 @@ function consoleView({ type = 'shell', node = 'pve', vmid = 101, text, label = '
     return { anchor, toolbar, owner, root, frame, frames, term };
 }
 function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = false, hidden = false, create, hasPVE = true,
-    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow' } = {}) {
+    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow', readClipboard } = {}) {
     let now = 0, nextId = 0;
     const timers = new Map(), intervals = [], events = {}, copied = [], created = [], warnings = [];
     const anchors = views.map(v => v.anchor);
-    const window = {};
+    const window = { addEventListener(name, fn) { events[name] = fn; } };
     window.self = window;
     window.top = subframe ? {} : window;
     const document = {
@@ -62,6 +65,12 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
     };
     const Ext = {
         queries: 0,
+        GlobalEvents: {
+            listeners: new Set(),
+            on(name, fn) { if (name !== 'hide') throw Error('Unexpected event'); this.listeners.add(fn); },
+            un(name, fn) { if (name !== 'hide') throw Error('Unexpected event'); this.listeners.delete(fn); },
+            fireHide(component) { for (const fn of [...this.listeners]) fn(component); },
+        },
         ComponentQuery: { query(selector) {
             if (selector !== 'pveConsoleButton') throw new Error('Unexpected broad query');
             Ext.queries++;
@@ -72,16 +81,20 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
             const el = element();
             const listeners = {};
             const b = {
-                ...config, el,
+                ...config, el, destroyCalls: 0,
                 on(name, fn) { listeners[name] = fn; },
                 getEl: () => ({ dom: el }),
                 setDisabled(v) { this.disabled = v; },
                 setIconCls(v) { this.iconCls = v; },
                 setTooltip(v) { this.tooltip = v; },
                 destroy() {
-                    this.destroyed = true;
+                    this.destroyCalls++;
+                    this.destroying = true;
                     if (this.toolbar) this.toolbar.items.items = this.toolbar.items.items.filter(item => item !== this);
+                    // ExtJS emits destroy before Ext.Base sets destroyed.
                     listeners.destroy?.();
+                    this.destroying = false;
+                    this.destroyed = true;
                 },
             };
             created.push(b);
@@ -90,6 +103,8 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
     };
     const context = {
         window, document, location: new URL(url), URL,
+        navigator: { clipboard: { readText: readClipboard || (() => Promise.resolve('echo toolkit')) },
+            userActivation: { isActive: true } },
         unsafeWindow: { Ext, PVE: hasPVE ? {} : undefined },
         getComputedStyle: el => ({ display: el.display || 'block', visibility: el.visibility || 'visible' }),
         GM_info: manager ? { scriptHandler: manager } : undefined,
@@ -118,7 +133,8 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
                 if (timer.at <= now && timers.delete(id)) timer.fn();
             }
         },
-        click(index = 0) { return created[index].handler(); },
+        click(index = 0) { return created.filter(button => button.text === 'Copy')[index].handler(); },
+        paste(index = 0) { return created.filter(button => button.text === 'Paste & Execute')[index].handler(); },
     };
 }
 

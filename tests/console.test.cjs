@@ -14,17 +14,104 @@ test('localized node and LXC controls each copy their own console', async () => 
     const node = consoleView({ text: 'node', label: 'Terminal local' });
     const lxc = consoleView({ type: 'lxc', text: 'guest', label: 'Konsole' });
     const h = host({ views: [node, lxc] });
-    assert.equal(h.created.length, 2);
+    assert.equal(h.created.length, 4);
     assert.equal(node.toolbar.items.items[1], h.created[0]);
     await h.click(0);
     await h.click(1);
     assert.deepEqual(h.copied, ['node', 'guest']);
 });
-test('repeated scans create one ordinary stable-text button', () => {
+test('repeated scans create one ordinary stable-text pair of buttons', () => {
     const h = host({ views: [consoleView()] });
     for (let i = 0; i < 10; i++) h.scan();
-    assert.equal(h.created.length, 1);
+    assert.equal(h.created.length, 2);
     assert.equal(h.created[0].text, 'Copy');
+    assert.equal(h.created[1].text, 'Paste & Execute');
+});
+test('external destruction cleans up each button once using ExtJS event ordering', () => {
+    for (const index of [0, 1]) {
+        const h = host({ views: [consoleView()] });
+        h.created[index].destroy();
+        assert.deepEqual(h.created.map(button => button.destroyCalls), [1, 1]);
+        assert.equal(h.api.controls.size, 0);
+        h.scan();
+        assert.equal(h.created.length, 4, 'a new pair can be installed after teardown');
+    }
+});
+test('idle discovery resolves each console once and avoids unchanged button updates', () => {
+    const views = [consoleView(), consoleView({ node: 'other' })];
+    let searches = 0, geometry = 0, disabled = 0, tooltips = 0;
+    for (const view of views) {
+        view.root.querySelectorAll = () => { searches++; return view.frames; };
+        const rect = view.frame.getBoundingClientRect;
+        view.frame.getBoundingClientRect = function() { geometry++; return rect.call(this); };
+    }
+    const h = host({ views });
+    for (const button of h.created) {
+        const disable = button.setDisabled, tooltip = button.setTooltip;
+        button.setDisabled = function(value) { disabled++; disable.call(this, value); };
+        button.setTooltip = function(value) { tooltips++; tooltip.call(this, value); };
+    }
+    const queries = h.Ext.queries;
+    searches = geometry = 0;
+    for (let i = 0; i < 100; i++) h.scan();
+    assert.equal(h.Ext.queries - queries, 100);
+    assert.equal(searches, 200);
+    assert.equal(geometry, 200);
+    assert.equal(disabled, 0);
+    assert.equal(tooltips, 0);
+    views[0].frame.visible = false;
+    h.scan();
+    assert.equal(h.created[0].disabled, true);
+    assert.equal(h.created[1].disabled, true);
+    views[0].frame.visible = true;
+    h.scan();
+    assert.equal(h.created[0].disabled, false);
+    assert.equal(h.created[1].disabled, false);
+});
+
+test('pending paste shares polling discovery without adding queries, DOM reads, or timers', async () => {
+    const views = [consoleView(), consoleView({ node: 'other' })];
+    let searches = 0, geometry = 0, styles = 0, resolve;
+    for (const view of views) {
+        view.root.querySelectorAll = () => { searches++; return view.frames; };
+        const rect = view.frame.getBoundingClientRect;
+        view.frame.getBoundingClientRect = function() { geometry++; return rect.call(this); };
+    }
+    const h = host({ views, readClipboard: () => new Promise(done => { resolve = done; }) });
+    const computedStyle = h.context.getComputedStyle;
+    h.context.getComputedStyle = element => { styles++; return computedStyle(element); };
+    const pending = h.paste();
+    const queries = h.Ext.queries;
+    searches = geometry = styles = 0;
+    for (let i = 0; i < 100; i++) h.scan();
+    assert.deepEqual({ queries: h.Ext.queries - queries, searches, geometry, styles },
+        { queries: 100, searches: 200, geometry: 200, styles: 200 });
+    assert.equal(h.intervals.length, 1);
+    assert.equal(h.intervals[0].ms, 500);
+    assert.equal(h.timers.size, 1, 'one paste watchdog, no timer per scan');
+    assert.equal(h.Ext.GlobalEvents.listeners.size, 1, 'one pending hide listener');
+    resolve('echo toolkit');
+    await pending;
+    assert.deepEqual(views[0].term.sent, [{ paste: 'echo toolkit' }, { input: '\r' }]);
+    assert.equal(h.Ext.GlobalEvents.listeners.size, 0);
+    assert.equal(h.timers.size, 1, 'only feedback remains after completion');
+    h.advance(1500);
+    assert.equal(h.timers.size, 0);
+});
+
+test('hidden-page polling does no component or frame discovery', () => {
+    const view = consoleView();
+    const h = host({ views: [view] });
+    const queries = h.Ext.queries;
+    let searches = 0;
+    view.root.querySelectorAll = () => { searches++; return view.frames; };
+    h.document.hidden = true;
+    for (let i = 0; i < 100; i++) h.scan();
+    assert.equal(h.Ext.queries, queries);
+    assert.equal(searches, 0);
+    assert.equal(h.timers.size, 0);
+    assert.equal(h.Ext.GlobalEvents.listeners.size, 0);
+    assert.equal(h.intervals.length, 1, 'page-lifetime recovery interval stays bounded');
 });
 test('another script installation marker prevents duplicates', () => {
     const v = consoleView();
@@ -37,7 +124,7 @@ test('unrelated controls cannot borrow a frame outside their owner', async () =>
     const actual = consoleView({ text: 'correct' });
     const h = host({ views: [empty, actual] });
     assert.equal(empty.toolbar.items.items.length, 1);
-    assert.equal(h.created.length, 1);
+    assert.equal(h.created.length, 2);
     await h.click();
     assert.deepEqual(h.copied, ['correct']);
 });
@@ -147,7 +234,7 @@ test('idle scans never read buffer rows and hidden pages do not discover compone
     assert.equal(h.Ext.queries, 0);
     h.document.hidden = false;
     h.events.visibilitychange();
-    assert.equal(h.created.length, 1);
+    assert.equal(h.created.length, 2);
     h.scan();
     assert.equal(h.warnings.length, 0);
 });
@@ -231,7 +318,7 @@ test('Tampermonkey success waits for its callback; no duplicate write during pen
     callback();
     await pending;
     assert.match(h.created[0].tooltip, /^Copied /);
-    assert.equal(h.created[1].disabled, false);
+    assert.equal(h.created[2].disabled, false);
 });
 test('promise-returning legacy APIs wait for completion', async () => {
     let complete;

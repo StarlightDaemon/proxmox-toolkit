@@ -3,8 +3,9 @@
 For installation and everyday use, start with the [project README](../README.md).
 
 - [Testing](TESTING.md) — supported targets, recorded results, local checks, and troubleshooting.
-- [Design](DESIGN.md) — how the current script finds consoles, extracts text, and writes the clipboard.
+- [Design](DESIGN.md) — console ownership, copying, clipboard reading, and input-session cancellation in the Toolkit release candidate.
 - [Open loops](OPEN-LOOPS.md) — remaining evidence gaps and conditional follow-ups.
+- [Toolkit development record](TOOLKIT-DEVELOPMENT.md) — accepted scope, ordered work record, release-candidate preparation, and earlier checkpoints.
 
 [Decisions](../DECISIONS.md) records scope and rationale; the [changelog](../CHANGELOG.md) records versions.
 

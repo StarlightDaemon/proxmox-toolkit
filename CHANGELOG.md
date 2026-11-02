@@ -1,5 +1,49 @@
 # Changelog
 
+## 0.5.0-rc.1 — 2026-11-01
+
+- Promote the unchanged 0.5.0-dev.1 runtime to a release candidate after the
+  maintainer reported extensive successful live testing and authorized a push.
+  Change only userscript version/description metadata; preserve permissions,
+  input safeguards, console targeting, and Copy behavior.
+- Align candidate installation, design, decisions, test evidence, and follow-up
+  documentation. Record the practical acceptance separately from automated
+  tests. The reported environment is Firefox 159.0 (64-bit), Violentmonkey
+  2.50.0, and Windows 11; Proxmox/package versions and per-scenario results
+  were not supplied.
+- Pass all 180 local tests, source/metadata/local-link checks, cached xterm
+  fixture integrity verification, and whitespace checks under Node.js 24.18.0.
+- Prepare the candidate on `codex/toolkit-paste-execute`. Stable 0.4.1 and its
+  historical evidence remain unchanged; a main-branch promotion, tag, or GitHub
+  Release is separate from this candidate branch push.
+
+## 0.5.0-dev.1 — Unreleased Proxmox Toolkit candidate
+
+- Adopt the maintainer-approved Proxmox Toolkit name; keep the repository URL,
+  userscript filename, namespace, and existing grants during development.
+- Add native Paste & Execute beside Copy for embedded node Shell/LXC consoles.
+  Read clipboard text on activation, use the existing connected terminal, and
+  paste followed by a separate Enter. Remove trailing line breaks; require
+  bracketed-paste mode for multiline text/tabs; refuse unsupported input.
+- Cancel pending input on expiry, navigation, teardown, or session changes.
+  Serialize clipboard actions and never retry a submission automatically.
+- Share paired toolbar cleanup and fixed feedback without changing Copy's
+  extraction/write policy.
+- Apply audit fixes: avoid reentrant ExtJS button destruction, share console
+  discovery within each idle scan, centralize action presentation, and skip
+  unchanged button updates. Cancel pending paste on observed ExtJS console
+  hiding even if it returns between scans; release the temporary hide listener.
+- Replace the fixed source-size ceiling with efficiency-focused review of
+  repeated work, resource lifetimes, and justified complexity. Retain byte/hash
+  reporting for candidate identity.
+- Extend per-scan discovery reuse to pending-paste validation. Preserve fresh
+  resolution after clipboard reading, after pasting, and on hide events. Add
+  measured pending/hidden scan coverage and fail-closed discovery regressions.
+- Add input/session/cancellation regressions and a documented name-migration,
+  rollback, and live acceptance procedure. Firefox + Violentmonkey is primary.
+  Live clipboard/Proxmox acceptance was pending at this development checkpoint;
+  see 0.5.0-rc.1 for the subsequent maintainer report. 0.4.1 remains stable.
+
 ## 0.4.1 — 2026-09-19
 
 - Preserve the runtime of live-tested `0.4.1-dev.1` at `6d803b0946af66c021bc9999cfdce292de750120`; only userscript version/description metadata changes for promotion.
