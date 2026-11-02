@@ -37,9 +37,19 @@ Local verification completed with Node.js 24.18.0:
 - `git diff --check` passes. Logs and pre-promotion artifacts are retained under
   ignored `.cache/release-0.7.0`.
 
-Publication target is main plus tag/release v0.7.0, marked Latest with exactly
-the Toolkit and Copy & Paste userscripts attached. Remote CI, tag/release state
-and uploaded asset digests must be verified separately from the local results.
+Published release commit `4e75f1919af091da72a9b01335f52fc329c795f8` to main
+and annotated tag v0.7.0. The [v0.7.0 release](https://github.com/StarlightDaemon/proxmox-toolkit/releases/tag/v0.7.0)
+is regular (not draft/prerelease), and the Latest API returns v0.7.0 with exactly
+the Toolkit and Copy & Paste assets. Both GitHub-reported SHA-256 digests and
+sizes match the locally tested and committed artifacts. The annotated tag peels
+to the release commit. GitHub Checks passed on the
+[release branch](https://github.com/StarlightDaemon/proxmox-toolkit/actions/runs/41437719112),
+[main](https://github.com/StarlightDaemon/proxmox-toolkit/actions/runs/41437820821),
+and [tag](https://github.com/StarlightDaemon/proxmox-toolkit/actions/runs/41437820664).
+The old repository's releases/latest URL redirects 301 to the new repository,
+then 302 to v0.7.0 and 200. The active checkout is now main; this publication
+record is a documentation-only follow-up to the tagged release.
+
 The maintainer's practical acceptance does not close detailed clipboard/report,
 serial/proxy, migration, package-version or cross-browser checks. Open Loops now
 also records Tools-menu grouping and versioned handoff copies as proposals, and

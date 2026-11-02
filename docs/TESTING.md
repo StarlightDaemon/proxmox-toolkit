@@ -19,6 +19,13 @@ passes again; desktop/narrow screenshots were inspected. Its sandbox launch
 failed at Crashpad startup; an isolated elevated rerun passed. This does not add
 live Firefox, userscript-manager, OS clipboard or Proxmox API observations.
 
+GitHub [main CI](https://github.com/StarlightDaemon/proxmox-toolkit/actions/runs/41437820821)
+and [tag CI](https://github.com/StarlightDaemon/proxmox-toolkit/actions/runs/41437820664)
+passed for release commit `4e75f1919af091da72a9b01335f52fc329c795f8`.
+The Latest release API confirmed regular v0.7.0 and both uploaded asset digests
+matched the tested local files. This remote evidence is separate from the local
+browser fixture and maintainer live observations.
+
 Dev.8 implements the approved six-category layout, inline report launchers,
 wrapped navigation and paginated settings. All 375 Node tests pass. The real
 ExtJS fixture checks category ownership, every setting reachable through paging,
