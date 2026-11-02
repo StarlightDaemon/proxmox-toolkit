@@ -1,6 +1,8 @@
 # Proxmox Toolkit
 
 [![Version](https://img.shields.io/badge/version-0.7.0-0969da)](https://github.com/StarlightDaemon/proxmox-toolkit/releases/latest)
+[![Checks](https://github.com/StarlightDaemon/proxmox-toolkit/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/StarlightDaemon/proxmox-toolkit/actions/workflows/checks.yml)
+[![Platform: Proxmox VE](https://img.shields.io/badge/platform-Proxmox_VE-e57000)](docs/COMPATIBILITY.md)
 [![License](https://img.shields.io/badge/license-MIT-2da44e)](LICENSE)
 
 Native clipboard tools and configurable read-only management reports for Proxmox VE.
@@ -35,9 +37,7 @@ Click **Toolkit** immediately left of global **Documentation** to select feature
 
 ## Compatibility
 
-Targets current stable **Proxmox VE** through its main HTTPS interface on port **8006**, with embedded node Shell and LXC xterm consoles. The maintainer approved the tested 0.7.0-dev.8 runtime for stable 0.7.0. Firefox + Violentmonkey remains the primary target; detailed report, clipboard and cross-browser qualification remains tracked in [Testing](docs/TESTING.md).
-
-Standalone windows, noVNC/SPICE and PDM remote consoles are outside scope. Toolkit's VM serial and custom HTTPS origin/proxy options require explicit opt-in and environment-specific verification; see [catalog setup](docs/CATALOG.md).
+See the [compatibility guide](docs/COMPATIBILITY.md) for supported console types, browser and userscript-manager guidance, and optional integration requirements.
 
 ## Documentation
 

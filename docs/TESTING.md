@@ -1,5 +1,8 @@
 # Testing and compatibility
 
+For a concise overview of console scope and browser/manager guidance, see
+[Compatibility](COMPATIBILITY.md). This page retains detailed evidence and history.
+
 ## Current status
 
 **0.7.0 is the maintainer-approved stable promotion of 0.7.0-dev.8.** On

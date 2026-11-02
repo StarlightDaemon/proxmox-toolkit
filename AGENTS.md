@@ -24,6 +24,7 @@ userscripts are shipped. Preserve historical edition records as historical.
 - `README.md` — user-facing project overview.
 - `docs/INSTALL.md` — installation, updates, host restrictions, migration, and rollback.
 - `docs/USAGE.md` — action behavior, feedback, cancellation limits, and user troubleshooting.
+- `docs/COMPATIBILITY.md` — current console scope, browser/manager guidance and optional integration requirements.
 - `docs/CATALOG.md`, `docs/CATALOG-DEVELOPMENT.md`, and `docs/CATALOG-ACCEPTANCE.md` — configurable catalog usage, implementation record, and pending live campaign.
 - `docs/EDITIONS.md` — edition selection, migration, generation, coexistence, and synchronized release versions.
 - `CHANGELOG.md` — version/baseline record.

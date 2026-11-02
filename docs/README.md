@@ -4,7 +4,8 @@ For a quick introduction, start with the [project README](../README.md).
 
 - [Installation and updates](INSTALL.md) — manager setup, trusted-host rules, migration, rollback, and custom ports.
 - [Usage guide](USAGE.md) — stable and existing console actions, feedback, cancellation, and common problems.
-- [Editions and development](EDITIONS.md) — Toolkit and Copy & Paste candidates, migration, shared source, and synchronized versions.
+- [Compatibility](COMPATIBILITY.md) — console scope, browsers, userscript managers and optional integrations.
+- [Editions and development](EDITIONS.md) — Toolkit and Copy & Paste editions, migration, shared source, and synchronized versions.
 - [Catalog and settings](CATALOG.md) — all 22 toggles, reports, setup, data limits and migration.
 - [Catalog development](CATALOG-DEVELOPMENT.md) — current implementation plan and checkpoint.
 - [Catalog acceptance](CATALOG-ACCEPTANCE.md) — stable promotion, current hashes, local evidence and remaining detailed live checks.

@@ -1,6 +1,24 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-02: stable 0.7.0 promotion
+## Latest checkpoint — 2026-11-02: README and compatibility maintenance
+
+Verified origin StarlightDaemon/proxmox-toolkit, branch main, clean starting
+commit `01a616f8bb32b425145e0b9f72e5411b20a2c093` in the Toolkit checkout.
+At the maintainer's request, moved the README's compatibility detail into
+`docs/COMPATIBILITY.md`, leaving a short README link. The guide distinguishes
+embedded xterm targets, optional serial/proxy integration, graphical VM consoles,
+and separate console browser windows; Windows OS support is not excluded.
+Detailed acceptance and historical evidence remain in Testing.
+
+Added a live main-branch GitHub Checks badge and a Proxmox VE platform badge
+linking to the new guide. Updated the documentation index and instructions.
+This is documentation-only maintenance; stable 0.7.0 assets, runtime, tags and
+release are unchanged. `node tools/check.cjs` passes (27 JavaScript files,
+174 local Markdown links, metadata and version), and `git diff --check` passes.
+Both new badge URLs return valid SVG. No runtime suite was rerun locally for
+these documentation-only edits.
+
+## Previous checkpoint — 2026-11-02: stable 0.7.0 promotion
 
 The maintainer accepted the last tested 0.7.0-dev.8 runtime as the new stable and
 explicitly authorized pushing/publishing it. Work proceeds in the verified
