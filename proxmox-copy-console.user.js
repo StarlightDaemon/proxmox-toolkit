@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Proxmox Toolkit
 // @namespace    homelab
-// @version      0.5.0-rc.1
-// @description  Release candidate: copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles.
+// @version      0.5.0
+// @description  Copy console text or paste clipboard text and send Enter in Proxmox node/LXC consoles.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
 // @grant        GM_info

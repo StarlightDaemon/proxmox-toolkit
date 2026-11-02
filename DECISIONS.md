@@ -5,7 +5,7 @@ This file records durable decisions by version. Historical sections preserve the
 ## Product scope and simplicity
 
 The maintainer approved **Proxmox Toolkit** and Paste & Execute development on
-2026-09-23. The 0.5.0-rc.1 release candidate adds that console action alongside
+2026-09-23. Stable 0.5.0 adds that console action alongside
 Copy in one userscript. Firefox + Violentmonkey is the primary development and
 acceptance target. The broader name permits modest future additions, but no
 other feature is accepted by implication. Chrome/other-manager qualification
@@ -18,10 +18,16 @@ runtime. Record the report as practical workflow acceptance in Firefox 159.0
 (64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and
 per-scenario observations were not supplied.
 After the candidate branch push, the maintainer explicitly authorized promotion
-to main and availability under Releases. Publish v0.5.0-rc.1 as a prerelease
-with the installable userscript attached and keep 0.4.1 as the latest stable
-release. Preserve the tested runtime and its evidence limits. A final stable
-0.5.0 promotion and remote renaming remain separate.
+to main and availability under Releases. Version v0.5.0-rc.1 was published as
+a prerelease with the installable userscript attached; 0.4.1 remained Latest
+at that checkpoint.
+
+The maintainer then explicitly confirmed the current version works as intended
+within the accepted scope and approved stable **0.5.0**, removing the RC label.
+Preserve the tested runtime, change version/description metadata only, promote
+main, and publish v0.5.0 as a regular GitHub Release explicitly marked Latest.
+This promotion does not imply new browser/manager or scenario qualification.
+Preserve earlier tags/releases; remote renaming remains separate.
 
 Keep one readable installable file, no runtime dependencies or build step, and
 shared console targeting/lifecycle. On 2026-10-15 the maintainer removed the
@@ -41,7 +47,7 @@ page behavior are covered by operation-count regressions; browser timing claims
 require browser measurements. The separate clipboard-input length bound is an
 input safeguard, not a source-size policy.
 
-### Accepted for unreleased Toolkit development
+### Accepted for Toolkit 0.5.0
 
 - **Use the existing console session.** The new action uses public xterm paste
   and input APIs. Proxmox's page-level connection state and open socket identify
@@ -74,7 +80,7 @@ input safeguard, not a source-size policy.
 ### Historical scope through 0.4.1
 
 The following copying-only scope and 20 KiB ceiling describe the stable releases;
-the explicit Toolkit decisions above supersede them for unreleased development.
+the explicit Toolkit decisions above supersede them for Toolkit 0.5.0.
 
 The product has one job: copy the intended Proxmox console's retained text accurately through one native Copy button. Firefox + Violentmonkey is the maintainer's primary daily homelab combination; Chrome compatibility remains required.
 

@@ -6,8 +6,8 @@ const { createHash } = require('node:crypto');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'proxmox-copy-console.user.js'), 'utf8');
 const version = source.match(/^\/\/ @version\s+(\S+)$/m)?.[1];
-assert.equal(version, '0.5.0-rc.1', 'Update version checks intentionally when preparing a release');
-assert.match(source, /^\/\/ @name\s+Proxmox Toolkit$/m, 'Development product name');
+assert.equal(version, '0.5.0', 'Update version checks intentionally when preparing a release');
+assert.match(source, /^\/\/ @name\s+Proxmox Toolkit$/m, 'Product name');
 // Size/hash identify the candidate; efficiency is reviewed through runtime work
 // and resource lifetimes, without a source-size threshold (see DECISIONS.md).
 assert.deepEqual([...source.matchAll(/^\/\/ @grant\s+(\S+)$/gm)].map(m => m[1]).sort(),

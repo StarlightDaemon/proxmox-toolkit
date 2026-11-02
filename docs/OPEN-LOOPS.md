@@ -1,11 +1,11 @@
 # Open loops
 
-Stable 0.4.1 is released with reported copy-only practical passes in the four
-primary browser/manager combinations. The maintainer subsequently authorized
-**Proxmox Toolkit** and Paste & Execute development, then reported successful
-live testing of 0.5.0-dev.1 on 2026-11-01 and authorized pushing 0.5.0-rc.1,
-followed by explicit main promotion and GitHub prerelease publication approval.
-[Testing](TESTING.md) separates historical evidence from candidate acceptance.
+Stable **Proxmox Toolkit 0.5.0** preserves the maintainer-tested 0.5.0-dev.1 /
+0.5.0-rc.1 runtime after explicit stable promotion approval on 2026-11-01.
+The reported Toolkit environment is Firefox 159.0 (64-bit), Violentmonkey
+2.50.0, and Windows 11. Earlier 0.4.1 copy-only reports cover four primary
+browser/manager combinations; they do not qualify Toolkit input elsewhere.
+[Testing](TESTING.md) separates historical, automated, and live evidence.
 [Decisions](../DECISIONS.md#product-scope-and-simplicity) governs additions.
 
 ## Remaining and conditional work
@@ -14,7 +14,6 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
-| OL-11 | Practical acceptance received; main/prerelease authorized | The maintainer reports extensive successful live testing of 0.5.0-dev.1 and authorizes 0.5.0-rc.1 on main and as a GitHub prerelease after the candidate branch push. Preserve the tested runtime; promotion changes version/description metadata only. See the [current checkpoint](TOOLKIT-DEVELOPMENT.md) and [evidence limits](TESTING.md#maintainer-reported-live-acceptance--2026-11-01). The reported environment is Firefox 159.0 (64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and per-scenario results were not supplied. Detailed Firefox + Violentmonkey qualification, other-manager evidence, and stable promotion remain separate follow-ups; do not infer individual passes from the broad acceptance report. |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |
 | OL-05 | Package evidence pending | Record installed console package versions and compare with the pinned xterm fixture. Add or refresh a fixture only when an observed package/API difference warrants it; close with comparison and relevant regression evidence. |
@@ -25,8 +24,14 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 ## Completed
 
+- **OL-11:** Paste & Execute implementation, local review, maintainer practical
+  acceptance, main promotion, and stable 0.5.0 publication authorized. The
+  maintainer explicitly accepts the feature within its scope. Runtime is
+  unchanged from the tested development candidate; only release metadata
+  changes. Detailed platform/scenario and other-manager qualification remain
+  evidence gaps in Testing, not a requirement to repeat the accepted campaign.
 - **OL-01:** Bounded callback/clipboard/lifecycle review completed with no runtime change; independent review and 82 tests passed at that historical checkpoint.
-- **OL-09:** 0.4.0 promotion completed. Stable tags, release notes, and userscript assets for both [0.4.0](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.0) and [0.4.1](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.1) are published; 0.4.1 is Latest.
+- **OL-09:** 0.4.0 promotion completed. Stable tags, release notes, and userscript assets for both [0.4.0](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.0) and [0.4.1](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.1) are preserved; stable 0.5.0 supersedes them as Latest.
 - README simplified; copy/paste installation and port guidance published.
 
 The [archived register](historicals/OPEN-LOOPS.md) preserves the original ownership notes, completed OL-01 handoff, review evidence, and earlier release blockers. Those blockers and assignments are historical.

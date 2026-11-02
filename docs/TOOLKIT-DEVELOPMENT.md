@@ -1,6 +1,33 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-01: release candidate
+## Latest checkpoint — 2026-11-01: stable 0.5.0
+
+The maintainer reconfirmed that the version works as intended within its
+accepted scope and explicitly approved **0.5.0** as stable, without the RC
+label. Promote main and publish v0.5.0 as a regular GitHub Release marked
+Latest, with the installable userscript attached. Preserve the earlier RC
+and stable tags/releases and their evidence; remote renaming is separate.
+
+Verified clean checkout at `2495a270b0d4a45d459fc3d7acf8597269f6b642`,
+matching remote main, with origin
+`https://github.com/StarlightDaemon/proxmox-copy-console.git`. The live Latest
+API still returned v0.4.1 while v0.5.0-rc.1 was a non-Latest prerelease.
+Create `codex/release-0.5.0` for promotion. Change only userscript version and
+description metadata; keep the tested executable body. Align current docs,
+manager probe, and version checks. OL-11 practical acceptance is complete;
+preserve the reported Firefox 159.0 (64-bit), Violentmonkey 2.50.0, Windows 11
+environment and the remaining detailed qualification limits in Testing.
+
+Verification: **180 local tests passed**, zero failures/skips, under Node.js
+24.18.0. Source/metadata/version checks, 83 local Markdown links, pinned cached
+xterm integrity, and whitespace checks passed. Stable script: 28,090 bytes;
+SHA-256 `8263ac0d60dcb9d08f1653c97cdfcdaa1960cdd0f404015c5a8beddedae523f8`.
+The normalized executable-body hash remains
+`8cd88a878b1dd61ca77603ab00350864841aaefa0ac7ddbdcea3a467160d0828`,
+matching the maintainer-tested runtime. Publication must verify main/tag refs,
+CI, asset digest, regular release status, and the Latest release endpoint.
+
+## Previous checkpoint — 2026-11-01: release candidate
 
 ### Main promotion and GitHub prerelease
 

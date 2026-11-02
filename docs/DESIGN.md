@@ -1,6 +1,6 @@
 # Design
 
-This describes **Proxmox Toolkit 0.5.0-rc.1**, preserving the runtime of maintainer-tested 0.5.0-dev.1 with version/description metadata changes only. Stable 0.4.1 remains the released copy-only runtime. The [historical design](historicals/DESIGN.md) preserves the 0.3.0 baseline and the development sequence. [Decisions](../DECISIONS.md) records the rationale.
+This describes stable **Proxmox Toolkit 0.5.0**, preserving the runtime of maintainer-tested 0.5.0-dev.1 and published 0.5.0-rc.1 with version/description metadata changes only. Earlier 0.4.1 remains available as the copy-only release. The [historical design](historicals/DESIGN.md) preserves the 0.3.0 baseline and the development sequence. [Decisions](../DECISIONS.md) records the rationale.
 
 ## Scope and console ownership
 

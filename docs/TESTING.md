@@ -2,9 +2,12 @@
 
 ## Current status
 
-**Proxmox Toolkit 0.5.0-rc.1 is a release candidate.** Firefox + Violentmonkey
+**Proxmox Toolkit 0.5.0 is stable.** Firefox + Violentmonkey
 remains the primary target. Its executable runtime is unchanged from
-0.5.0-dev.1; only userscript version/description metadata changed for promotion.
+0.5.0-dev.1 and 0.5.0-rc.1; only userscript version/description metadata changed
+for promotion. On 2026-11-01 the maintainer reconfirmed that the current version
+works as intended within the accepted scope and authorized stable 0.5.0 as
+the latest GitHub Release. This does not expand the live evidence below.
 
 ### Maintainer-reported live acceptance — 2026-11-01
 
@@ -20,7 +23,22 @@ clipboard comparisons, and individual cancellation observations were not given.
 Do not mark every acceptance step or browser/manager combination passed by
 inference. The agent did not operate the live console or OS clipboard; this
 is a maintainer report. Detailed qualification and browser profiling remain
-open, and 0.4.1 remains stable.
+open. Stable promotion is based on this practical acceptance; 0.4.1 remains
+available as the earlier copy-only release.
+
+### Stable 0.5.0 local verification — 2026-11-01
+
+All **180 tests passed**, zero failures/skips, under Node.js 24.18.0.
+Source parsing for 13 JavaScript files, metadata/version alignment, 83 local
+Markdown links, pinned cached xterm integrity, and `git diff --check` passed.
+Stable source: 28,090 bytes; SHA-256
+`8263ac0d60dcb9d08f1653c97cdfcdaa1960cdd0f404015c5a8beddedae523f8`.
+Normalized executable-body SHA-256 remains
+`8cd88a878b1dd61ca77603ab00350864841aaefa0ac7ddbdcea3a467160d0828`,
+matching the maintainer-tested development candidate and published RC.
+Only version/description metadata changed in the installable userscript.
+These local results and the maintainer's report are separate from publication
+CI, tag/ref verification, and release-asset integrity checks.
 
 ### Release-candidate local verification — 2026-11-01
 
@@ -138,11 +156,11 @@ not demonstrate a successful rendered paste. Neither mocks nor parser tests
 prove native Firefox compartment behavior, permissions, real clipboard
 contents, or live Proxmox compatibility.
 
-## Toolkit candidate acceptance
+## Toolkit acceptance
 
-Install the local [candidate source](../proxmox-copy-console.user.js) in Firefox
+Install the [Toolkit source](../proxmox-copy-console.user.js) in Firefox
 with Violentmonkey, following the [migration/rollback instructions](../README.md#install).
-Confirm `Proxmox Toolkit`, `0.5.0-rc.1`, your exact trusted-host include rule,
+Confirm `Proxmox Toolkit`, `0.5.0`, your exact trusted-host include rule,
 and only one enabled installation. Keep the released 0.4.1 source available for
 rollback. Record browser, manager, PVE, and `pve-xtermjs` versions plus the actual
 script hash. Numeric versions from earlier Copy reports are not candidate data.

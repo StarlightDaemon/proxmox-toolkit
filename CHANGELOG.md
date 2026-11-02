@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0 — 2026-11-01
+
+- Promote the unchanged 0.5.0-rc.1 runtime to stable after the maintainer
+  confirmed it works as intended within the accepted scope and explicitly
+  approved stable 0.5.0 publication. Change only version/description metadata.
+- Publish v0.5.0 as the latest stable GitHub Release with the installable
+  userscript attached. Update installation, design, decisions, and test records
+  for stable Toolkit. Preserve earlier tags/releases and evidence boundaries.
+- Retain the maintainer's Firefox 159.0 (64-bit), Violentmonkey 2.50.0,
+  Windows 11 workflow acceptance. Promotion does not expand the tested
+  browser/manager or scenario coverage.
+- Pass all 180 local tests and source/metadata/link/fixture/whitespace checks.
+  Verify the normalized executable body is identical to the tested candidate.
+
 ## 0.5.0-rc.1 — 2026-11-01
 
 - Promote the unchanged 0.5.0-dev.1 runtime to a release candidate after the
