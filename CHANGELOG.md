@@ -13,9 +13,10 @@
   were not supplied.
 - Pass all 180 local tests, source/metadata/local-link checks, cached xterm
   fixture integrity verification, and whitespace checks under Node.js 24.18.0.
-- Prepare the candidate on `codex/toolkit-paste-execute`. Stable 0.4.1 and its
-  historical evidence remain unchanged; a main-branch promotion, tag, or GitHub
-  Release is separate from this candidate branch push.
+- Promote the candidate from `codex/toolkit-paste-execute` to main and publish
+  v0.5.0-rc.1 as a GitHub prerelease with the installable userscript attached,
+  following explicit maintainer approval. Stable 0.4.1 remains the latest
+  stable release; its tag, assets, and historical evidence remain unchanged.
 
 ## 0.5.0-dev.1 — Unreleased Proxmox Toolkit candidate
 

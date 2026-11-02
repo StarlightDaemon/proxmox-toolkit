@@ -2,6 +2,23 @@
 
 ## Latest checkpoint — 2026-11-01: release candidate
 
+### Main promotion and GitHub prerelease
+
+After commit `eff382dc4a7fb8b2e22cdfca215e798bfc047fa3` was pushed to
+`codex/toolkit-paste-execute` and its GitHub Checks run passed, the maintainer
+explicitly requested promotion to main and publication under Releases.
+Remote main was reverified at
+`3726925562fe069a34984cc0c28c8f2f2719303f`; the candidate tag did not exist.
+Prepare a documentation-only follow-up, fast-forward main, and publish
+**v0.5.0-rc.1** as a GitHub prerelease with the exact userscript attached.
+Stable 0.4.1 remains the latest stable release. No runtime or metadata changes
+are needed beyond the candidate already tested. Recheck source identity,
+documentation links, whitespace, the final remote refs, CI, and release asset.
+The earlier branch-only authorization below is superseded by this request;
+final stable promotion and remote renaming remain separate.
+
+### Candidate branch preparation
+
 The maintainer reports extensive successful live testing of the supplied
 0.5.0-dev.1 source and authorizes preparing and pushing a release candidate
 with documentation. The reported environment is Firefox 159.0 (64-bit),
@@ -28,8 +45,9 @@ Normalized executable-body SHA-256
 matches the tested development candidate. Review found no critical issue.
 Local checks and the maintainer's report do not imply GitHub CI success.
 
-The authorized remote target is the candidate branch. Main-branch promotion,
-tags/GitHub Releases, deployment, and remote renaming are separate actions.
+At that stage the authorized remote target was the candidate branch;
+main-branch promotion and tag/GitHub Release publication were separate actions,
+subsequently authorized above. Deployment and remote renaming remain separate.
 The earlier local-only holding instructions below describe their dated
 checkpoints and no longer describe the current practical acceptance status.
 

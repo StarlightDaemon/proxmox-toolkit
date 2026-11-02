@@ -4,11 +4,12 @@
 
 `StarlightDaemon/proxmox-copy-console` contains Proxmox Toolkit development and
 the stable Proxmox Copy Console lineage. The maintainer approved the Toolkit
-name and Paste & Execute development; remote renaming/publication is separate.
+name, Paste & Execute development, main promotion, and v0.5.0-rc.1 prerelease
+publication. Remote renaming remains separate.
 
 ## Authoritative project documents
 
-- `proxmox-copy-console.user.js` — Toolkit 0.5.0-rc.1 release candidate, preserving the runtime of maintainer-tested 0.5.0-dev.1. Stable 0.4.1 on main preserves the live-tested 0.4.1-dev.1 runtime. Preserve the evidence limits in Testing; the candidate's practical acceptance does not establish the full compatibility matrix.
+- `proxmox-copy-console.user.js` — Toolkit 0.5.0-rc.1 release candidate on main, preserving the runtime of maintainer-tested 0.5.0-dev.1. The stable 0.4.1 tag/release preserves the live-tested 0.4.1-dev.1 runtime. Preserve the evidence limits in Testing; the candidate's practical acceptance does not establish the full compatibility matrix.
 - `README.md` — user-facing project overview.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.

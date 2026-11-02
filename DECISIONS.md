@@ -17,8 +17,11 @@ Promote it to 0.5.0-rc.1 by version/description metadata only. Preserve the test
 runtime. Record the report as practical workflow acceptance in Firefox 159.0
 (64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and
 per-scenario observations were not supplied.
-Candidate branch publication is authorized; stable promotion, tags/GitHub
-Releases, and remote renaming remain separate.
+After the candidate branch push, the maintainer explicitly authorized promotion
+to main and availability under Releases. Publish v0.5.0-rc.1 as a prerelease
+with the installable userscript attached and keep 0.4.1 as the latest stable
+release. Preserve the tested runtime and its evidence limits. A final stable
+0.5.0 promotion and remote renaming remain separate.
 
 Keep one readable installable file, no runtime dependencies or build step, and
 shared console targeting/lifecycle. On 2026-10-15 the maintainer removed the

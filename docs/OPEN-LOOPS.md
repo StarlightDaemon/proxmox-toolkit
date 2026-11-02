@@ -3,7 +3,8 @@
 Stable 0.4.1 is released with reported copy-only practical passes in the four
 primary browser/manager combinations. The maintainer subsequently authorized
 **Proxmox Toolkit** and Paste & Execute development, then reported successful
-live testing of 0.5.0-dev.1 on 2026-11-01 and authorized pushing 0.5.0-rc.1.
+live testing of 0.5.0-dev.1 on 2026-11-01 and authorized pushing 0.5.0-rc.1,
+followed by explicit main promotion and GitHub prerelease publication approval.
 [Testing](TESTING.md) separates historical evidence from candidate acceptance.
 [Decisions](../DECISIONS.md#product-scope-and-simplicity) governs additions.
 
@@ -13,7 +14,7 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
-| OL-11 | Practical acceptance received; release candidate authorized | The maintainer reports extensive successful live testing of 0.5.0-dev.1 and authorizes pushing 0.5.0-rc.1 on `codex/toolkit-paste-execute`. Preserve the tested runtime; promotion changes version/description metadata only. See the [current checkpoint](TOOLKIT-DEVELOPMENT.md) and [evidence limits](TESTING.md#maintainer-reported-live-acceptance--2026-11-01). The reported environment is Firefox 159.0 (64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and per-scenario results were not supplied. Detailed Firefox + Violentmonkey qualification, other-manager evidence, and stable promotion remain separate follow-ups; do not infer individual passes from the broad acceptance report. |
+| OL-11 | Practical acceptance received; main/prerelease authorized | The maintainer reports extensive successful live testing of 0.5.0-dev.1 and authorizes 0.5.0-rc.1 on main and as a GitHub prerelease after the candidate branch push. Preserve the tested runtime; promotion changes version/description metadata only. See the [current checkpoint](TOOLKIT-DEVELOPMENT.md) and [evidence limits](TESTING.md#maintainer-reported-live-acceptance--2026-11-01). The reported environment is Firefox 159.0 (64-bit), Violentmonkey 2.50.0, and Windows 11. Proxmox/package versions and per-scenario results were not supplied. Detailed Firefox + Violentmonkey qualification, other-manager evidence, and stable promotion remain separate follow-ups; do not infer individual passes from the broad acceptance report. |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |
 | OL-05 | Package evidence pending | Record installed console package versions and compare with the pinned xterm fixture. Add or refresh a fixture only when an observed package/API difference warrants it; close with comparison and relevant regression evidence. |

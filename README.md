@@ -7,7 +7,7 @@ Native **Copy** and **Paste & Execute** buttons for Proxmox node shells and LXC 
 
 **0.5.0-rc.1 is a release candidate.** It preserves the runtime of 0.5.0-dev.1, which the maintainer reports working well after extensive live testing in Firefox 159.0 (64-bit) with Violentmonkey 2.50.0 on Windows 11. This is practical workflow acceptance; full compatibility qualification remains open. **Proxmox Copy Console 0.4.1** remains the stable release. The repository URL and script filename retain their original names.
 
-**[Install the candidate](#install)** · [Candidate source](proxmox-copy-console.user.js) · [Stable 0.4.1](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.1) · [Testing](docs/TESTING.md)
+**[Install the candidate](#install)** · [Candidate release](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.5.0-rc.1) · [Candidate source](proxmox-copy-console.user.js) · [Stable 0.4.1](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.4.1) · [Testing](docs/TESTING.md)
 
 ## What it copies
 
@@ -24,7 +24,7 @@ One JavaScript file, with no build step or runtime dependencies. The script stor
 Copy and paste directly into your chosen manager. This avoids raw-script links being opened by another extension, such as AdGuard.
 
 1. Use **Firefox + Violentmonkey** as the primary candidate target.
-2. Open [the candidate file](proxmox-copy-console.user.js) on `codex/toolkit-paste-execute` and copy the entire file, including its `// ==UserScript==` header. Confirm `@version 0.5.0-rc.1`. GitHub main and the stable release still provide the copy-only version. The [candidate branch](https://github.com/StarlightDaemon/proxmox-copy-console/tree/codex/toolkit-paste-execute) contains the release candidate.
+2. Open [the candidate file](proxmox-copy-console.user.js) on `main`, or download `proxmox-copy-console.user.js` from the [v0.5.0-rc.1 prerelease](https://github.com/StarlightDaemon/proxmox-copy-console/releases/tag/v0.5.0-rc.1), and copy the entire file, including its `// ==UserScript==` header. Confirm `@version 0.5.0-rc.1`. The stable 0.4.1 tag/release still provides the copy-only version.
 3. Replace the code in your existing userscript entry, or create one using the manager instructions below. When using a separate candidate entry, disable the old **Proxmox Copy Console** entry first. Changing `@name` to **Proxmox Toolkit** can be treated as a different installation by managers; do not leave both enabled.
 4. **Replace** the supplied `https://*:8006/*` include rule with your trusted Proxmox host, for example `https://pve.example.net:8006/*`. Adding a narrow rule alongside the broad one does not restrict access.
 5. Save, keep one copy enabled in one manager, reload Proxmox, and open a node **Shell** or LXC **Console**.

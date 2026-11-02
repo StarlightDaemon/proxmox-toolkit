@@ -35,8 +35,11 @@ The executable IIFE, normalized to LF, has SHA-256
 `8cd88a878b1dd61ca77603ab00350864841aaefa0ac7ddbdcea3a467160d0828`,
 matching the supplied maintainer-tested 0.5.0-dev.1 body. Metadata promotion
 adds no new runtime behavior. These checks are local execution, distinct from
-the maintainer's live report and from GitHub CI. Candidate CI is verified
-separately after the branch push; no result is implied by this record.
+the maintainer's live report and from GitHub CI. The candidate branch's
+[GitHub Checks run](https://github.com/StarlightDaemon/proxmox-copy-console/actions/runs/41397807086)
+passed for commit `eff382dc4a7fb8b2e22cdfca215e798bfc047fa3`. Main promotion
+and prerelease publication retain this userscript; the final publication commit
+contains documentation changes only. CI is separate from live acceptance.
 
 ### Earlier local development verification
 
