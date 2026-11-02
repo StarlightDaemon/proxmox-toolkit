@@ -1,6 +1,38 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-01: stable 0.5.0
+## Latest checkpoint — 2026-11-01: public documentation cleanup
+
+The maintainer approved a shorter README, a corrected GitHub About description,
+and two focused guides. Verified clean starting commit
+`b8e638ad0d6717ed55d3f7b517853454589cf24a`, matching remote main, and origin
+`https://github.com/StarlightDaemon/proxmox-copy-console.git`. Work proceeds
+on `codex/docs-simplify`.
+
+Keep the front page focused on the two actions, quick installation, essential
+host/execution cautions, and supported scope. Move detailed setup, migration,
+rollback, and custom-port instructions into `docs/INSTALL.md`; move text
+handling, feedback, cancellation limits, and common problems into
+`docs/USAGE.md`. Update the documentation index, repository instructions,
+and Testing links. Preserve technical test evidence and historical records.
+Clarify that transient changes without an event or polling observation cannot
+be reconstructed; retain the safeguards and uncertainty guidance.
+
+The approved About description is: "Native Copy and Paste & Execute buttons
+for Proxmox node shells and LXC consoles." Existing repository topics remain
+appropriate. About metadata is published separately from the documentation
+commit. No userscript, version, release asset, or tag changes are needed.
+
+Verification: README reduced from 963 to 339 whitespace-delimited words (65%).
+Source/metadata/version checks and 92 repository-local Markdown links passed;
+47 links in the seven changed Markdown files also passed heading-fragment
+validation. Preserve the old candidate-acceptance fragment as an alias for
+historical checkpoint links. Official manager setup links were checked.
+Whitespace checks passed. The stable userscript SHA-256 remains
+`8263ac0d60dcb9d08f1653c97cdfcdaa1960cdd0f404015c5a8beddedae523f8`.
+No runtime tests were rerun locally for this documentation-only change;
+publication CI is a separate check.
+
+## Previous checkpoint — 2026-11-01: stable 0.5.0
 
 The maintainer reconfirmed that the version works as intended within its
 accepted scope and explicitly approved **0.5.0** as stable, without the RC

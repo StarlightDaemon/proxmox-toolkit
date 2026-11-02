@@ -156,10 +156,12 @@ not demonstrate a successful rendered paste. Neither mocks nor parser tests
 prove native Firefox compartment behavior, permissions, real clipboard
 contents, or live Proxmox compatibility.
 
+<a id="toolkit-candidate-acceptance"></a>
+
 ## Toolkit acceptance
 
 Install the [Toolkit source](../proxmox-copy-console.user.js) in Firefox
-with Violentmonkey, following the [migration/rollback instructions](../README.md#install).
+with Violentmonkey, following the [migration/rollback instructions](INSTALL.md).
 Confirm `Proxmox Toolkit`, `0.5.0`, your exact trusted-host include rule,
 and only one enabled installation. Keep the released 0.4.1 source available for
 rollback. Record browser, manager, PVE, and `pve-xtermjs` versions plus the actual
@@ -235,7 +237,7 @@ Record date, script version/hash, browser/manager versions, Proxmox and `pve-xte
 
 ## Troubleshooting and optional probes
 
-If the button is missing, first confirm the script is saved/enabled in the intended manager, its host rules match, the page has been reloaded, and the view is a supported embedded console. See [installation](../README.md#install), including the custom-port limitation.
+Start with the [usage troubleshooting guide](USAGE.md#troubleshooting) and [installation requirements](INSTALL.md), including the custom-port limitation. Use the diagnostics below for concrete failures that need investigation.
 
 Use probes only when a failure needs investigation:
 

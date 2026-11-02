@@ -11,6 +11,8 @@ publication as Latest. Remote renaming remains separate.
 
 - `proxmox-copy-console.user.js` — stable Toolkit 0.5.0 on main, preserving the runtime of maintainer-tested 0.5.0-dev.1 and published 0.5.0-rc.1. The earlier 0.4.1 tag/release preserves the live-tested 0.4.1-dev.1 runtime. Preserve the evidence limits in Testing; practical acceptance does not establish the full compatibility matrix.
 - `README.md` — user-facing project overview.
+- `docs/INSTALL.md` — installation, updates, host restrictions, migration, and rollback.
+- `docs/USAGE.md` — action behavior, feedback, cancellation limits, and user troubleshooting.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.
 - `docs/README.md` — current documentation index.
