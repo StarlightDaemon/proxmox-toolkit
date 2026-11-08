@@ -1060,6 +1060,9 @@
     /* @settings */
     // #endif
     // #if CATALOG
+    /* @capacity-updates */
+    /* @drift-firewall */
+    /* @support-bundle */
     /* @catalog-model */
     /* @catalog-ui */
     // #endif

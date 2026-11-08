@@ -68,7 +68,7 @@ test('native header entry precedes translated Documentation and opens workspace 
     assert.equal(h.nativeRoot.getAttribute('inert'), '');
     assert.equal(win.visible, true);
     const boxes = h.components.filter(c => c.type === 'Ext.form.field.Checkbox');
-    assert.equal(boxes.length, 22);
+    assert.equal(boxes.length, 27);
     assert.equal(boxes.some(c => c.getValue()), false);
     h.action('Return to Proxmox').handler();
     assert.equal(h.nativeRoot.getAttribute('inert'), null);

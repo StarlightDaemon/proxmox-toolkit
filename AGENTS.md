@@ -17,16 +17,24 @@ authorized all catalog/open-loop feature implementations and then consolidated
 packaging to Toolkit plus one Copy & Paste edition. No other individual feature
 userscripts are shipped. Preserve historical edition records as historical.
 
+On 2026-11-02 the operator authorized local cataloging, planning, implementation
+and verification of Capacity & Headroom, Cluster Configuration Changes,
+Troubleshooting Bundle Builder, Firewall Visibility & Rule References, and
+Update Readiness & Version Consistency. The local candidate is 0.8.0-dev.1.
+GitHub push requires explicit operator approval; implementation authority does
+not authorize a commit, remote update, merge, tag or publication.
+
 ## Authoritative project documents
 
-- `src/toolkit.js`, `src/settings.js`, `src/console-extras.js`, `src/catalog-model.js`, `src/catalog-ui.js`, `tools/features.cjs`, and `tools/editions.json` — shared build-time source, feature registry, and one version manifest. Run `node tools/build.cjs`; do not hand-edit generated userscripts.
-- `proxmox-toolkit.user.js` and `proxmox-copy-paste.user.js` — the only generated 0.7.0 stable editions, promoted from dev.8. Toolkit has all 22 toggles; Copy & Paste has the three clipboard actions. Detailed live qualification remains tracked. Historical 0.5.0 retains its all-in-one proxmox-copy-console.user.js asset at its tag/release.
+- `src/toolkit.js`, `src/settings.js`, `src/console-extras.js`, `src/catalog-model.js`, `src/catalog-ui.js`, `src/capacity-updates.js`, `src/drift-firewall.js`, `src/support-bundle.js`, `tools/features.cjs`, and `tools/editions.json` — shared build-time source, feature registry, and one version manifest. Run `node tools/build.cjs`; do not hand-edit generated userscripts.
+- `proxmox-toolkit.user.js` and `proxmox-copy-paste.user.js` — the only generated local 0.8.0-dev.1 editions. Toolkit has 27 toggles; Copy & Paste has the three clipboard actions. Published stable 0.7.0 retains its 22-toggle Toolkit at the tag/release. Detailed live qualification remains tracked. Historical 0.5.0 retains its all-in-one proxmox-copy-console.user.js asset at its tag/release.
 - `README.md` — user-facing project overview.
 - `docs/INSTALL.md` — installation, updates, host restrictions, migration, and rollback.
 - `docs/USAGE.md` — action behavior, feedback, cancellation limits, and user troubleshooting.
 - `docs/COMPATIBILITY.md` — current console scope, browser/manager guidance and optional integration requirements.
 - `docs/CATALOG.md`, `docs/CATALOG-DEVELOPMENT.md`, and `docs/CATALOG-ACCEPTANCE.md` — configurable catalog usage, implementation record, and pending live campaign.
 - `docs/EDITIONS.md` — edition selection, migration, generation, coexistence, and synchronized release versions.
+- `docs/EXPANSION-0.8.md` — five-feature scope, refined plan, acceptance criteria and publication boundary.
 - `CHANGELOG.md` — version/baseline record.
 - `DECISIONS.md` — durable design decisions.
 - `docs/README.md` — current documentation index.

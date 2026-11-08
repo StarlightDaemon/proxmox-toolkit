@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Proxmox Toolkit - manager probe
 // @namespace    homelab
-// @version      0.7.0
+// @version      0.8.0-dev.1
 // @description  Temporary capability and integration checks. No UI changes, clipboard calls, or terminal text.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard

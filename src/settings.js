@@ -148,7 +148,9 @@ function openToolkitDialog(title, category) {
         // Scope layout rules only; colors/fonts come from the installed PVE theme.
         nodeElement('style', `.pve-toolkit-report [hidden]{display:none!important}
             .pve-toolkit-report label{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;flex-wrap:wrap}
-            .pve-toolkit-report input{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report input,.pve-toolkit-report select,.pve-toolkit-report textarea{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report label:has(textarea){display:flex;width:100%;box-sizing:border-box}
+            .pve-toolkit-report textarea{box-sizing:border-box;resize:vertical}
             .pve-toolkit-report input[type=checkbox]{appearance:auto;width:auto}
             .pve-toolkit-report p{line-height:1.5;margin:8px 0}
             .pve-toolkit-report table{border-collapse:collapse;display:block;max-height:50vh;overflow:auto;width:100%;margin-top:12px}
@@ -284,13 +286,21 @@ function openToolkitSettings(section) {
                     const width = form.body.getWidth() - 16;
                     const columns = width >= 720 ? 2 : 1;
                     const available = form.body.getHeight() - 16;
-                    size = Math.max(1, Math.floor(available / 112)) * columns;
+                    let cardHeight = 104;
+                    // Report descriptions add a second text block. Reserve room for
+                    // wrapped titles and notes before calculating page capacity.
+                    // #if CATALOG
+                    if (FEATURE_CATALOG.some(f => f.group === group && f.description && REPORT_IDS.includes(f.id)))
+                        cardHeight = width / columns < 420 ? 184 : 152;
+                    // #endif
+                    size = Math.max(1, Math.floor(available / (cardHeight + 8))) * columns;
                     const pages = Math.ceil(cards.length / size);
                     index = Math.max(0, Math.min(index, pages - 1));
                     page.Ext.suspendLayouts();
                     try {
                         cards.forEach((card, i) => {
                             card.setWidth(Math.floor(width / columns) - 8);
+                            card.setHeight(cardHeight);
                             card.setHidden(i < index * size || i >= (index + 1) * size);
                         });
                         previous.setDisabled(index === 0); next.setDisabled(index === pages - 1);

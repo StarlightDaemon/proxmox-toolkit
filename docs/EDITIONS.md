@@ -4,11 +4,13 @@
 
 ## Choose an edition
 
-Stable **0.7.0** has exactly two installable files:
+The local **0.8.0-dev.1** candidate has exactly two generated installable files.
+Published stable **0.7.0** remains at its tag/release with 22 Toolkit toggles;
+use the stable links in [Installation](INSTALL.md) for that version.
 
 | Edition | File | Features |
 | --- | --- | --- |
-| Proxmox Toolkit | [proxmox-toolkit.user.js](../proxmox-toolkit.user.js) | All 22 independently toggleable capabilities. Only Copy, Paste Only and Paste & Execute default on; other tools default off. |
+| Proxmox Toolkit | [proxmox-toolkit.user.js](../proxmox-toolkit.user.js) | All 27 independently toggleable capabilities. Only Copy, Paste Only and Paste & Execute default on; other tools default off. |
 | Proxmox Copy & Paste | [proxmox-copy-paste.user.js](../proxmox-copy-paste.user.js) | Copy, Paste & Execute and Paste Only, each toggleable and initially enabled. No management API client, export, diagnostic/recipe panels, search/review tools, serial or proxy extension. |
 
 On 2026-11-02 the maintainer replaced the individual-feature edition plan with
@@ -46,7 +48,8 @@ back, disable both new editions and restore the exact
 ## Build and verification
 
 Edit `src/toolkit.js` and its build-time fragments `src/settings.js`,
-`src/console-extras.js`, `src/catalog-model.js`, and `src/catalog-ui.js`.
+`src/console-extras.js`, `src/catalog-model.js`, `src/catalog-ui.js`,
+`src/capacity-updates.js`, `src/drift-firewall.js`, and `src/support-bundle.js`.
 `tools/features.cjs` defines feature IDs, names, groups and Toolkit defaults;
 `tools/editions.json` owns the synchronized version and the two selections.
 Never hand-edit generated userscripts. Excluded utility/management capabilities

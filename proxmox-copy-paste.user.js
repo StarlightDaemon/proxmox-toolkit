@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Proxmox Copy & Paste 0.7.0
+// @name         Proxmox Copy & Paste 0.8.0-dev.1
 // @namespace    homelab
-// @version      0.7.0
-// @description  Copy, Paste & Execute and Paste Only with persistent feature toggles for Proxmox consoles.
+// @version      0.8.0-dev.1
+// @description  Development candidate: Copy, Paste & Execute and Paste Only with persistent feature toggles for Proxmox consoles.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
 // @grant        GM.setClipboard
@@ -819,7 +819,9 @@ function openToolkitDialog(title, category) {
         // Scope layout rules only; colors/fonts come from the installed PVE theme.
         nodeElement('style', `.pve-toolkit-report [hidden]{display:none!important}
             .pve-toolkit-report label{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;flex-wrap:wrap}
-            .pve-toolkit-report input{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report input,.pve-toolkit-report select,.pve-toolkit-report textarea{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report label:has(textarea){display:flex;width:100%;box-sizing:border-box}
+            .pve-toolkit-report textarea{box-sizing:border-box;resize:vertical}
             .pve-toolkit-report input[type=checkbox]{appearance:auto;width:auto}
             .pve-toolkit-report p{line-height:1.5;margin:8px 0}
             .pve-toolkit-report table{border-collapse:collapse;display:block;max-height:50vh;overflow:auto;width:100%;margin-top:12px}
@@ -879,7 +881,7 @@ function mountToolkitLauncher() {
     finally { scheduleToolkitLauncher(); }
 }
 function openToolkitSettings(section) {
-    const win = createToolkitWorkspace('Proxmox Copy & Paste 0.7.0 settings');
+    const win = createToolkitWorkspace('Proxmox Copy & Paste 0.8.0-dev.1 settings');
     if (!win) return;
     try {
         const draft = settingsDraft || normalizeSettings(runtimeSettings);
@@ -927,13 +929,17 @@ function openToolkitSettings(section) {
                     const width = form.body.getWidth() - 16;
                     const columns = width >= 720 ? 2 : 1;
                     const available = form.body.getHeight() - 16;
-                    size = Math.max(1, Math.floor(available / 112)) * columns;
+                    let cardHeight = 104;
+                    // Report descriptions add a second text block. Reserve room for
+                    // wrapped titles and notes before calculating page capacity.
+                    size = Math.max(1, Math.floor(available / (cardHeight + 8))) * columns;
                     const pages = Math.ceil(cards.length / size);
                     index = Math.max(0, Math.min(index, pages - 1));
                     page.Ext.suspendLayouts();
                     try {
                         cards.forEach((card, i) => {
                             card.setWidth(Math.floor(width / columns) - 8);
+                            card.setHeight(cardHeight);
                             card.setHidden(i < index * size || i >= (index + 1) * size);
                         });
                         previous.setDisabled(index === 0); next.setDisabled(index === pages - 1);
@@ -1003,9 +1009,9 @@ function initializeSettings(start) {
         if (value && (value.schema !== 1 || !value.features || typeof value.features !== 'object')) settingsLoadError = true;
         if (settingsLoadError) for (const key of Object.keys(runtimeSettings.features)) runtimeSettings.features[key] = false;
         try {
-            if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings);
+            if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('Toolkit settings (0.8.0-dev.1)', openToolkitSettings);
             else if (typeof GM !== 'undefined' && typeof GM.registerMenuCommand === 'function')
-                Promise.resolve(GM.registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings)).catch(() => {});
+                Promise.resolve(GM.registerMenuCommand('Toolkit settings (0.8.0-dev.1)', openToolkitSettings)).catch(() => {});
         } catch { /* The header entry works without a manager menu command. */ }
         mountToolkitLauncher();
         window.addEventListener('hashchange', () => { closeToolkitDialog(); mountToolkitLauncher(); });

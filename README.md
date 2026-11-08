@@ -7,10 +7,16 @@
 
 Native clipboard tools and configurable read-only management reports for Proxmox VE.
 
+**Development checkout: 0.8.0-dev.1.** The local candidate adds five default-off
+reports, bringing Toolkit to 27 toggles. Published stable remains **0.7.0** with
+22 toggles; the installation links below intentionally select that release.
+See the [0.8 expansion plan and acceptance criteria](docs/EXPANSION-0.8.md) and
+[development catalog](docs/CATALOG.md). The candidate is not published or live-qualified.
+
 - **Copy** captures retained scrollback or the active alternate screen as plain text, joining wrapped lines.
 - **Paste Only** pastes clipboard text without appending Enter.
 - **Paste & Execute** reads clipboard text, pastes it into the current console, and sends Enter.
-- **Toolkit** provides 22 feature toggles across six categories, including console utilities and management reports. Only the three clipboard actions default on.
+- **Stable Toolkit 0.7.0** provides 22 feature toggles across six categories, including console utilities and management reports. Only the three clipboard actions default on.
 
 Choose one edition: **Toolkit** for all features, or **Copy & Paste** for the three clipboard actions. Each is one userscript with no user build step, runtime dependencies, or server installation. Settings are saved locally by the manager; transcripts and clipboard history are not stored by the script.
 

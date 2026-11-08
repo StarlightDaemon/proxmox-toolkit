@@ -1,5 +1,61 @@
 # Configurable Toolkit acceptance
 
+The local **0.8.0-dev.1** candidate adds five reports. Its acceptance criteria
+are in the [0.8 expansion plan](EXPANSION-0.8.md), and actual local results belong
+in the [development checkpoint](TOOLKIT-DEVELOPMENT.md). The stable 0.7.0 hashes,
+results and live evidence below are preserved; they do not qualify the new code.
+
+## 0.8.0-dev.1 live checklist — pending
+
+Operator steps for OL-16. Every report is read-only. Change PVE state only
+where a step asks for one operator-controlled scratch change. Record Firefox,
+Violentmonkey, OS, PVE and `pve-manager` versions; the installed Toolkit
+SHA-256; and, per step, pass/fail with what was actually seen. Run each report
+once as an administrator and once as a restricted account (for example
+PVEAuditor on one node). Hidden resources must show up as gaps or issues, not
+as clean empty results.
+
+1. **Install and settings:** replace the existing Toolkit entry's code, keeping
+   the entry. Confirm `@version 0.8.0-dev.1`, 27 toggles, the same three
+   defaults, and that earlier opt-ins survive. Enable the five new reports;
+   confirm each opens without collecting until Run report.
+2. **Capacity & Headroom:** run with day and week timeframes. For one node,
+   compare host memory, logical CPUs and storage used/total with the native
+   Summary views (GiB here; PVE may show GB). Change the reserve and confirm
+   only the balance columns move. If a container has no memory value, confirm
+   it is labelled `memory not configured`.
+3. **Cluster Configuration Changes:** run with blank scope; Download baseline
+   JSON. Make one scratch change (for example a test VM's memory). Choose the
+   file **before** fixing the scope fields, confirm it loads, then Run and
+   confirm exactly that difference. Set a different Node and confirm Run refuses
+   with the baseline's scope before any request. Inspect the saved file for
+   secrets (`cipassword`, descriptions, comments must be absent).
+4. **Troubleshooting Bundle Builder:** select a task with the task-log section.
+   Before preparing, add these to Symptoms:
+   `CSRFPreventionToken: TEST`, `PVEAuthCookie=PVE:user@pve:65F1A2B3::TEST`,
+   `PVEAPIToken=user@pve!t=00000000-0000-0000-0000-000000000000`,
+   and a clock time such as `12:34:56`. Confirm every value is
+   `[REDACTED-SECRET]`, the time stays readable, and node names/addresses are
+   labelled. Edit the preview, download Markdown and JSON, and confirm the saved
+   bytes equal the edited preview. Review for anything else sensitive before sharing.
+5. **Firewall Visibility & Rule References:** compare cluster, one node and one
+   guest's enablement, policies and rule order with the native Firewall panels
+   and the installed backend (nftables or legacy). Run once with Include guest
+   aliases and IP sets off (guest entries show `not requested`) and once on;
+   note both request counts from the status line.
+6. **Update Readiness & Version Consistency:** compare `pve-manager`, running
+   kernel and available update count with each node's Updates and Repositories
+   panels. Confirm that repository output has origins only (no paths, keys or
+   credentials) and that no refresh/upgrade was triggered (Tasks shows none).
+7. **Lifecycle:** cancel each report mid-collection, close/reopen, navigate away
+   and back, and narrow the window. The console underneath must keep its session,
+   and late results must not appear after cancel.
+8. **Copy & Paste edition:** confirm it remains three clipboard actions with no
+   report code or new grants.
+
+Record results here with the date and installed hash. A pass here qualifies
+these reports only; it does not close the 0.7.0 campaign items below.
+
 Release: **0.7.0**, promoted from **0.7.0-dev.8** at the maintainer's explicit
 request on 2026-11-02 after positive live workflow feedback. The only outputs
 are Toolkit and Copy & Paste. Promotion preserves the tested runtime; it does

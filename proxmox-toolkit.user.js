@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Proxmox Toolkit 0.7.0
+// @name         Proxmox Toolkit 0.8.0-dev.1
 // @namespace    homelab
-// @version      0.7.0
-// @description  Configurable console tools and read-only management reports for Proxmox VE.
+// @version      0.8.0-dev.1
+// @description  Development candidate: Configurable console tools and read-only management reports for Proxmox VE.
 // @include      https://*:8006/*
 // @grant        GM_setClipboard
 // @grant        GM.setClipboard
@@ -712,7 +712,7 @@
     // allowlisted constant; exceptions are deliberately discarded.
     function diagnosticReport(state) {
         const report = {
-            schema: 'proxmox-toolkit-diagnostics/1', version: '0.7.0', edition: 'toolkit',
+            schema: 'proxmox-toolkit-diagnostics/1', version: '0.8.0-dev.1', edition: 'toolkit',
             manager: null, context: null, eligible: null,
             counts: { anchors: null, frames: null, inaccessibleFrames: null },
             capabilities: { clipboardRead: null, clipboardWrite: null, activationApi: null,
@@ -1081,7 +1081,7 @@ function openReview(state, text, captured) {
 }
 
     // Persistent settings and native Proxmox UI. Included in configurable editions.
-const FEATURE_CATALOG = [{"id":"COPY","name":"Copy","group":"Console","defaultOn":true,"description":"Copy retained console output to the clipboard."},{"id":"PASTE_ONLY","name":"Paste Only","group":"Console","defaultOn":true,"description":"Paste clipboard text without appending Enter."},{"id":"PASTE","name":"Paste & Execute","group":"Console","defaultOn":true,"description":"Paste clipboard text, then send Enter."},{"id":"EXPORT","name":"Console Export","group":"Console","defaultOn":false,"description":"Download retained output as text or Markdown."},{"id":"DIAGNOSTICS","name":"Toolkit Diagnostics","group":"Troubleshooting","defaultOn":false,"description":"Inspect console integration from the Tools menu."},{"id":"RECIPES","name":"Diagnostic Recipes","group":"Troubleshooting","defaultOn":false,"description":"Copy explained diagnostic commands from Tools."},{"id":"SCOPED","name":"Scoped Copy","group":"Console","defaultOn":false,"description":"Copy the viewport or a chosen number of recent lines."},{"id":"FIND","name":"Find in Scrollback","group":"Console","defaultOn":false,"description":"Search a snapshot of retained console output."},{"id":"REVIEW","name":"Review & Paste","group":"Console","defaultOn":false,"description":"Review and edit clipboard text before pasting."},{"id":"SERIAL","name":"VM serial consoles","group":"Integration","defaultOn":false,"description":"Allow clipboard tools in configured VM serial consoles."},{"id":"CUSTOM_PORT","name":"Custom HTTPS origin / proxy path","group":"Integration","defaultOn":false,"description":""},{"id":"INVENTORY","name":"Inventory & Report Builder","group":"Inventory","defaultOn":false,"description":""},{"id":"COMPARE","name":"Guest Configuration Compare","group":"Inventory","defaultOn":false,"description":""},{"id":"BACKUPS","name":"Backup Coverage & Recovery Gaps","group":"Recovery","defaultOn":false,"description":""},{"id":"TASKS","name":"Task Failure Investigator","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"TASK_REPORT","name":"Copy Task Report","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"SNAPSHOTS","name":"Snapshot Age & Review Ledger","group":"Recovery","defaultOn":false,"description":""},{"id":"STORAGE","name":"Storage Reference & Unused-Disk Inspector","group":"Inventory","defaultOn":false,"description":""},{"id":"MAINTENANCE","name":"Node Maintenance Preflight","group":"Maintenance","defaultOn":false,"description":""},{"id":"NETWORK","name":"Network Path Explorer","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"GUEST_HEALTH","name":"Guest Integration Health Check","group":"Maintenance","defaultOn":false,"description":""},{"id":"RECOVERY","name":"Recovery Manifest & Rebuild Checklist","group":"Recovery","defaultOn":false,"description":""}];
+const FEATURE_CATALOG = [{"id":"COPY","name":"Copy","group":"Console","defaultOn":true,"description":"Copy retained console output to the clipboard."},{"id":"PASTE_ONLY","name":"Paste Only","group":"Console","defaultOn":true,"description":"Paste clipboard text without appending Enter."},{"id":"PASTE","name":"Paste & Execute","group":"Console","defaultOn":true,"description":"Paste clipboard text, then send Enter."},{"id":"EXPORT","name":"Console Export","group":"Console","defaultOn":false,"description":"Download retained output as text or Markdown."},{"id":"DIAGNOSTICS","name":"Toolkit Diagnostics","group":"Troubleshooting","defaultOn":false,"description":"Inspect console integration from the Tools menu."},{"id":"RECIPES","name":"Diagnostic Recipes","group":"Troubleshooting","defaultOn":false,"description":"Copy explained diagnostic commands from Tools."},{"id":"SCOPED","name":"Scoped Copy","group":"Console","defaultOn":false,"description":"Copy the viewport or a chosen number of recent lines."},{"id":"FIND","name":"Find in Scrollback","group":"Console","defaultOn":false,"description":"Search a snapshot of retained console output."},{"id":"REVIEW","name":"Review & Paste","group":"Console","defaultOn":false,"description":"Review and edit clipboard text before pasting."},{"id":"SERIAL","name":"VM serial consoles","group":"Integration","defaultOn":false,"description":"Allow clipboard tools in configured VM serial consoles."},{"id":"CUSTOM_PORT","name":"Custom HTTPS origin / proxy path","group":"Integration","defaultOn":false,"description":""},{"id":"INVENTORY","name":"Inventory & Report Builder","group":"Inventory","defaultOn":false,"description":""},{"id":"COMPARE","name":"Guest Configuration Compare","group":"Inventory","defaultOn":false,"description":""},{"id":"BACKUPS","name":"Backup Coverage & Recovery Gaps","group":"Recovery","defaultOn":false,"description":""},{"id":"TASKS","name":"Task Failure Investigator","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"TASK_REPORT","name":"Copy Task Report","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"SNAPSHOTS","name":"Snapshot Age & Review Ledger","group":"Recovery","defaultOn":false,"description":""},{"id":"STORAGE","name":"Storage Reference & Unused-Disk Inspector","group":"Inventory","defaultOn":false,"description":""},{"id":"MAINTENANCE","name":"Node Maintenance Preflight","group":"Maintenance","defaultOn":false,"description":""},{"id":"NETWORK","name":"Network Path Explorer","group":"Troubleshooting","defaultOn":false,"description":""},{"id":"GUEST_HEALTH","name":"Guest Integration Health Check","group":"Maintenance","defaultOn":false,"description":""},{"id":"RECOVERY","name":"Recovery Manifest & Rebuild Checklist","group":"Recovery","defaultOn":false,"description":""},{"id":"CAPACITY","name":"Capacity & Headroom","group":"Inventory","defaultOn":false,"description":"Compare allocations, current usage and sampled historical demand."},{"id":"DRIFT","name":"Cluster Configuration Changes","group":"Inventory","defaultOn":false,"description":"Export a baseline and review changes across visible resources."},{"id":"SUPPORT","name":"Troubleshooting Bundle Builder","group":"Troubleshooting","defaultOn":false,"description":"Prepare and review a local support bundle with assisted redaction."},{"id":"FIREWALL","name":"Firewall Visibility & Rule References","group":"Troubleshooting","defaultOn":false,"description":"Inspect configured firewall settings and shared rule references."},{"id":"UPDATES","name":"Update Readiness & Version Consistency","group":"Maintenance","defaultOn":false,"description":"Compare package, kernel and repository evidence across nodes."}];
 const SETTINGS_KEY = `proxmox-toolkit:toolkit:settings:1:${location.origin}`;
 let runtimeSettings;
 let settingsLoadError = false;
@@ -1224,7 +1224,9 @@ function openToolkitDialog(title, category) {
         // Scope layout rules only; colors/fonts come from the installed PVE theme.
         nodeElement('style', `.pve-toolkit-report [hidden]{display:none!important}
             .pve-toolkit-report label{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;flex-wrap:wrap}
-            .pve-toolkit-report input{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report input,.pve-toolkit-report select,.pve-toolkit-report textarea{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report label:has(textarea){display:flex;width:100%;box-sizing:border-box}
+            .pve-toolkit-report textarea{box-sizing:border-box;resize:vertical}
             .pve-toolkit-report input[type=checkbox]{appearance:auto;width:auto}
             .pve-toolkit-report p{line-height:1.5;margin:8px 0}
             .pve-toolkit-report table{border-collapse:collapse;display:block;max-height:50vh;overflow:auto;width:100%;margin-top:12px}
@@ -1302,7 +1304,7 @@ function localDownload(text, extension, mime = 'text/plain;charset=utf-8') {
     } catch (error) { cleanup(); throw error; }
 }
 function openToolkitSettings(section) {
-    const win = createToolkitWorkspace('Proxmox Toolkit 0.7.0 settings');
+    const win = createToolkitWorkspace('Proxmox Toolkit 0.8.0-dev.1 settings');
     if (!win) return;
     try {
         const draft = settingsDraft || normalizeSettings(runtimeSettings);
@@ -1356,13 +1358,19 @@ function openToolkitSettings(section) {
                     const width = form.body.getWidth() - 16;
                     const columns = width >= 720 ? 2 : 1;
                     const available = form.body.getHeight() - 16;
-                    size = Math.max(1, Math.floor(available / 112)) * columns;
+                    let cardHeight = 104;
+                    // Report descriptions add a second text block. Reserve room for
+                    // wrapped titles and notes before calculating page capacity.
+                    if (FEATURE_CATALOG.some(f => f.group === group && f.description && REPORT_IDS.includes(f.id)))
+                        cardHeight = width / columns < 420 ? 184 : 152;
+                    size = Math.max(1, Math.floor(available / (cardHeight + 8))) * columns;
                     const pages = Math.ceil(cards.length / size);
                     index = Math.max(0, Math.min(index, pages - 1));
                     page.Ext.suspendLayouts();
                     try {
                         cards.forEach((card, i) => {
                             card.setWidth(Math.floor(width / columns) - 8);
+                            card.setHeight(cardHeight);
                             card.setHidden(i < index * size || i >= (index + 1) * size);
                         });
                         previous.setDisabled(index === 0); next.setDisabled(index === pages - 1);
@@ -1432,9 +1440,9 @@ function initializeSettings(start) {
         if (value && (value.schema !== 1 || !value.features || typeof value.features !== 'object')) settingsLoadError = true;
         if (settingsLoadError) for (const key of Object.keys(runtimeSettings.features)) runtimeSettings.features[key] = false;
         try {
-            if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings);
+            if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('Toolkit settings (0.8.0-dev.1)', openToolkitSettings);
             else if (typeof GM !== 'undefined' && typeof GM.registerMenuCommand === 'function')
-                Promise.resolve(GM.registerMenuCommand('Toolkit settings (0.7.0)', openToolkitSettings)).catch(() => {});
+                Promise.resolve(GM.registerMenuCommand('Toolkit settings (0.8.0-dev.1)', openToolkitSettings)).catch(() => {});
         } catch { /* The header entry works without a manager menu command. */ }
         mountToolkitLauncher();
         window.addEventListener('hashchange', () => { closeToolkitDialog(); mountToolkitLauncher(); });
@@ -1457,7 +1465,644 @@ function initializeSettings(start) {
     } catch { settingsLoadError = true; finish(null); }
 }
 
+    // On-demand capacity and package evidence; no background collection or mutations.
+const CapacityUpdates = (() => {
+    const list = value => Array.isArray(value) ? value : [];
+    const object = value => value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    const number = value => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+    const text = value => typeof value === 'string' ? value : null;
+    const flag = value => value === true || value === 1 || value === '1' ? true : value === false || value === 0 || value === '0' ? false : null;
+    const encoded = value => encodeURIComponent(String(value));
+    const ratio = (a, b) => number(a) !== null && number(b) !== null && b > 0 ? number(a / b) : null;
+    const positiveInteger = value => Number.isSafeInteger(value) && value > 0 ? value : null;
+    function guestAllocation(config, type) {
+        if (!config) return { memoryMiB: null, vcpus: null, maximumVCPUs: null, memorySource: 'unavailable', cpuSource: 'unavailable' };
+        let memoryMiB = positiveInteger(config.memory);
+        let memorySource = memoryMiB !== null ? 'explicit configuration' : config.memory === undefined ? 'memory not configured; no allocation inferred' : 'unsupported memory value';
+        if (type === 'qemu' && config.memory === undefined) { memoryMiB = 512; memorySource = 'documented QEMU default: 512 MiB'; }
+        else if (type === 'qemu' && typeof config.memory === 'string') {
+            // PVE's current memory property is the online maximum for ballooning;
+            // do not infer future/unrecognized hotplug properties from this value.
+            const match = config.memory.match(/^(?:current=)?(\d+)$/);
+            memoryMiB = match ? positiveInteger(Number(match[1])) : null;
+            memorySource = memoryMiB === null ? 'unsupported memory property' : 'QEMU memory current property';
+        }
+        if (type !== 'qemu') return { memoryMiB, vcpus: positiveInteger(config.cores), maximumVCPUs: positiveInteger(config.cores), memorySource, cpuSource: config.cores === undefined ? 'unlimited or unspecified container cores; no allocation inferred' : 'explicit configuration' };
+        const cores = config.cores === undefined ? 1 : positiveInteger(config.cores);
+        const sockets = config.sockets === undefined ? config.smp === undefined ? 1 : positiveInteger(config.smp) : positiveInteger(config.sockets);
+        const maximumVCPUs = cores === null || sockets === null ? null : positiveInteger(cores * sockets);
+        const selectedVCPUs = config.vcpus === undefined ? maximumVCPUs : positiveInteger(config.vcpus);
+        const vcpus = maximumVCPUs !== null && selectedVCPUs !== null && selectedVCPUs <= maximumVCPUs ? selectedVCPUs : null;
+        return { memoryMiB, vcpus, maximumVCPUs, memorySource,
+            cpuSource: `QEMU ${config.vcpus === undefined ? 'topology allocation' : 'explicit online vcpus'}; ${config.cores === undefined || (config.sockets === undefined && config.smp === undefined) ? 'documented missing cores/sockets default to 1' : 'explicit topology'}` };
+    }
+    function metric(samples, key) {
+        const points = list(samples).filter(s => object(s) && number(s.time) !== null && number(s[key]) !== null)
+            .map(s => ({ time: s.time, value: s[key] })).sort((a, b) => a.time - b.time);
+        if (!points.length) return { samples: 0, average: null, peak: null, firstTime: null, lastTime: null, change: null };
+        return { samples: points.length, average: points.reduce((n, s) => n + s.value / points.length, 0),
+            peak: points.reduce((n, s) => Math.max(n, s.value), 0), firstTime: points[0].time, lastTime: points.at(-1).time,
+            change: points.at(-1).time > points[0].time ? points.at(-1).value - points[0].value : null };
+    }
+    async function history(get, path, timeframe, keys) {
+        const average = await get(path, { timeframe, cf: 'AVERAGE' });
+        const maximum = await get(path, { timeframe, cf: 'MAX' });
+        return Object.fromEntries(keys.map(key => {
+            const a = metric(average, key), m = metric(maximum, key);
+            return [key, { average: a.average, peak: m.peak, averageSamples: a.samples, maximumSamples: m.samples,
+                firstTime: a.firstTime, lastTime: a.lastTime, observedChange: a.change }];
+        }));
+    }
+    async function capacity(ctx) {
+        const { report, get, guests, nodes, config, each, identity, resources, options } = ctx;
+        const timeframe = options.timeframe ?? 'week';
+        const reservePercent = options.reservePercent ?? 20;
+        if (!['day', 'week', 'month', 'year'].includes(timeframe)) throw Error('Choose day, week, month or year for capacity history.');
+        if (typeof reservePercent !== 'number' || !Number.isFinite(reservePercent) || reservePercent < 0 || reservePercent > 90)
+            throw Error('Choose a host memory reserve from 0 to 90 percent.');
+        report.timeframe = timeframe;
+        report.reservePercent = reservePercent;
+        const allocations = new Map(nodes.map(node => [node, []]));
+        const guestRows = new Map();
+        await each(guests, async guest => {
+            const c = object(await config(guest));
+            const allocation = guestAllocation(c, guest.type), { memoryMiB, vcpus } = allocation;
+            const row = { kind: 'guest', ...identity(guest), configuredMemoryBytes: memoryMiB === null ? null : number(memoryMiB * 1048576),
+                configuredVCPUs: number(vcpus), observedMemoryBytes: number(guest.mem), observedCPUFraction: number(guest.cpu),
+                configurationAvailable: !!c, maximumTopologyVCPUs: allocation.maximumVCPUs,
+                memoryConfigurationSource: allocation.memorySource, cpuConfigurationSource: allocation.cpuSource };
+            allocations.get(guest.node)?.push(row);
+            guestRows.set(`${guest.type}/${guest.vmid}`, row);
+        });
+        if (options.signal?.aborted) return;
+        const nodeRows = new Map(), storageRows = [];
+        // Node and storage histories keep request counts proportional to infrastructure,
+        // rather than two more history calls for every guest in a large inventory.
+        await each(nodes, async node => {
+            const path = `/nodes/${encoded(node)}`;
+            const status = object(await get(`${path}/status`, {}, 'object'));
+            const resource = list(resources).find(r => object(r) && r.type === 'node' && (r.node || (typeof r.id === 'string' ? r.id.replace(/^node\//, '') : null)) === node);
+            const selected = allocations.get(node) || [];
+            const total = number(status?.memory?.total) ?? number(resource?.maxmem);
+            const used = number(status?.memory?.used) ?? number(resource?.mem);
+            const cpus = number(status?.cpuinfo?.cpus) ?? number(resource?.maxcpu);
+            const memoryComplete = selected.every(r => r.configuredMemoryBytes !== null);
+            const cpuComplete = selected.every(r => r.configuredVCPUs !== null);
+            const allocated = memoryComplete ? number(selected.reduce((n, r) => n + r.configuredMemoryBytes, 0)) : null;
+            const vcpus = cpuComplete ? number(selected.reduce((n, r) => n + r.configuredVCPUs, 0)) : null;
+            const historical = await history(get, `${path}/rrddata`, timeframe, ['cpu', 'memused', 'memavailable']);
+            nodeRows.set(node, { kind: 'node', node, selectedVisibleGuests: selected.length,
+                configuredMemoryBytes: number(allocated), configuredVCPUs: number(vcpus), hostMemoryBytes: total,
+                observedMemoryBytes: used, observedAvailableMemoryBytes: number(status?.memory?.available), hostLogicalCPUs: cpus,
+                selectedMemoryAllocationRatio: ratio(allocated, total), selectedCPUAllocationRatio: ratio(vcpus, cpus),
+                allocationBalanceAfterReserveBytes: total !== null && allocated !== null ? total * (1 - reservePercent / 100) - allocated : null,
+                observedBalanceAfterReserveBytes: total !== null && used !== null ? total * (1 - reservePercent / 100) - used : null,
+                historical, allocationScope: 'Selected visible guests only; includes stopped guests and templates; not placement capacity' });
+            const stores = await get(`${path}/storage`);
+            if (stores === null) storageRows.push({ kind: 'storage', node, storage: null, state: 'Storage list unavailable' });
+            if (list(stores).some(s => !object(s) || typeof s.storage !== 'string')) {
+                report.issues.push({ path: `${path}/storage`, reason: 'Malformed storage entries omitted; storage evidence is incomplete' });
+                storageRows.push({ kind: 'storage', node, storage: null, state: 'Malformed storage entries; coverage incomplete' });
+            }
+            await each(list(stores).filter(s => object(s) && typeof s.storage === 'string'), async store => {
+                const active = flag(store.active), enabled = flag(store.enabled);
+                const historical = active === true && enabled !== false ?
+                    await history(get, `${path}/storage/${encoded(store.storage)}/rrddata`, timeframe, ['used', 'total']) : null;
+                storageRows.push({ kind: 'storage', node, storage: store.storage, shared: flag(store.shared), active, enabled,
+                    capacityBytes: number(store.total), usedBytes: number(store.used), availableBytes: number(store.avail),
+                    utilizationRatio: ratio(number(store.used), number(store.total)), historical,
+                    aggregation: 'Per-node observation; shared stores and aliases are not summed' });
+            });
+        });
+        if (options.signal?.aborted) return;
+        report.rows.push(...nodes.map(node => nodeRows.get(node)), ...[...guestRows.values()].sort((a, b) => a.node.localeCompare(b.node) || a.vmid - b.vmid),
+            ...storageRows.sort((a, b) => a.node.localeCompare(b.node) || String(a.storage).localeCompare(String(b.storage))));
+        report.notes.push('Allocation ratios use selected visible guest configurations, not physical reservations. Missing configurations keep totals unknown. Guest filters do not restrict host utilization or storage observations.');
+        report.notes.push('QEMU allocation supports numeric memory and the current property, plus documented defaults for omitted memory (512 MiB), cores (1) and sockets (1). Explicit online vcpus are separate from maximum topology. Unknown memory properties and unspecified container cores stay unknown.');
+        report.notes.push('Historical values summarize finite RRD samples: averages are means of AVERAGE buckets and peaks are maxima of MAX buckets. Missing intervals are not zeros; historical peaks need not occur together. No growth or exhaustion forecast is inferred.');
+        report.notes.push('Reserve is a user-selected planning allowance, not a Proxmox requirement. Ballooning, host services, caches, passthrough and workload bursts affect actual capacity. Node memory may differ from guest-reported consumption. No workload is resized or moved.');
+        report.notes.push('Storage observations are never summed: shared stores, aliases and backing pools can overlap. No reclaimable-space or safe-deletion conclusion is made.');
+    }
+    function packages(data, installed) {
+        if (!Array.isArray(data)) return null;
+        if (data.some(p => !object(p) || typeof p.Package !== 'string' || !/^[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?$/.test(p.Package) || typeof p.Version !== 'string')) return null;
+        return data.map(p => ({
+            package: p.Package, installedVersion: text(p.OldVersion), candidateVersion: text(p.Version),
+            ...(installed ? { state: text(p.CurrentState), runningKernel: text(p.RunningKernel), managerVersion: text(p.ManagerVersion) } : {}),
+        })).sort((a, b) => a.package.localeCompare(b.package));
+    }
+    function repositories(data) {
+        if (!object(data) || !Array.isArray(data.files)) return null;
+        if (data.files.some(file => !object(file) || !Array.isArray(file.repositories) || file.repositories.some(repo => !object(repo)))) return null;
+        const rows = [];
+        for (const file of data.files) for (const repo of list(file?.repositories)) {
+            if (!object(repo)) continue;
+            rows.push({ enabled: flag(repo.Enabled),
+                types: list(repo.Types).filter(v => typeof v === 'string'),
+                suites: list(repo.Suites).filter(v => typeof v === 'string'),
+                components: list(repo.Components).filter(v => typeof v === 'string'),
+                origins: [...new Set(list(repo.URIs).map(uri => {
+                    try { const url = new URL(uri); return ['http:', 'https:'].includes(url.protocol) ? url.origin : 'non-HTTP repository'; }
+                    catch { return 'unparsed repository'; }
+                }))].sort() });
+        }
+        // Raw parser errors, file paths, URI paths/queries and options may contain secrets.
+        return { entries: rows, parserErrorCount: Array.isArray(data.errors) ? data.errors.length : null };
+    }
+    async function updates(ctx) {
+        const { report, get, nodes, each, options } = ctx;
+        const results = new Map();
+        await each(nodes, async node => {
+            const path = `/nodes/${encoded(node)}`;
+            const rawVersions = await get(`${path}/apt/versions`);
+            const versions = packages(rawVersions, true);
+            const rawUpdates = await get(`${path}/apt/update`);
+            const available = packages(rawUpdates, false);
+            const rawRepositories = await get(`${path}/apt/repositories`, {}, 'object');
+            const repository = repositories(rawRepositories);
+            for (const [suffix, raw, parsed] of [['versions', rawVersions, versions], ['update', rawUpdates, available], ['repositories', rawRepositories, repository]])
+                if (raw !== null && parsed === null) report.issues.push({ path: `${path}/apt/${suffix}`, reason: 'Unexpected package or repository data; evidence unavailable' });
+            const status = object(await get(`${path}/status`, {}, 'object'));
+            const pve = versions?.find(p => p.package === 'pve-manager');
+            const running = text(status?.['current-kernel']?.release) ?? versions?.find(p => p.runningKernel)?.runningKernel ?? null;
+            const kernelReleases = versions === null ? null : [...new Set(versions.filter(p => p.state === 'Installed')
+                .map(p => p.package.match(/^(?:proxmox|pve)-kernel-(\d[\w.+~-]*-pve)(?:-signed)?$/)?.[1]).filter(Boolean))].sort();
+            const review = !running || kernelReleases === null || !kernelReleases.length ? 'Unknown; kernel evidence incomplete' :
+                kernelReleases.some(k => k !== running) ? 'Other installed kernels found; review boot selection and maintenance needs' :
+                    'Running kernel matches the only visible installed kernel release; reboot need not established';
+            results.set(node, { node, installedManagerVersion: pve?.state === 'Installed' ? pve.installedVersion : null,
+                runningManagerVersion: pve?.managerVersion ?? null, runningKernel: running,
+                availableUpdateCount: available?.length ?? null, packageIndexFreshness: 'Unknown; local APT data only',
+                repositoryCount: repository?.entries.length ?? null, repositoryParserErrors: repository?.parserErrorCount ?? null,
+                kernelReview: review, installedKernelReleases: kernelReleases, packages: versions, availableUpdates: available, repositories: repository });
+        });
+        if (options.signal?.aborted) return;
+        report.rows.push(...nodes.map(node => {
+            const { packages: ignoredPackages, availableUpdates: ignoredUpdates, repositories: ignoredRepositories, ...row } = results.get(node);
+            return row;
+        }));
+        report.nodePackages = nodes.map(node => ({ node, packages: results.get(node).packages, availableUpdates: results.get(node).availableUpdates,
+            repositories: results.get(node).repositories }));
+        const names = [...new Set(report.nodePackages.flatMap(n => list(n.packages).map(p => p.package)))].sort();
+        report.versionDifferences = names.map(name => ({ package: name, nodes: nodes.map(node => {
+            const p = results.get(node).packages?.find(p => p.package === name);
+            return { node, installedVersion: p?.state === 'Installed' ? p.installedVersion : null, state: p?.state ?? 'unknown / not returned' };
+        }) })).filter(p => new Set(p.nodes.filter(n => n.installedVersion !== null).map(n => n.installedVersion)).size > 1);
+        report.notes.push('Installed package versions use OldVersion from the Proxmox API; Version is the candidate version. Differences show distinct observed installed versions, not upgrade ordering or compatibility. Missing packages or denied nodes stay unknown.');
+        report.notes.push('Available updates come from local APT data. Its age is not established; zero listed updates does not prove a fully patched system. Collection never refreshes repository indexes, installs packages, changes repositories or reboots.');
+        report.notes.push('Additional installed kernels may be deliberate fallbacks or pins. No bootloader selection, service restart requirement, security-patch classification or definitive reboot requirement is inferred. Use native maintenance checks before acting.');
+        report.notes.push('Repository exports contain only enablement, types, suites, components and HTTP(S) origins; credentials, URI paths/queries, options and raw parser messages are omitted.');
+    }
+    return { capacity, updates };
+})();
+
+
+    // On-demand configuration comparisons and firewall evidence. No runtime dependencies.
+const DriftFirewall = (() => {
+    const SCHEMA = 'proxmox-toolkit-baseline/1';
+    const NETWORK_KEYS = ['iface', 'type', 'address', 'address6', 'netmask', 'netmask6', 'gateway', 'gateway6', 'cidr', 'cidr6',
+        'bridge_ports', 'slaves', 'bond_slaves', 'bond_mode', 'bond_miimon', 'mtu', 'bridge_vlan_aware', 'bridge_vids', 'vlan-id', 'vlan-raw-device', 'autostart'];
+    const STORAGE_KEYS = ['storage', 'type', 'content', 'nodes', 'shared', 'disable', 'path', 'server', 'export', 'pool', 'vgname', 'thinpool', 'datastore', 'namespace'];
+    const GUEST_KEYS = ['name', 'hostname', 'cores', 'sockets', 'cpu', 'memory', 'balloon', 'bios', 'machine', 'ostype', 'scsihw',
+        'boot', 'bootdisk', 'onboot', 'startup', 'agent', 'tags', 'protection', 'numa', 'unprivileged', 'features', 'rootfs', 'efidisk0', 'tpmstate0'];
+    const guestKey = key => GUEST_KEYS.includes(key) || /^(?:scsi|sata|ide|virtio|unused|mp|net|ipconfig|hostpci|usb|serial)\d+$/.test(key);
+    const record = v => !!v && typeof v === 'object' && !Array.isArray(v);
+    const scalar = v => typeof v === 'string' || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v));
+    const clean = (obj, accepts) => Object.fromEntries(Object.entries(obj || {}).filter(([key, value]) => accepts(key) && scalar(value)));
+    const select = (obj, keys) => clean(obj, key => keys.includes(key));
+    const array = v => Array.isArray(v) ? v : [];
+    const flag = value => [1, '1', true].includes(value) ? true : [0, '0', false].includes(value) ? false : null;
+    const flagText = value => value === null ? 'unspecified / unknown' : value ? 'explicitly enabled' : 'explicitly disabled';
+    const failBaseline = () => { throw Error('Choose a valid Toolkit configuration baseline under 4 MiB with matching origin and scope.'); };
+    function origin(value) {
+        try { const u = new URL(value); if (u.protocol === 'https:' && u.origin === value && !u.username && !u.password) return u.origin; } catch { /* fixed error below */ }
+        return failBaseline();
+    }
+    function apiPrefix(value = '/') {
+        if (typeof value !== 'string' || !/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(value)) failBaseline();
+        return value;
+    }
+    function requestedScope(options = {}) {
+        const vmids = typeof options.vmids === 'string' ? options.vmids.split(/[;,\s]+/).filter(Boolean) : array(options.vmids).map(String);
+        if (vmids.some(v => !/^\d+$/.test(v)) || vmids.length > 2000) failBaseline();
+        return { node: options.node || null, vmids: [...new Set(vmids)].sort() };
+    }
+    function guardImport(value) {
+        const stack = [[value, 0]], seen = new Set(); let entries = 0;
+        while (stack.length) {
+            const [item, depth] = stack.pop();
+            if (++entries > 100000 || depth > 12) failBaseline();
+            if (item !== null && typeof item === 'object') {
+                if (seen.has(item)) failBaseline();
+                seen.add(item);
+                const pairs = Object.entries(item);
+                if (pairs.length > 10000) failBaseline();
+                for (const [key, entry] of pairs) {
+                    if (['__proto__', 'constructor', 'prototype'].includes(key)) failBaseline();
+                    stack.push([entry, depth + 1]);
+                }
+            } else if (item !== null && !scalar(item)) failBaseline();
+        }
+        // Measure the actual pretty-printed export's UTF-8 size, including JSON escaping.
+        const text = JSON.stringify(value, null, 2); let bytes = 0;
+        for (let i = 0; i < text.length; i++) {
+            const cp = text.codePointAt(i);
+            bytes += cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+            if (cp > 0xffff) i++;
+            if (bytes > 4 * 1024 * 1024) failBaseline();
+        }
+    }
+    function validateBaseline(value, options = {}) {
+        const b = record(value) && value.schema === 'proxmox-toolkit-report/1' && value.feature === 'DRIFT' ? value.baseline : value;
+        guardImport(b);
+        if (!record(b) || b.schema !== SCHEMA || !record(b.scope) || typeof b.collectedAt !== 'string' || !Number.isFinite(Date.parse(b.collectedAt)) ||
+            !Array.isArray(b.guests) || b.guests.length > 2000 || !Array.isArray(b.nodes) || b.nodes.length > 100 ||
+            !(b.storage === null || Array.isArray(b.storage) && b.storage.length <= 2000)) failBaseline();
+        const source = origin(b.origin);
+        const prefix = apiPrefix(b.apiPrefix);
+        if (options.origin !== undefined && source !== origin(options.origin)) failBaseline();
+        if (options.apiPrefix !== undefined && prefix !== apiPrefix(options.apiPrefix)) failBaseline();
+        if (!(b.scope.node === null || typeof b.scope.node === 'string' && b.scope.node.length <= 255) ||
+            !Array.isArray(b.scope.vmids) || b.scope.vmids.some(id => typeof id !== 'string' || !/^\d+$/.test(id))) failBaseline();
+        const scope = requestedScope(b.scope);
+        if (options.node !== undefined || options.vmids !== undefined) {
+            if (JSON.stringify(scope) !== JSON.stringify(requestedScope(options))) failBaseline();
+        }
+        const unique = new Set();
+        const guests = b.guests.map(g => {
+            if (!record(g) || !['qemu', 'lxc'].includes(g.type) || !/^\d+$/.test(String(g.vmid)) || !Number.isSafeInteger(Number(g.vmid)) || Number(g.vmid) < 1 || typeof g.node !== 'string' ||
+                !(g.configuration === null || record(g.configuration))) failBaseline();
+            const key = `${g.type}/${Number(g.vmid)}`; if (unique.has(key)) failBaseline(); unique.add(key);
+            if (g.configuration && Object.keys(g.configuration).length > 256) failBaseline();
+            if (g.configuration && Object.entries(g.configuration).some(([key, v]) => guestKey(key) && !scalar(v))) failBaseline();
+            return { type: g.type, vmid: Number(g.vmid), node: g.node, configuration: g.configuration === null ? null : clean(g.configuration, guestKey) };
+        });
+        const nodeNames = new Set();
+        const nodes = b.nodes.map(n => {
+            if (!record(n) || typeof n.node !== 'string' || nodeNames.has(n.node) || !(n.network === null || Array.isArray(n.network) && n.network.length <= 1000)) failBaseline();
+            nodeNames.add(n.node);
+            const network = n.network === null ? null : n.network.map(i => {
+                if (!record(i) || typeof i.iface !== 'string') failBaseline();
+                if (Object.entries(i).some(([key, v]) => NETWORK_KEYS.includes(key) && !scalar(v))) failBaseline();
+                return select(i, NETWORK_KEYS);
+            });
+            if (network && new Set(network.map(i => i.iface)).size !== network.length) failBaseline();
+            return { node: n.node, network };
+        });
+        const storage = b.storage === null ? null : b.storage.map(s => {
+            if (!record(s) || typeof s.storage !== 'string') failBaseline();
+            if (Object.entries(s).some(([key, v]) => STORAGE_KEYS.includes(key) && !scalar(v))) failBaseline();
+            return select(s, STORAGE_KEYS);
+        });
+        if (storage && new Set(storage.map(s => s.storage)).size !== storage.length) failBaseline();
+        return { schema: SCHEMA, origin: source, apiPrefix: prefix, collectedAt: b.collectedAt, scope, guests, nodes, storage };
+    }
+    function boundedList(ctx, value, limit, path) {
+        if (value === null) return null;
+        if (!Array.isArray(value)) { ctx.report.issues.push({ path, reason: 'Unexpected list shape' }); return null; }
+        if (value.length > limit) ctx.report.issues.push({ path, reason: `${limit}-entry limit reached; evidence incomplete` });
+        const selected = value.slice(0, limit);
+        if (selected.some(v => !record(v))) {
+            ctx.report.issues.push({ path, reason: 'Malformed list entry; evidence unavailable' }); return null;
+        }
+        return selected;
+    }
+    function keyedList(ctx, list, path, key) {
+        if (list === null) return null;
+        if (list.some(v => typeof v[key] !== 'string' || !v[key]) || new Set(list.map(v => v[key])).size !== list.length) {
+            ctx.report.issues.push({ path, reason: `Malformed or duplicate ${key}; evidence unavailable` }); return null;
+        }
+        return list;
+    }
+    async function drift(ctx) {
+        const { report, get, guests, nodes, config, each, options, part } = ctx;
+        const scope = requestedScope(options);
+        const source = origin(options.origin);
+        const prefix = apiPrefix(options.apiPrefix);
+        // Validate before collecting anything additional; imported values never supply request paths.
+        const previous = options.baseline ? validateBaseline(options.baseline, { ...scope, origin: source, apiPrefix: prefix }) : null;
+        const baseline = { schema: SCHEMA, origin: source, apiPrefix: prefix, collectedAt: report.collectedAt, scope, guests: [], nodes: [], storage: null };
+        await each(guests, async g => {
+            const c = await config(g);
+            baseline.guests.push({ type: g.type, vmid: Number(g.vmid), node: g.node, configuration: c === null ? null : clean(c, guestKey) });
+        });
+        await each(nodes, async node => {
+            const path = `/nodes/${part(node)}/network`, list = keyedList(ctx, boundedList(ctx, await get(path), 1000, path), path, 'iface');
+            baseline.nodes.push({ node, network: list === null ? null : list.map(n => select(n, NETWORK_KEYS)).sort((a, b) => a.iface.localeCompare(b.iface)) });
+        });
+        const stores = keyedList(ctx, boundedList(ctx, await get('/storage'), 2000, '/storage'), '/storage', 'storage');
+        baseline.storage = stores === null ? null : stores.filter(s => !scope.node || !s.nodes || String(s.nodes).split(/[;,\s]+/).includes(scope.node))
+            .map(s => select(s, STORAGE_KEYS)).sort((a, b) => a.storage.localeCompare(b.storage));
+        baseline.guests.sort((a, b) => `${a.type}/${a.vmid}`.localeCompare(`${b.type}/${b.vmid}`));
+        baseline.nodes.sort((a, b) => a.node.localeCompare(b.node));
+        try { report.baseline = validateBaseline(baseline); }
+        catch {
+            report.baseline = null;
+            report.issues.push({ path: 'baseline', reason: 'Baseline exceeds supported import size/shape limits; narrow the scope before exporting a reusable baseline.' });
+        }
+        report.comparison = previous ? { previousCollectedAt: previous.collectedAt, currentCollectedAt: baseline.collectedAt } : null;
+        const row = (resource, setting, before, after, state, extra = {}) => report.rows.push({ resource, setting, before, after, state, ...extra });
+        const compare = (resource, a, b, extra = {}, isGuest = false) => {
+            if (a === null || b === null) { row(resource, 'configuration', a === null ? 'unknown' : 'collected', b === null ? 'unknown' : 'collected', 'comparison unavailable', extra); return; }
+            const normalize = value => {
+                const c = { ...value };
+                if (isGuest && options.ignoreIdentity !== false) {
+                    delete c.name; delete c.hostname;
+                    for (const key of Object.keys(c)) if (/^net\d+$/.test(key)) c[key] = String(c[key]).replace(/([a-z0-9_-]+=)[0-9a-f]{2}(?::[0-9a-f]{2}){5}/ig, '$1<MAC>');
+                }
+                return c;
+            };
+            const left = normalize(a), right = normalize(b);
+            for (const key of [...new Set([...Object.keys(left), ...Object.keys(right)])].sort()) {
+                if (JSON.stringify(left[key]) !== JSON.stringify(right[key])) row(resource, key, left[key] ?? null, right[key] ?? null,
+                    !Object.hasOwn(left, key) ? 'setting added' : !Object.hasOwn(right, key) ? 'setting removed' : 'changed', extra);
+            }
+        };
+        const compareList = (label, a, b, key) => {
+            if (a === null || b === null) { compare(label, a === null ? null : {}, b === null ? null : {}); return; }
+            const left = new Map(a.map(v => [v[key], v])), right = new Map(b.map(v => [v[key], v]));
+            for (const id of [...new Set([...left.keys(), ...right.keys()])].sort()) {
+                if (!left.has(id) || !right.has(id)) row(`${label}/${id}`, 'visibility', left.has(id) ? 'visible' : 'not observed', right.has(id) ? 'visible' : 'not observed', right.has(id) ? 'newly visible' : 'not currently visible; deletion not established');
+                else compare(`${label}/${id}`, left.get(id), right.get(id));
+            }
+        };
+        if (!previous) {
+            for (const g of baseline.guests) row(`${g.type}/${g.vmid}`, 'baseline', null, g.configuration === null ? 'unknown' : 'collected', 'baseline captured', { node: g.node, type: g.type, vmid: g.vmid });
+            for (const n of baseline.nodes) row(`node/${n.node}`, 'network baseline', null, n.network === null ? 'unknown' : `${n.network.length} interfaces`, 'baseline captured');
+            row('storage', 'baseline', null, baseline.storage === null ? 'unknown' : `${baseline.storage.length} definitions`, 'baseline captured');
+        } else {
+            const oldGuests = new Map(previous.guests.map(g => [`${g.type}/${g.vmid}`, g])), newGuests = new Map(baseline.guests.map(g => [`${g.type}/${g.vmid}`, g]));
+            for (const key of [...new Set([...oldGuests.keys(), ...newGuests.keys()])].sort()) {
+                const a = oldGuests.get(key), b = newGuests.get(key), g = b || a, extra = { node: g.node, type: g.type, vmid: g.vmid };
+                if (!a || !b) row(key, 'visibility', a ? 'visible' : 'not observed', b ? 'visible' : 'not observed', b ? 'newly visible' : 'not currently visible; deletion not established', extra);
+                else {
+                    if (a.node !== b.node) row(key, 'node', a.node, b.node, 'placement changed; identity continuity not established', extra);
+                    compare(key, a.configuration, b.configuration, extra, true);
+                }
+            }
+            const oldNodes = new Map(previous.nodes.map(n => [n.node, n])), newNodes = new Map(baseline.nodes.map(n => [n.node, n]));
+            for (const node of [...new Set([...oldNodes.keys(), ...newNodes.keys()])].sort()) compareList(`node/${node}/network`, oldNodes.get(node)?.network ?? null, newNodes.get(node)?.network ?? null, 'iface');
+            compareList('storage', previous.storage, baseline.storage, 'storage');
+        }
+        report.notes.push(previous ? 'Changes compare two explicit observations, not a continuous audit log. No actor or exact change time is established.' : report.baseline ? 'Download configuration baseline to preserve this observation, then import it on a later run with the same origin, API prefix and scope. No history is stored automatically.' : 'A reusable baseline could not be produced. Narrow the scope and run again.');
+        report.notes.push('Guest identity is matched by type and VMID. Reused VMIDs, rebuilt nodes and permission changes cannot be distinguished reliably; absence never proves deletion. Configuration and network secrets/free-form comments are omitted.');
+        report.notes.push('Storage definitions are cluster-wide within the selected node restriction; guest filters apply only to guest configuration. Missing, capped and inaccessible data remain incomplete evidence.');
+    }
+    async function firewall(ctx) {
+        const { report, get, guests, nodes, config, each, part, guestPath } = ctx;
+        const optionKeys = ['enable', 'nftables', 'policy_in', 'policy_out', 'policy_forward', 'ipfilter', 'macfilter', 'dhcp', 'ndp', 'radv', 'log_level_in', 'log_level_out'];
+        const ruleKeys = ['pos', 'type', 'action', 'enable', 'source', 'dest', 'proto', 'sport', 'dport', 'iface', 'macro', 'ipversion', 'icmp-type', 'log'];
+        // Guest aliases/IP sets cost two or more extra requests per guest, so
+        // they are opt-in; cluster sets, which guest rules usually reference, stay.
+        const guestSets = ctx.options.includeGuestSets === true;
+        const evidence = { cluster: null, nodes: [], guests: [], groups: [], groupListAvailable: false, guestSetsRequested: guestSets };
+        report.firewall = evidence;
+        const references = new Map();
+        const addReference = (group, scope) => {
+            if (typeof group !== 'string' || !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(group)) {
+                report.issues.push({ path: scope, reason: 'Invalid security-group reference; not followed' }); return;
+            }
+            if (!references.has(group)) references.set(group, new Set());
+            references.get(group).add(scope);
+        };
+        const row = (scope, kind, item, value, details = null, extra = {}) => report.rows.push({ scope, kind, item, value, details, ...extra });
+        async function rulesAt(path) {
+            const list = boundedList(ctx, await get(path), 1000, path);
+            if (list === null) return null;
+            if (list.some(r => typeof r.type !== 'string' || typeof r.action !== 'string' || (r.pos !== undefined && (!Number.isInteger(r.pos) || r.pos < 0)))) {
+                report.issues.push({ path, reason: 'Malformed firewall rule; evidence unavailable' }); return null;
+            }
+            return list.map(r => select(r, ruleKeys)).sort((a, b) => (a.pos ?? Infinity) - (b.pos ?? Infinity));
+        }
+        async function collect(scope, path, withSets, extra = {}) {
+            const rawOptions = await get(`${path}/options`, {}, 'object');
+            const options = record(rawOptions) ? select(rawOptions, optionKeys) : null;
+            const rules = await rulesAt(`${path}/rules`);
+            const entry = { scope, options, rules, aliases: null, ipsets: null, ...extra };
+            row(scope, 'enablement', 'Firewall flag', options === null ? 'unavailable' : flagText(flag(options.enable)), null, extra);
+            for (const key of ['policy_in', 'policy_out', 'policy_forward']) if (options && Object.hasOwn(options, key)) row(scope, 'policy', key, options[key], null, extra);
+            if (rules === null) row(scope, 'rules', 'Rule list', 'unavailable', null, extra);
+            else for (const r of rules) {
+                row(scope, r.type === 'group' ? 'group reference' : 'rule', `Rule ${r.pos ?? '?'}`, `${r.type ?? 'unknown'} ${r.action ?? 'unknown'}`,
+                    { ...r, enabled: flag(r.enable) }, extra);
+                if (r.type === 'group') addReference(r.action, scope);
+            }
+            if (withSets) {
+                const aliases = keyedList(ctx, boundedList(ctx, await get(`${path}/aliases`), 1000, `${path}/aliases`), `${path}/aliases`, 'name');
+                entry.aliases = aliases === null ? null : aliases.map(a => select(a, ['name', 'cidr']));
+                let sets = keyedList(ctx, boundedList(ctx, await get(`${path}/ipset`), 50, `${path}/ipset`), `${path}/ipset`, 'name');
+                if (sets?.some(s => !/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(s.name))) {
+                    report.issues.push({ path: `${path}/ipset`, reason: 'Invalid IP-set name; evidence unavailable' }); sets = null;
+                }
+                entry.ipsets = sets === null ? null : [];
+                await each(array(sets), async s => {
+                    const p = `${path}/ipset/${part(s.name)}`, members = keyedList(ctx, boundedList(ctx, await get(p), 1000, p), p, 'cidr');
+                    entry.ipsets.push({ name: s.name, members: members === null ? null : members.map(m => select(m, ['cidr', 'nomatch'])) });
+                });
+                entry.ipsets?.sort((a, b) => a.name.localeCompare(b.name));
+            }
+            return entry;
+        }
+        evidence.cluster = await collect('cluster', '/cluster/firewall', true);
+        const listed = keyedList(ctx, boundedList(ctx, await get('/cluster/firewall/groups'), 100, '/cluster/firewall/groups'), '/cluster/firewall/groups', 'group');
+        evidence.groupListAvailable = listed !== null;
+        const listedGroups = new Set(array(listed).map(g => g.group).filter(g => typeof g === 'string'));
+        await each(nodes, async node => {
+            const entry = await collect(`node/${node}`, `/nodes/${part(node)}/firewall`, false, { node });
+            const backend = flag(entry.options?.nftables);
+            entry.backend = backend === null ? 'unspecified / unknown' : backend ? 'nftables requested' : 'legacy requested';
+            row(entry.scope, 'backend', 'Configured backend', entry.backend, 'Runtime service state is not established.', { node });
+            evidence.nodes.push(entry);
+        });
+        await each(guests, async g => {
+            const extra = { node: g.node, vmid: g.vmid, type: g.type }, scope = `${g.type}/${g.vmid}`;
+            const entry = await collect(scope, `${guestPath(g)}/firewall`, guestSets, extra), c = await config(g);
+            if (!guestSets) entry.sets = 'not requested'; // null aliases/ipsets here are not denied evidence
+            entry.nics = c === null ? null : Object.entries(c).filter(([key]) => /^net\d+$/.test(key)).map(([nic, value]) => {
+                const fields = ctx.fields(value); return { nic, firewall: flag(fields.firewall), bridge: fields.bridge ?? null };
+            });
+            if (entry.nics === null) row(scope, 'NIC flags', 'NIC configuration', 'unavailable', null, extra);
+            for (const nic of array(entry.nics)) row(scope, 'NIC flag', nic.nic, flagText(nic.firewall), { bridge: nic.bridge }, extra);
+            evidence.guests.push(entry);
+        });
+        // Iterative graph collection prevents recursive cycles and fetches shared groups once.
+        const fetched = new Set();
+        while (true) {
+            if (ctx.options.signal?.aborted) break;
+            const pending = [...references.keys()].filter(g => !fetched.has(g)).sort().slice(0, Math.max(0, 100 - fetched.size));
+            if (!pending.length) break;
+            await each(pending, async group => {
+                fetched.add(group);
+                const path = `/cluster/firewall/groups/${part(group)}`, rules = await rulesAt(path);
+                const item = { group, listed: listed === null ? null : listedGroups.has(group), rules, usedBy: [] };
+                evidence.groups.push(item);
+                for (const r of array(rules)) if (r.type === 'group') addReference(r.action, `group/${group}`);
+            });
+        }
+        if ([...references.keys()].some(g => !fetched.has(g))) report.issues.push({ path: '/cluster/firewall/groups', reason: '100 referenced-group limit reached; evidence incomplete' });
+        const groupMap = new Map(evidence.groups.map(g => [g.group, g]));
+        for (const group of evidence.groups) {
+            group.usedBy = [...(references.get(group.group) || [])].sort();
+            const visited = new Set(), stack = [group.group]; let cycle = false;
+            while (stack.length) {
+                const current = stack.pop(); if (visited.has(current)) continue; visited.add(current);
+                for (const r of array(groupMap.get(current)?.rules)) if (r.type === 'group' && typeof r.action === 'string') {
+                    if (r.action === group.group) cycle = true;
+                    else if (!visited.has(r.action)) stack.push(r.action);
+                }
+            }
+            group.cycle = cycle;
+            row('cluster', 'security group', group.group, group.rules === null ? 'unavailable' : cycle ? 'reference cycle; inspect configuration' : `${group.rules.length} configured rules`, { usedBy: group.usedBy, listed: group.listed, rules: group.rules });
+        }
+        evidence.nodes.sort((a, b) => a.scope.localeCompare(b.scope));
+        evidence.guests.sort((a, b) => a.scope.localeCompare(b.scope));
+        evidence.groups.sort((a, b) => a.group.localeCompare(b.group));
+        report.rows.sort((a, b) => a.scope.localeCompare(b.scope));
+        report.notes.push('Configured firewall evidence only. Explicit flags, backend requests and rule references do not establish loaded rules or actual packet outcomes. Omitted options retain unspecified/unknown status rather than assuming version-specific defaults.');
+        report.notes.push('Cluster, node, guest and NIC settings have different scopes. Node host rules are not treated as an inherited guest ruleset. Connection state, guest firewalls, switches, SDN and runtime backend behavior require separate checks.');
+        report.notes.push(`Security-group usage covers collected scopes only, including disabled references. Cluster aliases and IP sets are in Additional evidence/JSON. ${guestSets ? 'Guest aliases and IP sets were collected.' : 'Guest aliases and IP sets were not requested; enable that option to collect them (two or more extra requests per guest).'} Free-form comments are omitted; addresses and rules may still be sensitive.`);
+    }
+    return { drift, firewall, validateBaseline };
+})();
+
+
+    // Local, explicitly collected evidence. No upload or persistent report history.
+const SupportBundle = (() => {
+    const sections = ['versions', 'configurations', 'network', 'storage', 'diagnostics', 'task'];
+    const scalar = v => typeof v === 'string' || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v)) ? v : null;
+    const pick = (v, keys) => Object.fromEntries(keys.map(k => [k, scalar(v?.[k])]));
+    async function collect(ctx) {
+        const { report, get, guests, nodes, config, each, identity, options, safeConfig, part } = ctx;
+        const selected = new Set((options.supportSections || ['versions', 'configurations', 'diagnostics']).filter(s => sections.includes(s)));
+        report.bundle = { sections: [...selected], subjects: guests.map(identity), nodes: [...nodes] };
+        const evidence = report.bundle.evidence = {};
+        const add = (section, subject, data, state = data === null ? 'unavailable' : 'collected') => {
+            (evidence[section] ||= []).push({ subject, state, data });
+            report.rows.push({ section, subject, state });
+        };
+        if (selected.has('versions')) await each(nodes, async node => {
+            const data = await get(`/nodes/${part(node)}/apt/versions`);
+            add('versions', node, data === null ? null : data.map(p => pick(p, ['Package', 'OldVersion', 'Version', 'CurrentState', 'RunningKernel', 'ManagerVersion'])));
+        });
+        if (selected.has('configurations')) await each(guests, async g => {
+            const data = await config(g);
+            add('configurations', `${g.type}/${g.vmid}`, data === null ? null : safeConfig(data));
+        });
+        if (selected.has('network')) await each(nodes, async node => {
+            const data = await get(`/nodes/${part(node)}/network`);
+            add('network', node, data === null ? null : data.map(n => pick(n, ['iface', 'type', 'address', 'netmask', 'gateway', 'cidr', 'mtu', 'bridge_ports', 'slaves', 'bond_slaves', 'bridge_vlan_aware', 'vlan-id'])));
+        });
+        if (selected.has('storage')) {
+            const data = await get('/storage');
+            add('storage', 'cluster', data === null ? null : data.map(s => pick(s, ['storage', 'type', 'content', 'nodes', 'shared', 'path', 'server', 'export', 'pool', 'vgname', 'thinpool'])));
+        }
+        if (selected.has('diagnostics')) add('diagnostics', 'Toolkit', pick(options.toolkit, ['version', 'edition', 'manager', 'clipboardRead', 'clipboardWrite', 'secureContext']));
+        if (selected.has('task')) {
+            const upid = String(options.upid || '').trim(), node = upid.match(/^UPID:([^:]+):.+/)?.[1];
+            if (!node || !nodes.includes(node)) {
+                report.issues.push({ path: 'task', reason: 'Task owner is not visible in the selected scope; no task collected' });
+            } else {
+                const base = `/nodes/${part(node)}/tasks/${part(upid)}`;
+                const status = await get(`${base}/status`, {}, 'object');
+                const log = await get(`${base}/log`, { start: 0, limit: 5000 });
+                add('task', upid, { status: status === null ? null : pick(status, ['status', 'exitstatus', 'type', 'starttime', 'endtime']),
+                    log: log === null ? null : log.slice(0, 5000).map(l => pick(l, ['n', 't'])) },
+                    status === null && log === null ? 'unavailable' : status === null || log === null ? 'partial' : 'collected');
+                if (log?.length >= 5000) report.issues.push({ path: 'task', reason: '5,000-line limit reached; log may be incomplete' });
+            }
+        }
+        report.notes.push('Review the prepared preview before sharing. Assisted redaction cannot identify every secret in task logs or free text.');
+        report.notes.push('Selected structured evidence only; not a complete pvereport, host backup or automatic support submission. No console text or clipboard content is collected.');
+    }
+    function prepare(report, options = {}) {
+        const symptoms = String(options.symptoms || ''), steps = String(options.steps || '');
+        const custom = String(options.replacements || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+        if (symptoms.length + steps.length > 65536 || custom.length > 100 || custom.some(s => s.length > 256))
+            throw Error('Keep the narrative under 65,536 characters and replacements to 100 lines of at most 256 characters.');
+        const source = { schema: 'proxmox-toolkit-support/1', collectedAt: report.collectedAt,
+            scope: report.scope, selection: report.selection, symptoms, reproductionSteps: steps,
+            bundle: report.bundle, issues: report.issues, notes: report.notes };
+        const known = new Set(custom);
+        if (options.redact !== false) {
+            for (const n of report.bundle?.nodes || []) if (typeof n === 'string') known.add(n);
+            for (const g of report.bundle?.subjects || []) for (const k of ['node', 'name']) if (typeof g[k] === 'string' && g[k]) known.add(g[k]);
+            for (const entry of report.bundle?.evidence?.configurations || []) for (const k of ['name', 'hostname'])
+                if (typeof entry.data?.[k] === 'string' && entry.data[k]) known.add(entry.data[k]);
+            for (const entry of report.bundle?.evidence?.storage || []) for (const s of entry.data || [])
+                if (typeof s.server === 'string' && s.server) known.add(s.server);
+        }
+        const labels = new Map();
+        const label = value => {
+            if (!labels.has(value)) { if (labels.size >= 10000) return '[REDACTED]'; labels.set(value, `[REDACTED-${labels.size + 1}]`); }
+            return labels.get(value);
+        };
+        // Secrets are replaced first with a private-use sentinel so that identifier
+        // matching cannot consume a key prefix (for example host.password=...) and
+        // generated placeholders are never reprocessed by later patterns.
+        const SENTINEL = '\uE000';
+        let secrets = 0;
+        const secret = (prefix = '', quote = '') => { secrets++; return `${prefix}${quote}${SENTINEL}${quote}`; };
+        const secretPattern = options.redact === false ? null : new RegExp([
+            // Whole header values, including multi-pair Cookie headers and Bearer/Basic schemes.
+            String.raw`(?<header>(?:\b(?:proxy-)?authorization|\bset-cookie|\bcookie)\s*:\s*)[^\r\n]+`,
+            // Keyed values. No leading word boundary: PVE names embed the keyword
+            // (CSRFPreventionToken, PVEAuthCookie, PVEAPIToken, client_secret).
+            String.raw`(?<key>(?:password|passwd|passphrase|token|secret|cookie|ticket|authorization|api[_-]?key|private[_-]?key)["']?\s*[:=]\s*)(?:"(?<dq>[^"\r\n]*)"|'(?<sq>[^'\r\n]*)'|[^\s,;"'&]+)`,
+            // Bare PVE API token secret after user@realm!tokenid=; the identity is labelled later.
+            String.raw`(?<=@[\w.-]+![\w.-]+=)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b`,
+            // Bare PVE authentication or VNC ticket.
+            String.raw`\bPVE(?:VNC)?:[^\s:]*:[0-9a-f]{8}::[a-z0-9+/=]+`,
+        ].join('|'), 'gi');
+        // Match original text once: generated placeholders must never be reprocessed.
+        // Email and host matches anchor on a lookbehind rather than a word boundary so a long
+        // hyphen/dot run offers one start position instead of one per word.
+        const literals = [...known].filter(Boolean).sort((a, b) => b.length - a.length);
+        const patterns = options.redact === false ? [] : [
+            String.raw`(?<email>(?<![A-Z0-9._%+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+(?:\.[A-Z]{2,}|![A-Z0-9._-]+)?\b)`,
+            String.raw`(?<mac>\b(?:[0-9a-f]{2}:){5}[0-9a-f]{2}\b)`,
+            String.raw`(?<ipv4>\b(?:\d{1,3}\.){3}\d{1,3}\b)`,
+            String.raw`(?<ipv6>(?<![\w])(?:[0-9a-f]{0,4}:){2,}[0-9a-f:.]*(?![\w]))`,
+            String.raw`(?<host>(?<![a-z0-9-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z][a-z0-9-]*\b)`,
+        ];
+        if (literals.length) patterns.push(`(?<literal>(?<![\\w.-])(?:${literals.map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?![\\w.-]))`);
+        const pattern = patterns.length ? new RegExp(patterns.join('|'), 'gi') : null;
+        // Clock times such as 01:02:03 share IPv6 characters but are not addresses:
+        // require a compressed form, eight groups, or six groups plus embedded IPv4.
+        const ipv6 = value => {
+            const colons = value.split(':').length - 1;
+            return value.includes('::') || colons >= 7 || (colons >= 6 && /\d+\.\d+\.\d+\.\d+$/.test(value));
+        };
+        const scrub = value => {
+            let text = value;
+            if (secretPattern) text = text.replace(secretPattern, (...args) => {
+                const groups = args.at(-1);
+                if (groups.header !== undefined) return secret(groups.header);
+                if (groups.key !== undefined) return secret(groups.key, groups.dq !== undefined ? '"' : groups.sq !== undefined ? "'" : '');
+                return secret();
+            });
+            if (pattern) text = text.replace(pattern, (match, ...args) => args.at(-1).ipv6 !== undefined && !ipv6(match) ? match : label(match));
+            return secretPattern ? text.replaceAll(SENTINEL, '[REDACTED-SECRET]') : text;
+        };
+        const visit = v => typeof v === 'string' ? scrub(v) : Array.isArray(v) ? v.map(visit) : v && typeof v === 'object' ?
+            Object.fromEntries(Object.entries(v).map(([k, item]) => [k, visit(item)])) : v;
+        const preview = visit(source);
+        preview.schema = source.schema; preview.collectedAt = source.collectedAt;
+        preview.redaction = { enabled: options.redact !== false, replacements: labels.size, secretValues: secrets,
+            limitation: 'Assisted redaction; inspect and edit this preview. No guarantee that all sensitive data was detected.' };
+        const json = JSON.stringify(preview, null, 2);
+        let fenceLength = 3;
+        for (const match of json.matchAll(/`+/g)) fenceLength = Math.max(fenceLength, match[0].length + 1);
+        const fence = '`'.repeat(fenceLength);
+        return { json, markdown: `# Proxmox troubleshooting bundle\n\nReview before sharing. Collected ${report.collectedAt}.\n\n${fence}json\n${json}\n${fence}\n`, replacements: labels.size + secrets };
+    }
+    return { collect, prepare, sections };
+})();
+
+
     // Pure report logic. Included at build time; no runtime module loader.
+
+
+
 const CatalogModel = (() => {
     const array = value => Array.isArray(value) ? value : [];
     const scalar = value => ['string', 'number', 'boolean'].includes(typeof value) ? value : null;
@@ -1474,6 +2119,17 @@ const CatalogModel = (() => {
             const taskNode = String(options.upid || '').trim().match(/^UPID:([^:]+):.+/)?.[1];
             if (!taskNode) return 'Enter a complete UPID; its owning node is detected automatically.';
             if (node && node !== taskNode) return 'The UPID must belong to the selected owning node.';
+        }
+        if (id === 'SUPPORT' && options.supportSections?.includes('task')) {
+            const taskNode = String(options.upid || '').trim().match(/^UPID:([^:]+):.+/)?.[1];
+            if (!taskNode) return 'Enter a complete UPID for the selected task-log section.';
+            if (options.node && options.node !== taskNode) return 'The task must belong to the selected node.';
+        }
+        if (id === 'CAPACITY' && options.timeframe && !['day', 'week', 'month', 'year'].includes(options.timeframe)) return 'Choose day, week, month or year.';
+        if (id === 'CAPACITY' && options.reservePercent !== undefined && (!Number.isFinite(options.reservePercent) || options.reservePercent < 0 || options.reservePercent > 90)) return 'Choose a host reserve between 0 and 90 percent.';
+        if (id === 'DRIFT' && options.baseline) {
+            try { DriftFirewall.validateBaseline(options.baseline, options); }
+            catch (error) { return error.message; }
         }
         return null;
     }
@@ -1566,13 +2222,14 @@ const CatalogModel = (() => {
             scope: 'Visible resources in this PVE origin; permission filtering can hide resources without an error',
             rows: [], issues: [], notes: [] };
         const cache = new Map();
-        async function get(path, query = {}) {
-            const key = path + JSON.stringify(query);
+        async function get(path, query = {}, shape) {
+            if (options.signal?.aborted) return null;
+            const key = path + JSON.stringify(query) + (shape || '');
             if (!cache.has(key)) cache.set(key, (async () => {
                 const r = await read(path, query);
                 if (r.error) report.issues.push({ path, reason: r.error });
                 if (r.error) return null;
-                const objectExpected = /\/config$|\/agent\/network-get-interfaces$|\/tasks\/[^/]+\/status$/.test(path);
+                const objectExpected = shape === 'object' || (!shape && /\/config$|\/agent\/network-get-interfaces$|\/tasks\/[^/]+\/status$/.test(path));
                 if (!r.data || (objectExpected ? typeof r.data !== 'object' || Array.isArray(r.data) : !Array.isArray(r.data))) {
                     report.issues.push({ path, reason: 'Unexpected or missing API data shape' }); return null;
                 }
@@ -1608,9 +2265,16 @@ const CatalogModel = (() => {
         }
         // Work is scheduled in small waves as well as limited by the transport.
         async function each(items, action) {
-            for (let offset = 0; offset < items.length; offset += 3) await Promise.all(items.slice(offset, offset + 3).map(action));
+            for (let offset = 0; offset < items.length && !options.signal?.aborted; offset += 3) await Promise.all(items.slice(offset, offset + 3).map(action));
         }
         const identity = g => pick(g, ['vmid', 'name', 'node', 'type', 'status', 'tags', 'pool']);
+        const extensions = { CAPACITY: CapacityUpdates.capacity, UPDATES: CapacityUpdates.updates,
+            DRIFT: DriftFirewall.drift, FIREWALL: DriftFirewall.firewall, SUPPORT: SupportBundle.collect };
+        if (extensions[id]) {
+            await extensions[id]({ report, get, guests, nodes: wantedNodes, config, each, identity,
+                resources, options, safeConfig, part, pick, array, fields, guestPath });
+            return report;
+        }
         async function visibleBackups() {
             const backups = [];
             await each(nodes, async node => {
@@ -1812,7 +2476,7 @@ const CatalogModel = (() => {
 // Node tests load this file directly; this line is omitted from generated scripts.
 
 
-    const REPORT_IDS = ["INVENTORY","COMPARE","BACKUPS","TASKS","TASK_REPORT","SNAPSHOTS","STORAGE","MAINTENANCE","NETWORK","GUEST_HEALTH","RECOVERY"];
+    const REPORT_IDS = ["INVENTORY","COMPARE","BACKUPS","TASKS","TASK_REPORT","SNAPSHOTS","STORAGE","MAINTENANCE","NETWORK","GUEST_HEALTH","RECOVERY","CAPACITY","DRIFT","SUPPORT","FIREWALL","UPDATES"];
 // Each explicit report gets one cancellable client. No timers exist at idle.
 function createReportClient(prefix, controller) {
     if (!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(prefix)) throw Error('Invalid API prefix');
@@ -1875,6 +2539,10 @@ function createReportClient(prefix, controller) {
     }
     return { read, get requests() { return used; } };
 }
+function baselineScope(baseline) {
+    const { node, vmids } = baseline.scope;
+    return `${node ? `node ${node}` : 'all visible nodes'}; ${vmids.length ? `guest IDs ${vmids.join(', ')}` : 'all visible guests'}`;
+}
 function openCatalogReport(id, initial = {}) {
     if (!featureEnabled(id) || !REPORT_IDS.includes(id)) return;
     if ((location.port !== '8006' || runtimeSettings.apiPrefix !== '/') && !featureEnabled('CUSTOM_PORT')) {
@@ -1883,14 +2551,15 @@ function openCatalogReport(id, initial = {}) {
     const feature = FEATURE_CATALOG.find(f => f.id === id);
     const panel = openToolkitDialog(feature.name, feature.group);
     if (!panel) return;
-    let controller, report, baseline = null;
-    dialogDispose = () => { controller?.abort(); report = baseline = null; };
+    let controller, report, baseline = null, baselineRead = 0, baselineState = 'empty';
+    dialogDispose = () => { controller?.abort(); baselineRead++; report = baseline = null; };
     nodeElement('p', id === 'COMPARE' ? 'Compare two selected guests, or one guest against an uploaded baseline. A comparison needs explicit targets.' :
         id === 'TASK_REPORT' ? 'Enter one complete task UPID. Its node is detected automatically; you can also open a task from Task Failure Investigator.' :
         'Leave scope fields blank to report on all visible resources. Optional filters narrow the report. Closing, navigating or hiding the tab cancels collection.', panel);
     const node = localField(id === 'TASK_REPORT' ? 'Node (optional; detected from UPID)' : 'Node (blank = all visible nodes)', panel, initial.node || '');
     const guests = localField(id === 'COMPARE' ? 'Guest IDs (two required; one with a baseline)' : 'Guest IDs (comma-separated; blank = all)', panel, initial.vmids || '');
-    guests.parentNode.hidden = ['TASK_REPORT', 'STORAGE'].includes(id);
+    guests.parentNode.hidden = ['TASK_REPORT', 'STORAGE', 'UPDATES'].includes(id);
+    node.dataset.field = 'node'; guests.dataset.field = 'vmids';
     node.placeholder = id === 'TASK_REPORT' ? 'Detected from UPID' : 'All visible nodes';
     guests.placeholder = id === 'COMPARE' ? 'For example: 101, 102' : 'All visible guests';
     const days = localField(id === 'SNAPSHOTS' ? 'Review age in days' : 'Task history days', panel, '7', 'number');
@@ -1902,40 +2571,90 @@ function openCatalogReport(id, initial = {}) {
     const failures = localField('Failures only', panel, '', 'checkbox');
     failures.parentNode.hidden = id !== 'TASKS';
     const upid = localField('Complete UPID', panel, initial.upid || '');
-    upid.parentNode.hidden = id !== 'TASK_REPORT';
+    upid.parentNode.hidden = !['TASK_REPORT', 'SUPPORT'].includes(id);
+    upid.dataset.field = 'upid';
     const checkAgent = localField('Check running guest-agent responsiveness', panel, '', 'checkbox');
     checkAgent.parentNode.hidden = id !== 'GUEST_HEALTH';
     const ignore = localField('Ignore expected name / MAC differences', panel, '', 'checkbox');
     ignore.checked = true;
-    ignore.parentNode.hidden = id !== 'COMPARE';
-    if (id === 'COMPARE') {
-        const file = localField('Optional exported configuration JSON baseline', panel, '', 'file');
+    ignore.parentNode.hidden = !['COMPARE', 'DRIFT'].includes(id);
+    const guestSets = localField('Include guest aliases and IP sets (two or more extra requests per guest)', panel, '', 'checkbox');
+    guestSets.dataset.field = 'includeGuestSets';
+    guestSets.parentNode.hidden = id !== 'FIREWALL';
+    const timeframe = nodeElement('select', undefined, nodeElement('label', 'Historical period', panel), { 'data-field': 'timeframe' });
+    for (const value of ['day', 'week', 'month', 'year']) nodeElement('option', value, timeframe, { value });
+    timeframe.value = 'week'; timeframe.parentNode.hidden = id !== 'CAPACITY';
+    const reserve = localField('Host memory reserve (%) — planning assumption', panel, '20', 'number');
+    reserve.min = '0'; reserve.max = '90'; reserve.parentNode.hidden = id !== 'CAPACITY';
+    const supportSections = new Map();
+    if (id === 'SUPPORT') {
+        nodeElement('p', 'Select evidence sections. Task logs are optional and may contain sensitive text. Prepare and edit a preview before downloading; nothing is uploaded.', panel);
+        for (const [key, label] of [['versions', 'Package versions'], ['configurations', 'Guest configurations'], ['network', 'Node networking'],
+            ['storage', 'Storage definitions'], ['diagnostics', 'Toolkit capabilities'], ['task', 'Selected task status and log']]) {
+            const box = localField(label, panel, '', 'checkbox'); box.checked = ['versions', 'configurations', 'diagnostics'].includes(key);
+            box.dataset.section = key; supportSections.set(key, box);
+        }
+    }
+    if (id === 'COMPARE' || id === 'DRIFT') {
+        const file = localField(id === 'DRIFT' ? 'Optional Toolkit cluster baseline JSON (4 MiB maximum)' : 'Optional exported configuration JSON baseline', panel, '', 'file');
         file.accept = '.json,application/json';
+        file.dataset.field = 'baseline';
         file.addEventListener('change', async () => {
+            const readId = ++baselineRead;
             baseline = null;
+            baselineState = file.files[0] ? 'loading' : 'empty';
             try {
                 if (!file.files[0]) return;
-                if (file.files[0].size > 1024 * 1024) throw Error();
+                if (file.files[0].size > (id === 'DRIFT' ? 4 : 1) * 1024 * 1024) throw Error();
                 const value = JSON.parse(await file.files[0].text());
-                if (!value || typeof value.currentConfiguration !== 'object' || Array.isArray(value.currentConfiguration)) throw Error();
-                if (!panel.isConnected) return;
+                if (!panel.isConnected || readId !== baselineRead) return;
+                if (id === 'DRIFT') {
+                    // Scope is checked when the report runs, so the file and the
+                    // Node/Guest fields can be set in either order.
+                    baseline = DriftFirewall.validateBaseline(value, { origin: location.origin, apiPrefix: runtimeSettings.apiPrefix });
+                    baselineState = 'ready';
+                    const filled = !node.value.trim() && !guests.value.trim() && (baseline.scope.node || baseline.scope.vmids.length);
+                    if (filled) { node.value = baseline.scope.node || ''; guests.value = baseline.scope.vmids.join(', '); }
+                    status.textContent = `Cluster baseline loaded: ${baselineScope(baseline)}.${filled ? ' Node and Guest IDs were filled from the baseline.' : ''} Run report with the same scope to compare.`;
+                    return;
+                }
+                if (!value?.currentConfiguration || typeof value.currentConfiguration !== 'object' || Array.isArray(value.currentConfiguration)) throw Error();
                 baseline = CatalogModel.safeConfig(value.currentConfiguration);
+                baselineState = 'ready';
                 status.textContent = 'Baseline loaded. Select one guest ID for comparison.';
-            } catch { status.textContent = 'Choose a Toolkit configuration export under 1 MiB.'; }
+            } catch { if (panel.isConnected && readId === baselineRead) { baselineState = 'invalid'; status.textContent = id === 'DRIFT' ? 'Choose a valid Toolkit cluster baseline under 4 MiB from this origin and the same node/guest scope.' : 'Choose a Toolkit configuration export under 1 MiB.'; } }
         });
+        if (id === 'DRIFT') nodeElement('p', 'Run without a baseline to capture the current scope, then Download baseline JSON. Import it later to compare. Baselines are local files; no history is saved by Toolkit.', panel);
     }
     const status = nodeElement('p', 'No data collected yet.', panel, { role: 'status', 'aria-live': 'polite' });
     const actions = nodeElement('div', undefined, panel);
     const result = nodeElement('div', undefined, panel);
     const run = localButton('Run report', actions, async () => {
         if (!panel.isConnected || document.hidden) return;
+        if (['loading', 'invalid'].includes(baselineState)) { status.textContent = 'Wait for a valid baseline, choose another file, or clear the file selection.'; return; }
         if (guests.value.trim() && !/^\d+(?:[\s,;]+\d+)*$/.test(guests.value.trim())) { status.textContent = 'Use numeric guest IDs separated by commas.'; return; }
+        if (id === 'DRIFT' && baseline) {
+            try { DriftFirewall.validateBaseline(baseline, { node: node.value.trim(), vmids: guests.value.trim() }); }
+            catch { status.textContent = `This baseline covers ${baselineScope(baseline)}. Set Node and Guest IDs to match, or clear the file to capture a new baseline.`; return; }
+        }
         if (!Number.isInteger(Number(days.value)) || Number(days.value) < 1 || Number(days.value) > 3650) { status.textContent = 'Choose 1–3650 days.'; return; }
         const options = { node: node.value.trim(), vmids: guests.value.trim(), days: Number(days.value), ageDays: Number(days.value),
-            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, baseline };
+            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, includeGuestSets: guestSets.checked, baseline,
+            origin: location.origin, apiPrefix: runtimeSettings.apiPrefix, timeframe: timeframe.value, reservePercent: Number(reserve.value),
+            supportSections: [...supportSections].filter(([, box]) => box.checked).map(([key]) => key) };
+        if (id === 'SUPPORT') {
+            if (!options.supportSections.length) { status.textContent = 'Choose at least one evidence section.'; return; }
+            const info = typeof GM_info !== 'undefined' ? GM_info : typeof GM !== 'undefined' ? GM.info : undefined;
+            options.toolkit = { version: '0.8.0-dev.1', edition: 'toolkit',
+                manager: ['Violentmonkey', 'Tampermonkey', 'Greasemonkey', 'FireMonkey'].includes(info?.scriptHandler) ? info.scriptHandler : null,
+                clipboardRead: typeof navigator?.clipboard?.readText === 'function',
+                clipboardWrite: typeof GM_setClipboard === 'function' || (typeof GM !== 'undefined' && typeof GM.setClipboard === 'function'),
+                secureContext: typeof isSecureContext === 'boolean' ? isSecureContext : null };
+        }
         const invalidScope = CatalogModel.scopeError(id, options);
         if (invalidScope) { status.textContent = invalidScope; return; }
         controller?.abort(); controller = new AbortController();
+        options.signal = controller.signal;
         const thisController = controller;
         const client = createReportClient(runtimeSettings.apiPrefix, controller);
         run.setDisabled(true); report = null; clearLocalContent(result);
@@ -1953,7 +2672,12 @@ function openCatalogReport(id, initial = {}) {
     localButton('Cancel collection', actions, () => { controller?.abort(); status.textContent = 'Collection cancelled. Run report to collect again.'; run.setDisabled(false); });
 }
 function renderCatalogReport(report, parent, id, status) {
-    for (const note of [report.scope, ...report.notes]) nodeElement('p', note, parent);
+    if (id === 'SUPPORT') { renderSupportBundle(report, parent, status); return; }
+    const expanded = ['CAPACITY', 'DRIFT', 'FIREWALL', 'UPDATES'].includes(id);
+    nodeElement('p', report.scope, parent);
+    const notes = expanded ? nodeElement('details', undefined, parent) : parent;
+    if (expanded) nodeElement('summary', 'Interpretation and evidence limits', notes);
+    for (const note of report.notes) nodeElement('p', note, notes);
     if (report.issues.length) nodeElement('pre', JSON.stringify(report.issues, null, 2), parent, { class: 'error' });
     if (id === 'MAINTENANCE') {
         nodeElement('h3', 'Per-node preflight', parent);
@@ -1985,11 +2709,33 @@ function renderCatalogReport(report, parent, id, status) {
         nodeElement('p', 'Expand a path to follow its configured upstream interfaces. First 100 paths shown here; the table and export include all collected paths.', parent);
     }
     const filter = localField('Filter rows', parent);
+    if (id === 'DRIFT' && report.baseline) localButton('Download baseline JSON', parent, () => {
+        try { localDownload(JSON.stringify(report.baseline, null, 2), 'json', 'application/json;charset=utf-8'); status.textContent = 'Baseline download requested; inspect the saved file.'; }
+        catch { status.textContent = 'Baseline download failed.'; }
+    });
+    if (id === 'UPDATES' && featureEnabled('MAINTENANCE')) localButton('Open Maintenance Preflight', parent,
+        () => openCatalogReport('MAINTENANCE', { node: report.selection.node || '' }));
     const columns = [...new Set(report.rows.flatMap(r => Object.keys(r)))];
     const choices = nodeElement('details', undefined, parent);
     nodeElement('summary', 'Columns shown / exported to CSV', choices);
     const checked = new Map();
-    for (const name of columns) { const box = localField(name, choices, '', 'checkbox'); box.checked = true; checked.set(name, box); }
+    const primary = id === 'CAPACITY' ? ['kind', 'node', 'vmid', 'name', 'storage', 'configuredMemoryBytes', 'hostMemoryBytes', 'observedMemoryBytes', 'configuredVCPUs', 'allocationBalanceAfterReserveBytes', 'utilizationRatio', 'historical'] :
+        id === 'UPDATES' ? ['node', 'installedManagerVersion', 'runningKernel', 'availableUpdateCount', 'packageIndexFreshness', 'kernelReview'] : columns;
+    const heading = name => expanded ? name.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase())
+        .replace(/ Bytes$/, id === 'CAPACITY' ? ' (GiB)' : ' Bytes') : name;
+    const cellText = (key, value) => {
+        if (value === null || value === undefined) return 'unknown';
+        if (id === 'CAPACITY' && typeof value === 'number') {
+            if (key.endsWith('Bytes')) return `${(value / 1073741824).toFixed(2)} GiB`;
+            if (key.endsWith('Ratio') || key === 'observedCPUFraction') return `${(value * 100).toFixed(1)}%`;
+        }
+        if (id === 'CAPACITY' && key === 'historical') return Object.entries(value).map(([metric, data]) => {
+            const format = n => n === null ? 'unknown' : metric === 'cpu' ? `${(n * 100).toFixed(1)}%` : `${(n / 1073741824).toFixed(2)} GiB`;
+            return `${metric}: average ${format(data.average)}, sampled peak ${format(data.peak)} (${data.averageSamples}/${data.maximumSamples} samples)`;
+        }).join('\n');
+        return typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+    };
+    for (const name of columns) { const box = localField(heading(name), choices, '', 'checkbox'); box.checked = primary.includes(name); checked.set(name, box); }
     const rows = () => report.rows.filter(r => JSON.stringify(r).toLowerCase().includes(filter.value.toLowerCase()));
     const selectedColumns = () => columns.filter(c => checked.get(c).checked);
     localButton('Download JSON', parent, () => {
@@ -2017,7 +2763,7 @@ function renderCatalogReport(report, parent, id, status) {
         clearLocalContent(table);
         const cols = selectedColumns(), visible = rows();
         const head = nodeElement('tr', undefined, nodeElement('thead', undefined, table));
-        for (const c of cols) nodeElement('th', c, head, { scope: 'col' });
+        for (const c of cols) nodeElement('th', heading(c), head, { scope: 'col' });
         const navigable = report.rows.some(r => r.node && (r.type === 'qemu' || r.type === 'lxc'));
         if (navigable) nodeElement('th', 'Open in PVE', head, { scope: 'col' });
         if (id === 'TASKS' && featureEnabled('TASK_REPORT')) nodeElement('th', 'Inspect', head, { scope: 'col' });
@@ -2025,7 +2771,7 @@ function renderCatalogReport(report, parent, id, status) {
         // Bounded rendering; exports retain all filtered collected rows.
         for (const row of visible.slice(0, 500)) {
             const tr = nodeElement('tr', undefined, body);
-            for (const c of cols) nodeElement('td', typeof row[c] === 'object' && row[c] !== null ? JSON.stringify(row[c], null, 2) : String(row[c] ?? 'unknown'), tr);
+            for (const c of cols) nodeElement('td', cellText(c, row[c]), tr);
             if (navigable) {
                 const cell = nodeElement('td', undefined, tr);
                 if (['qemu', 'lxc'].includes(row.type) && row.vmid) localButton('Open guest', cell, () => {
@@ -2049,6 +2795,48 @@ function renderCatalogReport(report, parent, id, status) {
     nodeElement('summary', 'Additional evidence and checklist', details);
     const { rows: ignoredRows, ...metadata } = report;
     nodeElement('pre', JSON.stringify(metadata, null, 2), details);
+}
+
+function renderSupportBundle(report, parent, status) {
+    const area = (label, field, maxLength) => {
+        const input = nodeElement('textarea', undefined, nodeElement('label', label, parent),
+            { rows: 3, 'data-field': field, maxlength: maxLength, class: 'x-form-field x-form-text x-form-text-default' });
+        input.style.width = '100%'; input.value = ''; return input;
+    };
+    nodeElement('p', `${report.rows.length} evidence sections collected; ${report.issues.length} collection issues. Review the preview for sensitive information before sharing.`, parent);
+    const symptoms = area('Symptoms', 'symptoms', 32768), steps = area('Reproduction steps', 'steps', 32768);
+    const redact = localField('Assist redaction of names, addresses and common credential patterns', parent, '', 'checkbox');
+    redact.checked = true;
+    const replacements = area('Additional literal values to redact (one per line; up to 100)', 'replacements', 25700);
+    const format = nodeElement('select', undefined, nodeElement('label', 'Preview format', parent), { 'data-field': 'format' });
+    nodeElement('option', 'Markdown', format, { value: 'markdown' }); nodeElement('option', 'JSON', format, { value: 'json' });
+    format.value = 'markdown';
+    const preview = area('Editable export preview — only this text is downloaded', 'preview', 32 * 1024 * 1024);
+    preview.rows = 18;
+    let preparedFormat = null;
+    const prepare = () => {
+        try {
+            const value = SupportBundle.prepare(report, { symptoms: symptoms.value, steps: steps.value, replacements: replacements.value, redact: redact.checked });
+            preparedFormat = format.value; preview.value = value[preparedFormat];
+            download.setDisabled(false);
+            status.textContent = `Preview prepared; ${value.replacements} identifiers replaced. Inspect and edit before downloading. Redaction is not guaranteed complete.`;
+        } catch (error) { status.textContent = error.message; }
+    };
+    localButton('Prepare preview', parent, prepare);
+    const download = localButton('Download reviewed preview', parent, () => {
+        try {
+            if (!preparedFormat) return;
+            if (preparedFormat === 'json') JSON.parse(preview.value);
+            localDownload(preview.value, preparedFormat === 'json' ? 'json' : 'md', preparedFormat === 'json' ? 'application/json;charset=utf-8' : 'text/markdown;charset=utf-8');
+            status.textContent = 'Reviewed preview download requested; inspect the saved file.';
+        } catch { status.textContent = 'Download failed. For JSON, check that your edited preview is valid JSON.'; }
+    });
+    download.setDisabled(true);
+    for (const input of [symptoms, steps, replacements, redact, format]) {
+        input.addEventListener('change', () => { preparedFormat = null; download.setDisabled(true); status.textContent = 'Options changed. Prepare a new preview before downloading.'; });
+        if (input.tagName === 'TEXTAREA') input.addEventListener('input', () => { preparedFormat = null; download.setDisabled(true); });
+    }
+    prepare();
 }
 
 

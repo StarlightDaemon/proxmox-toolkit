@@ -6,7 +6,8 @@ For a quick introduction, start with the [project README](../README.md).
 - [Usage guide](USAGE.md) — stable and existing console actions, feedback, cancellation, and common problems.
 - [Compatibility](COMPATIBILITY.md) — console scope, browsers, userscript managers and optional integrations.
 - [Editions and development](EDITIONS.md) — Toolkit and Copy & Paste editions, migration, shared source, and synchronized versions.
-- [Catalog and settings](CATALOG.md) — all 22 toggles, reports, setup, data limits and migration.
+- [Catalog and settings](CATALOG.md) — all 27 development toggles, reports, setup, data limits and migration.
+- [0.8 expansion plan](EXPANSION-0.8.md) — five additions, category placement, implementation scope, acceptance criteria and approval boundary.
 - [Catalog development](CATALOG-DEVELOPMENT.md) — current implementation plan and checkpoint.
 - [Catalog acceptance](CATALOG-ACCEPTANCE.md) — stable promotion, current hashes, local evidence and remaining detailed live checks.
 - [Historical feature acceptance](FEATURE-ACCEPTANCE.md) — exact local candidate hashes and pending Firefox + Violentmonkey campaign.
@@ -15,7 +16,7 @@ For a quick introduction, start with the [project README](../README.md).
 - [Design](DESIGN.md) — console ownership, clipboard handling, edition generation, and input-session cancellation in the current candidate.
 - [Open loops](OPEN-LOOPS.md) — remaining evidence gaps and conditional follow-ups.
 - [Feature implementation handoff](FEATURE-EXPANSION-HANDOFF.md) — selected Paste Only, Console Export, Diagnostics, and Recipe Picker scope, implementation stages, review, and acceptance requirements.
-- [Toolkit development and release record](TOOLKIT-DEVELOPMENT.md) — stable promotion, verified checkout at `E:\Citadel\proxmox-toolkit`, resume instructions and earlier checkpoints.
+- [Toolkit development and release record](TOOLKIT-DEVELOPMENT.md) — stable promotion, current checkout at `E:\Proxmox Toolkit`, resume instructions and earlier checkpoints.
 
 [Decisions](../DECISIONS.md) records scope and rationale; the [changelog](../CHANGELOG.md) records versions.
 

@@ -1,6 +1,142 @@
 # Proxmox Toolkit development record
 
-## Latest checkpoint — 2026-11-02: README and compatibility maintenance
+## Latest checkpoint — 2026-11-02: local 0.8.0-dev.1 ready for operator review
+
+Verified origin `https://github.com/StarlightDaemon/proxmox-toolkit.git`, branch
+`main`, and clean starting commit `5dbe558f0857cc010a5f76d0987dc3aedeb6e7f8`
+in `E:\Citadel\proxmox-toolkit`. The operator authorized all five additions,
+planning, implementation and local verification, while reserving GitHub push
+approval. Work remains uncommitted on the same branch/commit. No remote refs,
+tags, release assets or live Proxmox systems were changed.
+
+Checkout relocation, observed 2026-11-08: the checkout now lives at
+`E:\Proxmox Toolkit`; `E:\Citadel\proxmox-toolkit` no longer exists. Origin,
+`main` at `5dbe558`, and the uncommitted candidate are intact there, and
+`node tools/build.cjs --check`, `node tools/check.cjs`, all 435 Node tests and
+`git diff --check` pass from the new root. The browser fixture was not rerun.
+The linked `.cache/ol-01-review` files moved with it, but its Git pointers
+still referenced the old root, so Git listed it as prunable. Ran
+`git worktree repair "E:/Proxmox Toolkit/.cache/ol-01-review"`; both pointers
+now resolve under the new root, branch `codex/ol-01-review` remains at
+`c921989`, and its short status is clean.
+Paths in the earlier checkpoints below are historical.
+
+Support redaction correction, 2026-11-08 (local, uncommitted): a review probe
+showed Troubleshooting Bundle previews retained Proxmox-native credentials whose
+names embed the keyword without a word boundary: `PVEAuthCookie` ticket
+signatures, `CSRFPreventionToken` values, `PVEAPIToken`/`user@realm!id=` secret
+UUIDs, `api_key`/`client_secret` values, dotted keys such as `db.password=`,
+and bare or JSON `ticket` values. `src/support-bundle.js` now replaces secret
+values in a first pass (keys and quotes stay readable; query values end at `&`)
+before labelling identifiers, and reports `redaction.secretValues`. Clock times
+such as `01:02:03` are no longer labelled as IPv6; compressed, eight-group and
+IPv4-embedded forms still are. The email and hostname patterns were quadratic
+on long hyphen/dot runs (pre-existing; a 400k-character task-log line could stall
+preparation) and now anchor on lookbehinds. Four regression tests were added.
+
+Same-day follow-ups: a Cluster Configuration Changes baseline chosen before the
+Node/Guest fields matched its scope was marked invalid, and re-selecting the
+same file need not fire `change`. Load now checks schema, origin and API prefix
+only, fills blank scope fields from the baseline, and Run reports the baseline's
+scope on mismatch (still before any request). Capacity no longer labels missing
+or invalid container memory as `explicit configuration`. `.serena/` local tool
+state is ignored by Git and by `tools/check.cjs`. One Node test and browser
+fixture load-order checks were added.
+
+Executed after both waves: `node tools/build.cjs`, `--check`,
+`node tools/check.cjs`, `node tools/fetch-xterm.cjs`, all 440 Node tests,
+`node tools/browser-smoke.cjs` (Chrome 155.0.8059.85, ExtJS 7.0.0.168
+synthetic fixture) and `git diff --check` pass. No live PVE test was run.
+Toolkit is now 197833 bytes, SHA-256
+`bf1cf42ddce5345e89f8d353beddd7efb45be47be81dd459bf71585dcd790574`; Copy &
+Paste is unchanged. The artifact table below records the earlier candidate.
+
+Committed as `6cb5522` on `claude/expansion-0.8`, pushed with operator approval,
+and opened as StarlightDaemon/proxmox-toolkit#1 (GitHub Checks: success). No
+merge, tag or release.
+
+Follow-up wave, 2026-11-08 (local, on the PR branch): Firewall guest aliases and
+IP sets are now opt-in (`includeGuestSets`, unchecked by default). Default guest
+cost drops from at least four reads plus one per guest IP set to three
+(firewall options, rules, configuration). Guest entries say `not requested`;
+cluster aliases/IP sets are unchanged. A request-count Node test and a browser
+check that the option appears unchecked only for Firewall were added. The
+operator live checklist for OL-16 is in `docs/CATALOG-ACCEPTANCE.md`. OL-15's
+read-only comparison of the old checkout is recorded in `docs/OPEN-LOOPS.md`.
+Executed: build/`--check`, `tools/check.cjs`, `fetch-xterm.cjs`, all 441 Node
+tests, `browser-smoke.cjs` (Chrome 155.0.8059.85, ExtJS 7.0.0.168) and
+`git diff --check` pass. Toolkit is 198673 bytes, SHA-256
+`a1d6beca076e079db6f568659a718d9a4c2edf93262a5c60f663b310b036f156`; Copy & Paste
+is unchanged. No live PVE test was run.
+
+The refined catalog and acceptance criteria are in `docs/EXPANSION-0.8.md`.
+Implemented Capacity & Headroom and Cluster Configuration Changes in Inventory;
+Troubleshooting Bundle Builder and Firewall Visibility & Rule References in
+Troubleshooting; Update Readiness & Version Consistency in Maintenance. Existing
+categories suffice. Toolkit has 27 toggles with the same three defaults; Copy &
+Paste retains three. Both generated editions are 0.8.0-dev.1. Stable 0.7.0 install
+links and historical evidence remain preserved.
+
+Three focused model fragments reuse the bounded GET client. Capacity separates
+allocation, current consumption and sampled node/storage history. Allowlisted
+baselines are local files bound to HTTPS origin, API prefix and selected scope,
+with schema/size/depth/count/identity checks. Support sections produce an editable,
+assisted-redaction preview; only its reviewed text is downloaded. Firewall
+presents configured flags/rules and bounded shared references. Updates separates
+installed/candidate versions and local-index evidence. No report adds idle
+timers, grants, server installation, index refresh, configuration writes or reboot.
+
+Independent subagent review and integration checks found and corrected partial
+task sections labeled complete, overflowing Markdown fence calculation, credential
+header redaction omissions, short identifiers corrupting replacement labels,
+baseline normalized-VMID collisions/proxy ambiguity/oversized exports, malformed
+entries, cancellation in reference expansion and node mapping, and QEMU default/
+property-string allocations. Generated fragments now preserve literal replacement
+tokens. Invalid/loading/late baseline imports cannot become a fresh capture;
+null comparison imports are rejected. Settings pagination reserves space for
+wrapped report descriptions, and new reports use compact interpretation notes.
+
+Final local verification actually executed with Node.js 24.18.0:
+
+| Surface | Result |
+| --- | --- |
+| `node tools/build.cjs --check` | Both editions match shared source and manifest |
+| `node tools/check.cjs` | 33 JavaScript files, 195 local Markdown links, metadata and version pass |
+| `node tools/fetch-xterm.cjs` | Existing pinned fixture integrity verified; no download |
+| `node --test --test-isolation=none --test-reporter=tap tests/*.test.cjs` | 435 pass; zero failures, cancellations or skips |
+| `node tools/browser-smoke.cjs` | Real ExtJS 7.0.0.168 / Chrome 155.0.8059.85 synthetic fixture passes |
+| `git diff --check` | Pass |
+
+Browser coverage includes all 27 options and three defaults, every report return
+route, five new collections/cancellations, baseline export/import and changed-memory
+comparison, invalid/scope-mismatched import refusal, edited support Blob bytes,
+no unreviewed support export bypass, repository-secret omission, component cleanup,
+preserved iframe/document/socket, narrow 640/800-pixel layouts and support preview,
+Escape, and the companion. Desktop/narrow screenshots under ignored
+`.cache/catalog-browser/` were inspected. Initial sandbox launch failed in
+Crashpad; isolated elevated execution passed. Browser-fixture-only download
+interception and async Blob checks were corrected during development. The final
+run has no uncaught exceptions. These are synthetic results, not live PVE tests.
+
+Efficiency evidence is operation-level: no collection on report open; default
+one-node/one-guest Support uses three reads including discovery; two-node Update
+model uses eight reads excluding discovery; shared firewall groups are fetched
+once. Existing idle/resource-lifetime, three-concurrent-request and request/byte/
+time-budget regressions pass. No production CPU/latency claim is made.
+
+| Candidate artifact | Bytes (LF) | SHA-256 |
+| --- | --- | --- |
+| `proxmox-toolkit.user.js` | 194446 | `5bb3415b844d28c3c1d4444cc167d3a5f12fe78081fc50fec1e7bcaeba52b551` |
+| `proxmox-copy-paste.user.js` | 56427 | `89855736b80a09424710380626914b2e0cd2094dd6da7a3a8f9d328f4f149ed6` |
+
+Local implementation and verification are complete. Operator review/live Firefox
++ Violentmonkey acceptance is next. Actual API permissions/data, backend variants,
+clipboard/file-save behavior and broad browser qualification remain separate.
+Redaction is assisted; capacity is advisory; snapshots do not establish identity
+continuity or authorship; firewall/kernel evidence does not establish operational
+safety. Do not push or publish without explicit operator approval.
+
+## Previous checkpoint — 2026-11-02: README and compatibility maintenance
 
 Verified origin StarlightDaemon/proxmox-toolkit, branch main, clean starting
 commit `01a616f8bb32b425145e0b9f72e5411b20a2c093` in the Toolkit checkout.

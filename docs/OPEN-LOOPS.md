@@ -1,5 +1,13 @@
 # Open loops
 
+Local **0.8.0-dev.1** implements the operator-authorized five-report expansion;
+see [scope and acceptance](EXPANSION-0.8.md). All new reports default off. Local
+verification is recorded separately from live qualification and publication.
+The candidate is under review in
+[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1);
+further pushes, merge and publication need operator approval. Stable 0.7.0
+remains published.
+
 Stable **Proxmox Toolkit 0.7.0** promotes the maintainer-tested 0.7.0-dev.8
 runtime after explicit stable promotion approval on 2026-11-02. Both Toolkit
 and Copy & Paste share the release version. Detailed qualification remains
@@ -16,6 +24,7 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
+| OL-16 | Local checks pass (441 Node tests, synthetic browser fixture); in review as [PR #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1); live evidence pending | Collect operator live observations for the installed PVE APIs, report contents, baselines and exports using the [0.8 live checklist](CATALOG-ACCEPTANCE.md#080-dev1-live-checklist--pending) and [acceptance criteria](EXPANSION-0.8.md#acceptance-criteria). Do not treat stable 0.7.0 acceptance as a pass for the new reports. Further pushes, merge and release require operator approval. |
 | OL-12 | Stable 0.7.0 approved; detailed live qualification open | Record remaining Toolkit and Copy & Paste observations using the [catalog campaign](CATALOG-ACCEPTANCE.md), especially report permissions/results, actual clipboard/file contents, serial/proxy, migration and lifecycle cases. Maintainer practical acceptance authorizes release; it does not mark the full checklist passed. |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |
@@ -26,7 +35,7 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 | OL-10 | Deferred: environmental UI errors | If the earlier Firefox exceptions recur, reproduce identical navigation in a clean profile, then isolate extensions/preferences. Close with a demonstrated cause or inability to reproduce; keep unrelated Proxmox fixes outside this script. |
 | OL-13 | Proposal only: configurable Tools-menu grouping | Review the grouped/inline preference proposal before implementing it. Existing grouping is unchanged by stable promotion. |
 | OL-14 | Proposal only: versioned handoff copies | Decide whether versioned handoff files would help review. No change to Codex review controls is established or authorized by this proposal. |
-| OL-15 | Local checkout housekeeping | Use `E:\Citadel\proxmox-toolkit` for ongoing work; both old and new folders still exist. Verify no unique work and close old-folder tasks before any separately authorized removal. The new linked review worktree has been repaired; do not prune it. |
+| OL-15 | Closed: old checkout verified and moved to the Recycle Bin | Use `E:\Proxmox Toolkit` for ongoing work; it is the former `E:\Citadel\proxmox-toolkit` checkout, relocated by 2026-11-08. Read-only comparison on 2026-11-08: the old `E:\Citadel\proxmox-copy-console` checkout is on `codex/standalone-editions` at `5a245c9` with no stash or unpushed commits. Its 41 modified/untracked files are byte-identical to blobs committed in this repository, and its two deletions match `main`. Its 30 top-level `.cache` files match this checkout's `.cache`; its `codex/ol-01-review` worktree is clean at `c921989`. It has no other ignored files. Only regenerable browser-fixture output differs: 5 earlier screenshots and 31 temporary Chrome profiles (about 455 MB in total). With operator approval on 2026-11-08, after confirming no reference from this repository and Recycle Bin capacity (7215 MB limit, recycling enabled), the folder was moved to the E: Recycle Bin (restorable to `E:\Citadel`), not permanently deleted. The linked review worktree at `.cache/ol-01-review` in this checkout was repaired for the new root on 2026-11-08; do not prune it. |
 
 ## Routine maintenance
 
