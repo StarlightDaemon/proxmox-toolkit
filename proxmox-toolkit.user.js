@@ -1852,7 +1852,10 @@ const DriftFirewall = (() => {
         const { report, get, guests, nodes, config, each, part, guestPath } = ctx;
         const optionKeys = ['enable', 'nftables', 'policy_in', 'policy_out', 'policy_forward', 'ipfilter', 'macfilter', 'dhcp', 'ndp', 'radv', 'log_level_in', 'log_level_out'];
         const ruleKeys = ['pos', 'type', 'action', 'enable', 'source', 'dest', 'proto', 'sport', 'dport', 'iface', 'macro', 'ipversion', 'icmp-type', 'log'];
-        const evidence = { cluster: null, nodes: [], guests: [], groups: [], groupListAvailable: false };
+        // Guest aliases/IP sets cost two or more extra requests per guest, so
+        // they are opt-in; cluster sets, which guest rules usually reference, stay.
+        const guestSets = ctx.options.includeGuestSets === true;
+        const evidence = { cluster: null, nodes: [], guests: [], groups: [], groupListAvailable: false, guestSetsRequested: guestSets };
         report.firewall = evidence;
         const references = new Map();
         const addReference = (group, scope) => {
@@ -1913,7 +1916,8 @@ const DriftFirewall = (() => {
         });
         await each(guests, async g => {
             const extra = { node: g.node, vmid: g.vmid, type: g.type }, scope = `${g.type}/${g.vmid}`;
-            const entry = await collect(scope, `${guestPath(g)}/firewall`, true, extra), c = await config(g);
+            const entry = await collect(scope, `${guestPath(g)}/firewall`, guestSets, extra), c = await config(g);
+            if (!guestSets) entry.sets = 'not requested'; // null aliases/ipsets here are not denied evidence
             entry.nics = c === null ? null : Object.entries(c).filter(([key]) => /^net\d+$/.test(key)).map(([nic, value]) => {
                 const fields = ctx.fields(value); return { nic, firewall: flag(fields.firewall), bridge: fields.bridge ?? null };
             });
@@ -1956,7 +1960,7 @@ const DriftFirewall = (() => {
         report.rows.sort((a, b) => a.scope.localeCompare(b.scope));
         report.notes.push('Configured firewall evidence only. Explicit flags, backend requests and rule references do not establish loaded rules or actual packet outcomes. Omitted options retain unspecified/unknown status rather than assuming version-specific defaults.');
         report.notes.push('Cluster, node, guest and NIC settings have different scopes. Node host rules are not treated as an inherited guest ruleset. Connection state, guest firewalls, switches, SDN and runtime backend behavior require separate checks.');
-        report.notes.push('Security-group usage covers collected scopes only, including disabled references. Aliases and IP sets are in Additional evidence/JSON. Free-form comments are omitted; addresses and rules may still be sensitive.');
+        report.notes.push(`Security-group usage covers collected scopes only, including disabled references. Cluster aliases and IP sets are in Additional evidence/JSON. ${guestSets ? 'Guest aliases and IP sets were collected.' : 'Guest aliases and IP sets were not requested; enable that option to collect them (two or more extra requests per guest).'} Free-form comments are omitted; addresses and rules may still be sensitive.`);
     }
     return { drift, firewall, validateBaseline };
 })();
@@ -2574,6 +2578,9 @@ function openCatalogReport(id, initial = {}) {
     const ignore = localField('Ignore expected name / MAC differences', panel, '', 'checkbox');
     ignore.checked = true;
     ignore.parentNode.hidden = !['COMPARE', 'DRIFT'].includes(id);
+    const guestSets = localField('Include guest aliases and IP sets (two or more extra requests per guest)', panel, '', 'checkbox');
+    guestSets.dataset.field = 'includeGuestSets';
+    guestSets.parentNode.hidden = id !== 'FIREWALL';
     const timeframe = nodeElement('select', undefined, nodeElement('label', 'Historical period', panel), { 'data-field': 'timeframe' });
     for (const value of ['day', 'week', 'month', 'year']) nodeElement('option', value, timeframe, { value });
     timeframe.value = 'week'; timeframe.parentNode.hidden = id !== 'CAPACITY';
@@ -2632,7 +2639,7 @@ function openCatalogReport(id, initial = {}) {
         }
         if (!Number.isInteger(Number(days.value)) || Number(days.value) < 1 || Number(days.value) > 3650) { status.textContent = 'Choose 1–3650 days.'; return; }
         const options = { node: node.value.trim(), vmids: guests.value.trim(), days: Number(days.value), ageDays: Number(days.value),
-            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, baseline,
+            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, includeGuestSets: guestSets.checked, baseline,
             origin: location.origin, apiPrefix: runtimeSettings.apiPrefix, timeframe: timeframe.value, reservePercent: Number(reserve.value),
             supportSections: [...supportSections].filter(([, box]) => box.checked).map(([key]) => key) };
         if (id === 'SUPPORT') {

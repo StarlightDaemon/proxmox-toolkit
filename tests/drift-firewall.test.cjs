@@ -162,6 +162,28 @@ test('firewall shared group is read once and records disabled references too', a
     assert.deepEqual(f.report.firewall.groups[0].usedBy, ['lxc/102', 'qemu/101']);
     assert.deepEqual(f.report.firewall.cluster.ipsets, [{ name: 'trusted', members: [{ cidr: '192.0.2.0/24', nomatch: 0 }] }]);
 });
+test('firewall guest aliases and IP sets are opt-in; default guest cost is three reads', async () => {
+    const perGuest = calls => ['qemu/101', 'lxc/102'].map(g => calls.filter(c => c.path.includes(`/${g}/`)).map(c => c.path.replace(/^.*\/(?:qemu|lxc)\/\d+/, '')).sort());
+    const f = fixture(); await M.firewall(f.ctx);
+    assert.deepEqual(perGuest(f.calls), [['/config', '/firewall/options', '/firewall/rules'], ['/config', '/firewall/options', '/firewall/rules']]);
+    const g = f.report.firewall.guests.find(g => g.vmid === 101);
+    assert.equal(f.report.firewall.guestSetsRequested, false);
+    assert.equal(g.sets, 'not requested');
+    assert.equal(g.aliases, null);
+    assert.ok(!Object.hasOwn(f.report.firewall.nodes[0], 'sets'), 'nodes have no set endpoints to request');
+    assert.deepEqual(f.report.firewall.cluster.ipsets, [{ name: 'trusted', members: [{ cidr: '192.0.2.0/24', nomatch: 0 }] }], 'cluster sets stay collected');
+    assert.match(f.report.notes.join(' '), /not requested/);
+    const sets = { '/nodes/one/qemu/101/firewall/ipset': [{ name: 'own' }], '/nodes/one/qemu/101/firewall/ipset/own': [{ cidr: '198.51.100.7' }],
+        '/nodes/one/qemu/101/firewall/aliases': [{ name: 'gw', cidr: '198.51.100.1' }] };
+    const o = fixture(sets, { includeGuestSets: true }); await M.firewall(o.ctx);
+    assert.deepEqual(perGuest(o.calls)[0], ['/config', '/firewall/aliases', '/firewall/ipset', '/firewall/ipset/own', '/firewall/options', '/firewall/rules']);
+    const og = o.report.firewall.guests.find(g => g.vmid === 101);
+    assert.equal(o.report.firewall.guestSetsRequested, true);
+    assert.ok(!Object.hasOwn(og, 'sets'));
+    assert.deepEqual(og.aliases, [{ name: 'gw', cidr: '198.51.100.1' }]);
+    assert.deepEqual(og.ipsets, [{ name: 'own', members: [{ cidr: '198.51.100.7' }] }]);
+    assert.equal(o.calls.length - f.calls.length, 5, 'opting in adds aliases, ipset list and one member read for 101, plus two list reads for 102');
+});
 test('firewall graph cycles terminate without duplicate reads or recursive expansion', async () => {
     const f = fixture({ '/cluster/firewall/groups/web': [{ type: 'group', action: 'other' }], '/cluster/firewall/groups/other': [{ type: 'group', action: 'web' }] });
     await M.firewall(f.ctx);

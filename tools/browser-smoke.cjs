@@ -241,6 +241,7 @@ async function main() {
         const before = await evaluate('fixtureRequests()');
         await evaluate(`fixtureAPI.openCatalogReport(${JSON.stringify(id)})`);
         await checks('fixtureRequests()', before, `${id} opens without collection`);
+        await checks('(()=>{const b=document.querySelector("input[data-field=includeGuestSets]");return !!b&&!b.parentNode.hidden&&!b.checked;})()', id === 'FIREWALL', `${id} guest-set option is shown unchecked only for Firewall`);
         await click('Run report');
         for (let n=0;n<100;n++) {
             if (await evaluate('!Ext.ComponentQuery.query("button").find(b=>b.text==="Run report").disabled')) break;

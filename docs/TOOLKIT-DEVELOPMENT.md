@@ -51,6 +51,24 @@ Toolkit is now 197833 bytes, SHA-256
 `bf1cf42ddce5345e89f8d353beddd7efb45be47be81dd459bf71585dcd790574`; Copy &
 Paste is unchanged. The artifact table below records the earlier candidate.
 
+Committed as `6cb5522` on `claude/expansion-0.8`, pushed with operator approval,
+and opened as StarlightDaemon/proxmox-toolkit#1 (GitHub Checks: success). No
+merge, tag or release.
+
+Follow-up wave, 2026-11-08 (local, on the PR branch): Firewall guest aliases and
+IP sets are now opt-in (`includeGuestSets`, unchecked by default). Default guest
+cost drops from at least four reads plus one per guest IP set to three
+(firewall options, rules, configuration). Guest entries say `not requested`;
+cluster aliases/IP sets are unchanged. A request-count Node test and a browser
+check that the option appears unchecked only for Firewall were added. The
+operator live checklist for OL-16 is in `docs/CATALOG-ACCEPTANCE.md`. OL-15's
+read-only comparison of the old checkout is recorded in `docs/OPEN-LOOPS.md`.
+Executed: build/`--check`, `tools/check.cjs`, `fetch-xterm.cjs`, all 441 Node
+tests, `browser-smoke.cjs` (Chrome 155.0.8059.85, ExtJS 7.0.0.168) and
+`git diff --check` pass. Toolkit is 198673 bytes, SHA-256
+`a1d6beca076e079db6f568659a718d9a4c2edf93262a5c60f663b310b036f156`; Copy & Paste
+is unchanged. No live PVE test was run.
+
 The refined catalog and acceptance criteria are in `docs/EXPANSION-0.8.md`.
 Implemented Capacity & Headroom and Cluster Configuration Changes in Inventory;
 Troubleshooting Bundle Builder and Firewall Visibility & Rule References in

@@ -100,6 +100,9 @@ function openCatalogReport(id, initial = {}) {
     const ignore = localField('Ignore expected name / MAC differences', panel, '', 'checkbox');
     ignore.checked = true;
     ignore.parentNode.hidden = !['COMPARE', 'DRIFT'].includes(id);
+    const guestSets = localField('Include guest aliases and IP sets (two or more extra requests per guest)', panel, '', 'checkbox');
+    guestSets.dataset.field = 'includeGuestSets';
+    guestSets.parentNode.hidden = id !== 'FIREWALL';
     const timeframe = nodeElement('select', undefined, nodeElement('label', 'Historical period', panel), { 'data-field': 'timeframe' });
     for (const value of ['day', 'week', 'month', 'year']) nodeElement('option', value, timeframe, { value });
     timeframe.value = 'week'; timeframe.parentNode.hidden = id !== 'CAPACITY';
@@ -158,7 +161,7 @@ function openCatalogReport(id, initial = {}) {
         }
         if (!Number.isInteger(Number(days.value)) || Number(days.value) < 1 || Number(days.value) > 3650) { status.textContent = 'Choose 1–3650 days.'; return; }
         const options = { node: node.value.trim(), vmids: guests.value.trim(), days: Number(days.value), ageDays: Number(days.value),
-            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, baseline,
+            taskType: taskType.value.trim(), failuresOnly: failures.checked, upid: upid.value.trim(), checkAgent: checkAgent.checked, ignoreIdentity: ignore.checked, includeGuestSets: guestSets.checked, baseline,
             origin: location.origin, apiPrefix: runtimeSettings.apiPrefix, timeframe: timeframe.value, reservePercent: Number(reserve.value),
             supportSections: [...supportSections].filter(([, box]) => box.checked).map(([key]) => key) };
         if (id === 'SUPPORT') {
