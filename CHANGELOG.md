@@ -16,8 +16,11 @@
   comparison. Keep incomplete evidence and inference limits visible.
 - Catalog the scope and acceptance criteria in `docs/EXPANSION-0.8.md`. Local
   verification is recorded in the development checkpoint after execution.
-- Stable 0.7.0 remains published and available for rollback. No GitHub push,
-  merge, tag or release may occur without the operator's approval.
+- Harden Troubleshooting Bundle redaction for Proxmox-native credentials, and
+  make Firewall guest aliases and IP sets opt-in.
+- Stable 0.7.0 remains published and available for rollback. The candidate
+  branch was pushed with operator approval for review; no merge, tag or release
+  may occur without the operator's approval.
 
 ## 0.7.0 — 2026-11-02
 

@@ -3,7 +3,10 @@
 Local **0.8.0-dev.1** implements the operator-authorized five-report expansion;
 see [scope and acceptance](EXPANSION-0.8.md). All new reports default off. Local
 verification is recorded separately from live qualification and publication.
-The operator requires approval before GitHub push; stable 0.7.0 remains published.
+The candidate is under review in
+[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1);
+further pushes, merge and publication need operator approval. Stable 0.7.0
+remains published.
 
 Stable **Proxmox Toolkit 0.7.0** promotes the maintainer-tested 0.7.0-dev.8
 runtime after explicit stable promotion approval on 2026-11-02. Both Toolkit
@@ -21,7 +24,7 @@ IDs are retained for continuity. These are evidence gaps or conditional ideas, n
 
 | ID | State | Follow-up and completion criterion |
 | --- | --- | --- |
-| OL-16 | Local five-report expansion; verification and live evidence tracked separately | Complete the [0.8 acceptance criteria](EXPANSION-0.8.md), record actual local checks in the development checkpoint, and collect operator live observations for the installed PVE APIs, report contents, baselines and exports. Do not treat stable 0.7.0 acceptance as a pass for the new reports. GitHub push requires operator approval. |
+| OL-16 | Local checks pass (441 Node tests, synthetic browser fixture); in review as [PR #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1); live evidence pending | Collect operator live observations for the installed PVE APIs, report contents, baselines and exports using the [0.8 live checklist](CATALOG-ACCEPTANCE.md#080-dev1-live-checklist--pending) and [acceptance criteria](EXPANSION-0.8.md#acceptance-criteria). Do not treat stable 0.7.0 acceptance as a pass for the new reports. Further pushes, merge and release require operator approval. |
 | OL-12 | Stable 0.7.0 approved; detailed live qualification open | Record remaining Toolkit and Copy & Paste observations using the [catalog campaign](CATALOG-ACCEPTANCE.md), especially report permissions/results, actual clipboard/file contents, serial/proxy, migration and lifecycle cases. Maintainer practical acceptance authorizes release; it does not mark the full checklist passed. |
 | OL-02 / OL-03 | Practical passes complete; detailed evidence optional | At the next relevant Firefox/Chrome test, record exact versions and per-scenario clipboard comparisons. Close full qualification only with the detailed observations in Testing; do not repeat the accepted campaign just to fill a table. |
 | OL-04 | Compatibility fix released; extended testing deferred | FireMonkey callback fix is in 0.4.1; reported FireMonkey/Greasemonkey results are preserved. Reopen extended-manager testing only for a requested target or a concrete copying defect. No manager-specific fork is currently needed. |

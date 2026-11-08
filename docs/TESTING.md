@@ -8,7 +8,7 @@ For a concise overview of console scope and browser/manager guidance, see
 The five-report expansion has its own [scope and acceptance criteria](EXPANSION-0.8.md).
 Toolkit now has 27 toggles across the same six categories; only the three
 clipboard actions default on. Copy & Paste remains a three-feature edition.
-Local verification passed: **435 Node tests**, deterministic generation,
+Local verification passed: **441 Node tests**, deterministic generation,
 33 JavaScript parses, 195 local links, metadata/version, cached xterm integrity
 and whitespace. The real ExtJS 7.0.0.168 / Chrome 155.0.8059.85 synthetic browser
 fixture passed new-report collection/cancellation, baseline round-trip and
@@ -16,8 +16,11 @@ rejection, edited preview export bytes, component cleanup and narrow layouts.
 Screenshots were inspected. Exact artifacts, commands, review fixes and evidence
 limits are in [the development checkpoint](TOOLKIT-DEVELOPMENT.md).
 No live PVE/API, Firefox-manager, real clipboard or saved-file qualification is
-inferred from local tests or the historical results below. GitHub push and
-publication require operator approval.
+inferred from local tests or the historical results below. The candidate is
+under review in
+[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1)
+(GitHub Checks pass); further pushes, merge and publication require operator
+approval.
 
 ## Stable 0.7.0 evidence
 

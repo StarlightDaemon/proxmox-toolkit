@@ -6,11 +6,14 @@ The operator authorized cataloging, refining, planning, implementing and locally
 verifying all five additions on 2026-11-02. The working candidate is
 **0.8.0-dev.1**, based on clean `main` at
 `5dbe558f0857cc010a5f76d0987dc3aedeb6e7f8` in
-`E:\Citadel\proxmox-toolkit`; that checkout, with the uncommitted candidate,
-now lives at `E:\Proxmox Toolkit` (observed 2026-11-08). Published stable **0.7.0** remains the rollback
-release. Local implementation does not publish a new release. The operator
-explicitly requires approval before any GitHub push; no remote update, merge,
-tag or release is authorized by this development request.
+`E:\Citadel\proxmox-toolkit`; that checkout now lives at `E:\Proxmox Toolkit`
+(observed 2026-11-08). Published stable **0.7.0** remains the rollback release.
+Local implementation does not publish a new release. With separate operator
+approval, the candidate was committed on `claude/expansion-0.8`, pushed and
+opened for review as
+[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1).
+Further pushes still need operator approval; no merge, tag or release is
+authorized.
 
 ## Refined catalog
 
@@ -82,8 +85,10 @@ index and do not establish that repositories were refreshed recently.
 
 ## Verification record
 
-All five implementation steps are complete locally. **435 Node tests passed**
-with no failures, cancellations or skips. Deterministic generation, static/link,
+All five implementation steps are complete locally. The initial candidate passed
+435 Node tests; after the 2026-11-08 support-redaction, baseline-import,
+capacity-label and firewall opt-in follow-ups, **441 Node tests pass** with no
+failures, cancellations or skips. Deterministic generation, static/link,
 metadata/version, pinned cached xterm and whitespace checks passed. The real
 ExtJS/Chrome synthetic fixture passed all five collections and cancellations,
 baseline import/export and scope rejection, edited support export bytes,
