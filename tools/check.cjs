@@ -30,7 +30,7 @@ for (const field of ['version', 'include', 'grant', 'run-at', 'noframes']) {
 let scripts = 0, links = 0;
 function inspect(directory) {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-        if (['.git', '.cache', 'node_modules'].includes(entry.name)) continue;
+        if (['.git', '.cache', '.serena', 'node_modules'].includes(entry.name)) continue;
         const file = path.join(directory, entry.name);
         if (entry.isDirectory()) { inspect(file); continue; }
         const content = fs.readFileSync(file, 'utf8');

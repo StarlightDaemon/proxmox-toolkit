@@ -4,6 +4,14 @@
 
 Firefox + Violentmonkey is the primary target for Proxmox Toolkit 0.7.0, promoted from the maintainer-tested dev.8 runtime. Other browser/manager results and detailed qualification limits are recorded in [Testing](TESTING.md).
 
+The working tree also contains an unreleased **0.8.0-dev.1** development
+candidate. The release links below continue to install stable 0.7.0. For an
+operator-requested candidate test, use the locally generated edition, confirm
+its exact version/hash, retain the stable file for rollback and replace the
+existing manager entry with the same trusted-host restrictions. New development
+reports remain off until explicitly enabled. See [the expansion acceptance
+plan](EXPANSION-0.8.md); installing a candidate does not publish it.
+
 ## Install
 
 Copy and paste the script into your manager. This avoids raw-script links being opened by another extension, such as AdGuard.

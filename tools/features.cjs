@@ -22,6 +22,11 @@ const features = [
     ['NETWORK', 'Network Path Explorer', 'Troubleshooting'],
     ['GUEST_HEALTH', 'Guest Integration Health Check', 'Maintenance'],
     ['RECOVERY', 'Recovery Manifest & Rebuild Checklist', 'Recovery'],
+    ['CAPACITY', 'Capacity & Headroom', 'Inventory', false, 'Compare allocations, current usage and sampled historical demand.'],
+    ['DRIFT', 'Cluster Configuration Changes', 'Inventory', false, 'Export a baseline and review changes across visible resources.'],
+    ['SUPPORT', 'Troubleshooting Bundle Builder', 'Troubleshooting', false, 'Prepare and review a local support bundle with assisted redaction.'],
+    ['FIREWALL', 'Firewall Visibility & Rule References', 'Troubleshooting', false, 'Inspect configured firewall settings and shared rule references.'],
+    ['UPDATES', 'Update Readiness & Version Consistency', 'Maintenance', false, 'Compare package, kernel and repository evidence across nodes.'],
 ].map(([id, name, group, defaultOn = false, description = '']) => ({ id, name, group, defaultOn, description }));
 const reports = features.slice(11).map(f => f.id);
 module.exports = { features, reports };

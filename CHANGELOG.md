@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.0-dev.1 — Unreleased local development
+
+- Add five default-off reports: Capacity & Headroom and Cluster Configuration
+  Changes in Inventory; Troubleshooting Bundle Builder and Firewall Visibility
+  & Rule References in Troubleshooting; Update Readiness & Version Consistency
+  in Maintenance. The existing six categories now contain 27 Toolkit toggles.
+- Preserve the three clipboard defaults and the lightweight three-feature
+  Copy & Paste edition. Both generated editions share the candidate version.
+- Reuse bounded on-demand same-origin GET collection, native report navigation,
+  exports and cancellation. No new idle polling, runtime dependency, server
+  service or userscript grant is introduced.
+- Add historical capacity review, explicit baseline comparison, locally reviewed
+  support exports, firewall configuration references and package/kernel/repository
+  comparison. Keep incomplete evidence and inference limits visible.
+- Catalog the scope and acceptance criteria in `docs/EXPANSION-0.8.md`. Local
+  verification is recorded in the development checkpoint after execution.
+- Stable 0.7.0 remains published and available for rollback. No GitHub push,
+  merge, tag or release may occur without the operator's approval.
+
 ## 0.7.0 — 2026-11-02
 
 - Promote the maintainer-tested 0.7.0-dev.8 runtime to stable at the maintainer's

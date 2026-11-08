@@ -1,4 +1,7 @@
 // Pure report logic. Included at build time; no runtime module loader.
+const CapacityUpdates = require('./capacity-updates.js');
+const DriftFirewall = require('./drift-firewall.js');
+const SupportBundle = require('./support-bundle.js');
 const CatalogModel = (() => {
     const array = value => Array.isArray(value) ? value : [];
     const scalar = value => ['string', 'number', 'boolean'].includes(typeof value) ? value : null;
@@ -15,6 +18,17 @@ const CatalogModel = (() => {
             const taskNode = String(options.upid || '').trim().match(/^UPID:([^:]+):.+/)?.[1];
             if (!taskNode) return 'Enter a complete UPID; its owning node is detected automatically.';
             if (node && node !== taskNode) return 'The UPID must belong to the selected owning node.';
+        }
+        if (id === 'SUPPORT' && options.supportSections?.includes('task')) {
+            const taskNode = String(options.upid || '').trim().match(/^UPID:([^:]+):.+/)?.[1];
+            if (!taskNode) return 'Enter a complete UPID for the selected task-log section.';
+            if (options.node && options.node !== taskNode) return 'The task must belong to the selected node.';
+        }
+        if (id === 'CAPACITY' && options.timeframe && !['day', 'week', 'month', 'year'].includes(options.timeframe)) return 'Choose day, week, month or year.';
+        if (id === 'CAPACITY' && options.reservePercent !== undefined && (!Number.isFinite(options.reservePercent) || options.reservePercent < 0 || options.reservePercent > 90)) return 'Choose a host reserve between 0 and 90 percent.';
+        if (id === 'DRIFT' && options.baseline) {
+            try { DriftFirewall.validateBaseline(options.baseline, options); }
+            catch (error) { return error.message; }
         }
         return null;
     }
@@ -107,13 +121,14 @@ const CatalogModel = (() => {
             scope: 'Visible resources in this PVE origin; permission filtering can hide resources without an error',
             rows: [], issues: [], notes: [] };
         const cache = new Map();
-        async function get(path, query = {}) {
-            const key = path + JSON.stringify(query);
+        async function get(path, query = {}, shape) {
+            if (options.signal?.aborted) return null;
+            const key = path + JSON.stringify(query) + (shape || '');
             if (!cache.has(key)) cache.set(key, (async () => {
                 const r = await read(path, query);
                 if (r.error) report.issues.push({ path, reason: r.error });
                 if (r.error) return null;
-                const objectExpected = /\/config$|\/agent\/network-get-interfaces$|\/tasks\/[^/]+\/status$/.test(path);
+                const objectExpected = shape === 'object' || (!shape && /\/config$|\/agent\/network-get-interfaces$|\/tasks\/[^/]+\/status$/.test(path));
                 if (!r.data || (objectExpected ? typeof r.data !== 'object' || Array.isArray(r.data) : !Array.isArray(r.data))) {
                     report.issues.push({ path, reason: 'Unexpected or missing API data shape' }); return null;
                 }
@@ -149,9 +164,16 @@ const CatalogModel = (() => {
         }
         // Work is scheduled in small waves as well as limited by the transport.
         async function each(items, action) {
-            for (let offset = 0; offset < items.length; offset += 3) await Promise.all(items.slice(offset, offset + 3).map(action));
+            for (let offset = 0; offset < items.length && !options.signal?.aborted; offset += 3) await Promise.all(items.slice(offset, offset + 3).map(action));
         }
         const identity = g => pick(g, ['vmid', 'name', 'node', 'type', 'status', 'tags', 'pool']);
+        const extensions = { CAPACITY: CapacityUpdates.capacity, UPDATES: CapacityUpdates.updates,
+            DRIFT: DriftFirewall.drift, FIREWALL: DriftFirewall.firewall, SUPPORT: SupportBundle.collect };
+        if (extensions[id]) {
+            await extensions[id]({ report, get, guests, nodes: wantedNodes, config, each, identity,
+                resources, options, safeConfig, part, pick, array, fields, guestPath });
+            return report;
+        }
         async function visibleBackups() {
             const backups = [];
             await each(nodes, async node => {

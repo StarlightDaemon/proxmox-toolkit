@@ -1,5 +1,10 @@
 # Configurable Toolkit acceptance
 
+The local **0.8.0-dev.1** candidate adds five reports. Its acceptance criteria
+are in the [0.8 expansion plan](EXPANSION-0.8.md), and actual local results belong
+in the [development checkpoint](TOOLKIT-DEVELOPMENT.md). The stable 0.7.0 hashes,
+results and live evidence below are preserved; they do not qualify the new code.
+
 Release: **0.7.0**, promoted from **0.7.0-dev.8** at the maintainer's explicit
 request on 2026-11-02 after positive live workflow feedback. The only outputs
 are Toolkit and Copy & Paste. Promotion preserves the tested runtime; it does

@@ -1,9 +1,12 @@
 # Toolkit catalog and settings
 
-This guide describes stable **0.7.0**, promoted from the tested **0.7.0-dev.8**
-runtime with maintainer approval. Detailed live report, clipboard and compatibility
-checks remain in the [acceptance record](CATALOG-ACCEPTANCE.md). Historical 0.5.0
-release files remain available for rollback.
+This guide describes local **0.8.0-dev.1**, with 27 Toolkit toggles. The five
+new reports and their limits are detailed in the [expansion plan](EXPANSION-0.8.md).
+Published stable **0.7.0** remains available with its 22-toggle catalog and
+maintainer-accepted workflow. New runtime behavior has not inherited that live
+acceptance. The [acceptance record](CATALOG-ACCEPTANCE.md) preserves stable
+evidence; the [development checkpoint](TOOLKIT-DEVELOPMENT.md) records candidate
+verification. No candidate publication is authorized without operator approval.
 
 ## Install and select features
 
@@ -32,7 +35,7 @@ Toolkit and follows normal Proxmox navigation, which may replace that console.
 can still disconnect a console independently of Toolkit.
 
 Toolkit initially enables only **Copy, Paste Only and Paste & Execute**.
-The other nineteen features default off. Copy & Paste enables the same three.
+The other twenty-four features default off. Copy & Paste enables the same three.
 Existing saved selections are preserved on upgrade. To adopt this baseline for
 an existing installation, choose Restore defaults, then Save & Reload. Check or uncheck features, then **Save & Reload**.
 Restore defaults changes the form only until saved. Preferences survive updates
@@ -130,6 +133,28 @@ native resource selection when that integration is available.
 | Network Path Explorer | Expand guest NIC → bridge → bond/VLAN → interface paths. Show configured MTU/VLAN data and a per-node interface comparison, including nodes with no visible guests. Cycles and unknown upstream interfaces are explicit. Physical switch topology, actual connectivity and complete OVS/SDN behavior are outside this view. |
 | Guest Integration Health Check | QEMU agent configuration and pending settings. Optional responsiveness checkbox performs a read-only guest-agent network-information request for running VMs with the agent enabled. It never calls guest-exec, ping POST, shutdown, freeze or trim. Configured, responding and unavailable are distinct. |
 | Recovery Manifest & Rebuild Checklist | Allowlisted guest hardware/startup configuration, storage/network configuration, HA and resource mappings, plus recovery prerequisites. Omits credentials and arbitrary text. This is documentation, not a host backup or executable restore plan; actual files, keys, backups, firewall and external infrastructure still need preservation. |
+
+## Added 0.8 reports
+
+These five reports are available only in the development candidate. Select their
+toggles, Save & Reload, then open the report beside the setting. Collection is
+explicit and obeys the same scope, cancellation and permission limits above.
+
+| Toggle / category | Workflow and limits |
+| --- | --- |
+| Capacity & Headroom / Inventory | Review selected guest configured allocations, current node consumption and sampled node/storage RRD history. Choose a historical timeframe and reserve percentage. Reserve headroom is an estimate for review, not guaranteed placement capacity; shared storage must not be summed once per observing node. |
+| Cluster Configuration Changes / Inventory | Collect an allowlisted configuration baseline, download it, and import a prior baseline for a later comparison. Covers guest configuration, node networking and storage definitions. Unknown or no-longer-visible resources are not proven deletions; VMID reuse can make identity uncertain. No automatic history or rollback. |
+| Troubleshooting Bundle Builder / Troubleshooting | Select evidence sections and optionally a task, add symptoms and reproduction notes, review assisted replacements and the final preview, then download Markdown or JSON. Evidence stays local; no upload or support submission occurs. Review arbitrary text for secrets before sharing. |
+| Firewall Visibility & Rule References / Troubleshooting | Review visible enablement settings, policies, ordered rules and group/alias/IP-set references. Inspect where groups are used. These are configuration observations, not a promise about packet filtering or a replacement for backend-specific troubleshooting. |
+| Update Readiness & Version Consistency / Maintenance | Compare installed package versions, running kernels, available candidates from the local package index, and repository summaries. Index freshness may be unknown. Kernel differences are review evidence; the report does not refresh repositories, install packages or reboot nodes. |
+
+Download baselines deliberately and keep them with the change record you intend
+to compare. Import only the intended cluster/origin, API proxy prefix and identical scope. Report
+exports may contain internal identities even when credential fields are omitted.
+The bundle's assisted redaction helps review but does not certify anonymity.
+Baseline files must be under 4 MiB and also pass conservative in-memory content,
+depth and entry limits. Support bundles offer local Markdown and JSON downloads;
+there is no bundle clipboard action.
 
 ## Data and efficiency boundaries
 

@@ -3,7 +3,23 @@
 For a concise overview of console scope and browser/manager guidance, see
 [Compatibility](COMPATIBILITY.md). This page retains detailed evidence and history.
 
-## Current status
+## Current local candidate — 0.8.0-dev.1
+
+The five-report expansion has its own [scope and acceptance criteria](EXPANSION-0.8.md).
+Toolkit now has 27 toggles across the same six categories; only the three
+clipboard actions default on. Copy & Paste remains a three-feature edition.
+Local verification passed: **435 Node tests**, deterministic generation,
+33 JavaScript parses, 195 local links, metadata/version, cached xterm integrity
+and whitespace. The real ExtJS 7.0.0.168 / Chrome 155.0.8059.85 synthetic browser
+fixture passed new-report collection/cancellation, baseline round-trip and
+rejection, edited preview export bytes, component cleanup and narrow layouts.
+Screenshots were inspected. Exact artifacts, commands, review fixes and evidence
+limits are in [the development checkpoint](TOOLKIT-DEVELOPMENT.md).
+No live PVE/API, Firefox-manager, real clipboard or saved-file qualification is
+inferred from local tests or the historical results below. GitHub push and
+publication require operator approval.
+
+## Stable 0.7.0 evidence
 
 **0.7.0 is the maintainer-approved stable promotion of 0.7.0-dev.8.** On
 2026-11-02 the maintainer reported the last tested version looked good and
@@ -317,9 +333,10 @@ contents, or live Proxmox compatibility.
 
 Install the chosen [edition source](EDITIONS.md#choose-an-edition) in Firefox
 with Violentmonkey, following the [migration/rollback instructions](INSTALL.md).
-Confirm the edition name, `0.6.0-dev.1`, and your trusted-host rule. Test Toolkit
-alone, each standalone alone, and both individuals together in separate runs;
-keep older entries disabled. Retain stable 0.5.0 for rollback. Record browser,
+Confirm the edition name, exact candidate version `0.8.0-dev.1`, and your
+trusted-host rule. Test Toolkit alone and Copy & Paste alone in separate runs;
+keep the other edition and all older entries disabled. Retain stable 0.7.0 for
+rollback. The five new reports also require the [0.8 scenarios](EXPANSION-0.8.md). Record browser,
 manager, PVE, and `pve-xtermjs` versions plus the actual
 script hash. Numeric versions from earlier Copy reports are not candidate data.
 
@@ -372,11 +389,11 @@ not establish a pass for each individual step.
    restores the old behavior. Secondary Chrome/Tampermonkey qualification follows
    primary acceptance, and is not yet established.
 
-9. With both individuals active, start a delayed read and activate Copy from
-   the other script; then reverse with a delayed Copy write and Paste. Expect
-   no overlapping clipboard action. Verify completion, denial, timeout, and
-   cancellation release the shared lock and controls recover. Check each
-   standalone's own targeting, focus, teardown, and current name/version.
+9. Within the enabled edition, start a delayed read and try another clipboard
+   action; reverse with a delayed Copy write and Paste. Expect no overlapping
+   action. Verify completion, denial, timeout and cancellation recover controls.
+   Recheck targeting, focus, teardown and version in each separate edition run.
+   Mixed-edition installation is not a supported acceptance configuration.
 
 If Paste is disabled while Copy works, the clipboard-read capability or exact
 connection/input checks (including ExtJS hide subscription/removal) are

@@ -1,5 +1,29 @@
 # Decisions
 
+## Five-report local expansion — 2026-11-02
+
+The operator accepted all five researched additions and directed cataloging,
+refinement, planning, implementation, testing and verification from start to
+finish. Implement them as local **0.8.0-dev.1**: Capacity & Headroom and Cluster
+Configuration Changes in Inventory; Troubleshooting Bundle Builder and Firewall
+Visibility & Rule References in Troubleshooting; Update Readiness & Version
+Consistency in Maintenance. The six existing categories suffice. Each report
+has its own toggle and defaults off; the three existing clipboard defaults stay.
+
+Reuse the authenticated same-origin GET client, per-run caching, bounded work,
+request budgets, native workspace and lifecycle cleanup. Explicit downloaded
+baselines provide change comparison without background persistence. Support
+exports require local review and offer assisted redaction; they are not uploaded.
+Capacity estimates, configuration differences, firewall observations and update
+candidates expose their uncertainty rather than claiming operational guarantees.
+The [expansion plan](docs/EXPANSION-0.8.md) records the concrete scope and acceptance.
+
+Both editions follow the Toolkit version; Copy & Paste keeps its three features.
+Published stable 0.7.0 and all prior history remain unchanged. The operator
+explicitly reserved GitHub publication approval: do not push, merge, tag or
+release this candidate without that approval. Local verification and live
+Proxmox/browser acceptance remain separate evidence classes.
+
 ## Stable 0.7.0 promotion — 2026-11-02
 
 After positive dev.8 workflow feedback, the maintainer explicitly directed that
@@ -14,7 +38,9 @@ This is maintainer practical acceptance and release authorization, not an
 assertion that every report, clipboard case or compatibility cell passed.
 Keep detailed qualification and conditional maintenance in Open Loops. Tools-menu
 grouping and versioned handoff copies remain unapproved proposals. The active
-release checkout is `E:\Citadel\proxmox-toolkit`; the old folder is preserved.
+release checkout is `E:\Proxmox Toolkit` (relocated from
+`E:\Citadel\proxmox-toolkit`, observed 2026-11-08); the old
+`E:\Citadel\proxmox-copy-console` folder is preserved.
 
 ## Category settings and report entry points — 2026-11-02
 
