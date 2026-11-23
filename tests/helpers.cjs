@@ -69,7 +69,7 @@ function consoleView({ type = 'shell', node = 'pve', vmid = 101, text, label = '
     return { anchor, toolbar, owner, root, frame, frames, term };
 }
 function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = false, hidden = false, create, hasPVE = true,
-    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow', readClipboard, edition = 'toolkit', enabledFeatures, headerReady = true, freshSettings = false } = {}) {
+    globals = {}, url = 'https://pve.example:8006/', exposure = 'unsafeWindow', readClipboard, edition = 'toolkit', enabledFeatures, toolsLayout, headerReady = true, freshSettings = false } = {}) {
     let now = 0, nextId = 0;
     const timers = new Map(), intervals = [], events = {}, copied = [], created = [], warnings = [], components = [];
     const blobs = new Map(), revoked = [], downloads = [], domAnchors = [];
@@ -198,7 +198,8 @@ function host({ views = [], manager = 'Violentmonkey', clipboard, subframe = fal
     if (!freshSettings && !enabledFeatures && !context.GM_getValue && !context.GM?.getValue)
         enabledFeatures = ['COPY', 'PASTE_ONLY', 'PASTE', 'EXPORT', 'DIAGNOSTICS', 'RECIPES'];
     if (enabledFeatures) context.GM_getValue = () => ({ schema: 1, features: Object.fromEntries(
-        require('../tools/features.cjs').features.map(f => [f.id, enabledFeatures.includes(f.id)])) });
+        require('../tools/features.cjs').features.map(f => [f.id, enabledFeatures.includes(f.id)])),
+        ...(toolsLayout === undefined ? {} : { toolsLayout }) });
     function installEdition(id, overrides = {}) {
         const config = require('../tools/editions.json').editions.find(item => item.id === id);
         if (!config) throw Error(`Unknown edition: ${id}`);

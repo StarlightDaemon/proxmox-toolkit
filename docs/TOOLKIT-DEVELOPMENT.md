@@ -7,7 +7,63 @@ in the verified 2026-11-09 cutover. Start development from that Git root.
 The retained OL-01 review remains linked at
 `E:\Proxmox Toolkit\development\proxmox-toolkit-source\.cache\ol-01-review`.
 
-## Latest checkpoint — 2026-11-02: local 0.8.0-dev.1 ready for operator review
+## Latest checkpoint — 2026-11-23: OL-13 Tools grouping (local pilot branch)
+
+Verified repository root `E:/Proxmox Toolkit/development/pt-claude-pilot`
+(linked worktree of `StarlightDaemon/proxmox-toolkit`), branch
+`claude/pilot-ol13-tools-grouping`, clean start at `d4b6f25` (tip of
+`claude/expansion-0.8`). Agent: Claude Code (Windows pilot of the shared
+Claude/Codex/Gemini workspace). Heath authorized implementing OL-13 on this
+branch only; this is not approval to merge, release or publish, and
+DECISIONS.md still lists the proposal as unapproved for release. No push, PR,
+tag, release or live-system contact.
+
+Source inspection first: at `d4b6f25` Toolkit already keeps Copy, Paste Only and
+Paste & Execute inline and puts every `utility` action (Export Console,
+Diagnostics, Recipes, Scoped Copy, Find in Scrollback, Review & Paste) under one
+native **Tools** menu. That equals the recorded recommendation, so the default
+was kept, not changed.
+
+Implemented the recommendation's one preference:
+- `src/settings.js` (Toolkit only, `#if MENU`): optional `toolsLayout` field
+  (`grouped` | `inline`) inside the existing schema-1 settings object under the
+  unchanged key. Missing, unknown or non-string values normalize to `grouped`,
+  so existing saved settings keep today's layout. A Console-tab **Utility
+  layout** combo box (a preference card, not a 28th feature toggle) edits it;
+  draft capture, Restore defaults and Save & Reload include it.
+- `src/toolkit.js`: `createControl` uses the menu only when the action is a
+  utility and `toolsGrouped()`; inline utilities reuse the existing
+  `ACTION_ORDER` placement after the clipboard actions. The choice is read once
+  per control creation; no new timers, listeners, queries or grants.
+- Stable 0.7.0's `normalizeSettings` copies only known keys (inspected at
+  `v0.7.0`), so rollback ignores the new field.
+- Edits are insert-only around Copy & Paste code paths: the generated
+  `proxmox-copy-paste.user.js` is byte-identical (SHA-256
+  `89855736b80a09424710380626914b2e0cd2094dd6da7a3a8f9d328f4f149ed6`). Toolkit is
+  200378 bytes, SHA-256
+  `4641c2ee857489bdfc3822fb3d3a5d8fcb71b788ac5e759ea61ac21306dc95f9`.
+
+Tests: `tests/tools-layout.test.cjs` adds 12 mock-host tests (absent, grouped,
+unknown and non-string stored values give the grouped layout; fresh install;
+inline order, subset and rescan stability; inline handlers and owner teardown;
+one preference card and still 27 checkboxes; save under the unchanged key and
+reload round trip; Restore defaults and draft survival; Copy & Paste stores no
+extra field). `tests/helpers.cjs` gains a `toolsLayout` host option.
+
+Executed locally: `node tools/build.cjs`, `node tools/build.cjs --check`,
+`node tools/check.cjs`, `node tools/fetch-xterm.cjs`,
+`node --test --test-isolation=none tests/*.test.cjs` (453 pass, 0 fail; baseline
+441) and `git diff --check`. Not run: `node tools/browser-smoke.cjs` (needs the
+ExtJS assets from pve.proxmox.com, outside this pilot's allowed checks; it also
+has no Tools-menu assertions). No live Firefox/Violentmonkey/PVE check: real
+ExtJS rendering of the combo box, Firefox `cloneInto` of its array store, the
+inline toolbar's width at narrow sizes and live persistence remain unverified.
+
+Next step: reviewer checks the diff; then live acceptance of both layouts,
+Save & Reload persistence and rollback; then an operator decision on whether
+OL-13 joins a release.
+
+## Previous checkpoint — 2026-11-02: local 0.8.0-dev.1 ready for operator review
 
 Verified origin `https://github.com/StarlightDaemon/proxmox-toolkit.git`, branch
 `main`, and clean starting commit `5dbe558f0857cc010a5f76d0987dc3aedeb6e7f8`

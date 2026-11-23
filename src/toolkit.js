@@ -935,7 +935,7 @@
                 group.actions.push(action);
                 let menu = false;
                 // #if MENU
-                menu = !!spec.utility;
+                menu = !!spec.utility && toolsGrouped();
                 if (menu && !group.menu) {
                     group.menu = Ext.create('Ext.menu.Menu', pageOptions({}));
                     group.toolsButton = Ext.create('Ext.button.Button', pageOptions({
