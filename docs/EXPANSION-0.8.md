@@ -6,8 +6,9 @@ The operator authorized cataloging, refining, planning, implementing and locally
 verifying all five additions on 2026-11-02. The working candidate is
 **0.8.0-dev.1**, based on clean `main` at
 `5dbe558f0857cc010a5f76d0987dc3aedeb6e7f8` in
-`E:\Citadel\proxmox-toolkit`; that checkout now lives at `E:\Proxmox Toolkit`
-(observed 2026-11-08). Published stable **0.7.0** remains the rollback release.
+`E:\Citadel\proxmox-toolkit`. The checkout was observed at `E:\Proxmox Toolkit`
+on 2026-11-08. See the [current local checkout](TOOLKIT-DEVELOPMENT.md#current-local-checkout).
+Published stable **0.7.0** remains the rollback release.
 Local implementation does not publish a new release. With separate operator
 approval, the candidate was committed on `claude/expansion-0.8`, pushed and
 opened for review as

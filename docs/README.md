@@ -16,7 +16,7 @@ For a quick introduction, start with the [project README](../README.md).
 - [Design](DESIGN.md) — console ownership, clipboard handling, edition generation, and input-session cancellation in the current candidate.
 - [Open loops](OPEN-LOOPS.md) — remaining evidence gaps and conditional follow-ups.
 - [Feature implementation handoff](FEATURE-EXPANSION-HANDOFF.md) — selected Paste Only, Console Export, Diagnostics, and Recipe Picker scope, implementation stages, review, and acceptance requirements.
-- [Toolkit development and release record](TOOLKIT-DEVELOPMENT.md) — stable promotion, current checkout at `E:\Proxmox Toolkit`, resume instructions and earlier checkpoints.
+- [Toolkit development and release record](TOOLKIT-DEVELOPMENT.md#current-local-checkout) — current local checkout, resume instructions, stable promotion, and earlier checkpoints.
 
 [Decisions](../DECISIONS.md) records scope and rationale; the [changelog](../CHANGELOG.md) records versions.
 

@@ -1,5 +1,12 @@
 # Proxmox Toolkit development record
 
+## Current local checkout
+
+The Windows checkout moved to `E:\Proxmox Toolkit\development\proxmox-toolkit-source`
+in the verified 2026-11-09 cutover. Start development from that Git root.
+The retained OL-01 review remains linked at
+`E:\Proxmox Toolkit\development\proxmox-toolkit-source\.cache\ol-01-review`.
+
 ## Latest checkpoint — 2026-11-02: local 0.8.0-dev.1 ready for operator review
 
 Verified origin `https://github.com/StarlightDaemon/proxmox-toolkit.git`, branch
