@@ -11,7 +11,7 @@ Native clipboard tools and configurable read-only management reports for Proxmox
 reports, bringing Toolkit to 27 toggles. Published stable remains **0.7.0** with
 22 toggles; the installation links below intentionally select that release.
 See the [0.8 expansion plan and acceptance criteria](docs/EXPANSION-0.8.md) and
-[development catalog](docs/CATALOG.md). The candidate is not published or live-qualified.
+[development catalog](docs/CATALOG.md). The candidate is on `main` but not released, published or live-qualified.
 
 - **Copy** captures retained scrollback or the active alternate screen as plain text, joining wrapped lines.
 - **Paste Only** pastes clipboard text without appending Enter.
