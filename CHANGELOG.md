@@ -18,7 +18,7 @@
   verification is recorded in the development checkpoint after execution.
 - Harden Troubleshooting Bundle redaction for Proxmox-native credentials, and
   make Firewall guest aliases and IP sets opt-in.
-- Pilot branch only (OL-13, not approved for release): add a Toolkit
+- OL-13 (live check reported good 2026-11-24; release inclusion undecided): add a Toolkit
   **Utility layout** preference. *Grouped under Tools* stays the default;
   *Inline toolbar buttons* places enabled console utilities after the clipboard
   actions. Stored as `toolsLayout` in the existing settings key/schema; Copy &

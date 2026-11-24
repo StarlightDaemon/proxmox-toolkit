@@ -63,6 +63,13 @@ Next step: reviewer checks the diff; then live acceptance of both layouts,
 Save & Reload persistence and rollback; then an operator decision on whether
 OL-13 joins a release.
 
+Update 2026-11-24: Heath reported the live browser check as good and working as
+expected (per-scenario detail not itemized). The pilot commits were rebased onto
+the docs commit `414405d`, fast-forwarded into `claude/expansion-0.8` and pushed
+to [PR #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1). The pilot
+worktree and backup branch were removed. Remaining: the operator decision on
+release inclusion.
+
 ## Previous checkpoint — 2026-11-02: local 0.8.0-dev.1 ready for operator review
 
 Verified origin `https://github.com/StarlightDaemon/proxmox-toolkit.git`, branch

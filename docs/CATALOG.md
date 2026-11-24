@@ -59,8 +59,8 @@ utilities after the clipboard actions in the order Export Console, Diagnostics,
 Recipes, Scoped Copy, Find in Scrollback, Review & Paste. It is stored as
 `toolsLayout` inside the existing settings object (same key and schema), applies
 after Save & Reload, and never enables an action. Copy & Paste has no utilities
-and no layout preference. *(Local pilot implementation for OL-13; live acceptance
-pending.)*
+and no layout preference. *(OL-13; operator live check reported good on 2026-11-24, release
+inclusion undecided.)*
 
 Every report has a fixed native footer with **Back to Toolkit** and **Return to Proxmox**.
 Back returns to the report's category tab and restores unsaved settings; Return restores the underlying Proxmox view and discards the unsaved draft.
