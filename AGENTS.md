@@ -21,8 +21,7 @@ On 2026-11-02 the operator authorized local cataloging, planning, implementation
 and verification of Capacity & Headroom, Cluster Configuration Changes,
 Troubleshooting Bundle Builder, Firewall Visibility & Rule References, and
 Update Readiness & Version Consistency. The local candidate is 0.8.0-dev.1.
-GitHub push requires explicit operator approval; implementation authority does
-not authorize a commit, remote update, merge, tag or publication.
+See Standing delegation v1 in AGENTS.md.
 
 ## Authoritative project documents
 
@@ -64,7 +63,7 @@ Before changing repository state:
 4. Preserve unrelated tracked files unless deletion is explicitly authorized.
 5. Match the execution surface to the evidence required by the task.
 
-Treat these as separate authority boundaries unless explicitly granted together:
+Treat these as separate authority boundaries unless explicitly granted together (see Standing delegation v1 in AGENTS.md):
 
 - implementation/file mutation;
 - commit creation;
@@ -85,3 +84,34 @@ Version 0.4.0 promotes the unchanged 0.4.0-dev.2 runtime following the maintaine
 ## Verification discipline
 
 GitHub-side file/ref evidence is not proof of local execution, runtime correctness, clipboard behavior, or manual Proxmox acceptance. Report those evidence classes separately and do not claim tests were run unless a surface actually ran them.
+
+## Standing delegation v1 (operator: StarlightDaemon)
+Applies to every agent working in this repo: Claude Code, Codex, Gemini CLI.
+
+Do without asking, then report once at the end of the task:
+- Read, build, test, lint. Wait for CI yourself; don't hand back "pending".
+- Create agent branches (claude/*, codex/*, gemini/*); commit, rebase,
+  fast-forward and merge them. Create agent worktrees.
+- Push agent branches (never force). Open and update PRs; enable auto-fix.
+- Merge a PR into the default branch when all checks pass, no review
+  requests changes, and the merge doesn't publish (see Publication surface).
+- Delete agent branches, local and remote, once their commits are in the
+  default branch or another pushed branch.
+- Keep records current: HANDOFF, OPEN-LOOPS, CHANGELOG and any doc that
+  describes branch or PR state.
+
+Ask once, in one message listing everything pending:
+- Tags, releases, leaving a -dev version, or any merge that publishes.
+- Force push, or rewriting history that's already pushed.
+- Any other deletion: worktrees, backup refs, files or branches an agent
+  didn't create, commits that exist nowhere else.
+- Committing, moving or discarding StarlightDaemon's uncommitted work.
+- CI workflows, branch protection, repo settings, secrets, agent permission
+  settings, and this section.
+- Anything against live hosts, services or devices.
+
+Stop and report: failing checks you can't fix within the task, conflicts in
+files StarlightDaemon is editing, or anything this section doesn't cover.
+
+### Publication surface
+Merging to `main` publishes nothing. None of the userscripts on `main` (`proxmox-toolkit.user.js`, `proxmox-copy-paste.user.js`, `tools/probe-manager.user.js`) sets `@updateURL` or `@downloadURL`, and the install docs link only to tag-pinned files and GitHub releases. Releases go out by tag and GitHub release only.
