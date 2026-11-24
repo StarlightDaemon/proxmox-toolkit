@@ -1,5 +1,5 @@
 {
-    "version": "0.7.0",
+    "version": "0.8.0-dev.1",
     "repository": "https://github.com/StarlightDaemon/proxmox-toolkit",
     "editions": [
         {
@@ -28,7 +28,12 @@
                 "MAINTENANCE",
                 "NETWORK",
                 "GUEST_HEALTH",
-                "RECOVERY"
+                "RECOVERY",
+                "CAPACITY",
+                "DRIFT",
+                "SUPPORT",
+                "FIREWALL",
+                "UPDATES"
             ],
             "description": "Configurable console tools and read-only management reports for Proxmox VE."
         },

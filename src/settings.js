@@ -7,17 +7,32 @@ let toolkitDialog, toolkitLauncher, dialogDispose;
 let settingsDraft;
 let launcherTimer, launcherDelay = 250, launcherStopped = false;
 const localDownloads = new Set();
+// #if MENU
+// One optional field inside the existing schema-1 object; absent means grouped.
+const TOOLS_LAYOUTS = ['grouped', 'inline'];
+const DEFAULT_TOOLS_LAYOUT = 'grouped';
+// #endif
 function defaultSettings() {
     return { schema: 1, features: Object.fromEntries(FEATURE_CATALOG.map(f => [f.id, f.defaultOn])), apiPrefix: '/' };
 }
 function normalizeSettings(value) {
     const result = defaultSettings();
+    // #if MENU
+    result.toolsLayout = DEFAULT_TOOLS_LAYOUT;
+    // #endif
     if (!value || value.schema !== 1 || !value.features || typeof value.features !== 'object') return result;
     for (const f of FEATURE_CATALOG) if (typeof value.features[f.id] === 'boolean') result.features[f.id] = value.features[f.id];
     if (typeof value.apiPrefix === 'string' && /^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(value.apiPrefix)) result.apiPrefix = value.apiPrefix;
+    // #if MENU
+    if (TOOLS_LAYOUTS.includes(value.toolsLayout)) result.toolsLayout = value.toolsLayout;
+    // #endif
     return result;
 }
 function featureEnabled(id) { return runtimeSettings?.features[id] === true; }
+// #if MENU
+// Clipboard actions are always inline; this only places the other console utilities.
+function toolsGrouped() { return runtimeSettings?.toolsLayout !== 'inline'; }
+// #endif
 function nodeElement(tag, text, parent, attributes = {}) {
     const el = document.createElement(tag);
     if (text !== undefined) el.textContent = text;
@@ -148,7 +163,9 @@ function openToolkitDialog(title, category) {
         // Scope layout rules only; colors/fonts come from the installed PVE theme.
         nodeElement('style', `.pve-toolkit-report [hidden]{display:none!important}
             .pve-toolkit-report label{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;flex-wrap:wrap}
-            .pve-toolkit-report input{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report input,.pve-toolkit-report select,.pve-toolkit-report textarea{max-width:100%;padding:5px;min-width:0;border:1px solid currentColor;border-color:color-mix(in srgb,currentColor 35%,transparent)}
+            .pve-toolkit-report label:has(textarea){display:flex;width:100%;box-sizing:border-box}
+            .pve-toolkit-report textarea{box-sizing:border-box;resize:vertical}
             .pve-toolkit-report input[type=checkbox]{appearance:auto;width:auto}
             .pve-toolkit-report p{line-height:1.5;margin:8px 0}
             .pve-toolkit-report table{border-collapse:collapse;display:block;max-height:50vh;overflow:auto;width:100%;margin-top:12px}
@@ -238,6 +255,9 @@ function openToolkitSettings(section) {
         const categories = new Map();
         const pagers = [];
         let prefix;
+        // #if MENU
+        let layout;
+        // #endif
         const order = ['Console', 'Inventory', 'Recovery', 'Troubleshooting', 'Maintenance', 'Integration'];
         for (const group of order.filter(name => FEATURE_CATALOG.some(f => f.group === name))) {
             const form = nativeChild(tabs, 'Ext.form.Panel', { title: group, bodyPadding: 8,
@@ -268,6 +288,22 @@ function openToolkitSettings(section) {
                     emptyText: '/', allowBlank: false,
                 });
             }
+            // #if MENU
+            if (group === 'Console') {
+                // A preference, not a feature toggle: it never enables an action.
+                const card = nativeChild(form, 'Ext.panel.Panel', { layout: 'anchor', height: 104,
+                    bodyPadding: 8, margin: '0 8 8 0', border: true, pveToolkitPreference: 'toolsLayout' });
+                cards.push(card);
+                layout = nativeChild(card, 'Ext.form.field.ComboBox', {
+                    fieldLabel: 'Utility layout', labelWidth: 110, anchor: '100%', name: 'toolsLayout',
+                    store: [['grouped', 'Grouped under Tools'], ['inline', 'Inline toolbar buttons']],
+                    value: draft.toolsLayout, editable: false, forceSelection: true, queryMode: 'local',
+                    margin: '0 0 4 0',
+                });
+                nativeChild(card, 'Ext.form.field.Display', { hideLabel: true, margin: 0, anchor: '100%',
+                    value: 'Copy, Paste Only and Paste & Execute always stay inline. Applies to enabled console utilities.' });
+            }
+            // #endif
             const pager = page.Ext.create('Ext.toolbar.Toolbar', pageOptions({ dock: 'bottom', enableOverflow: true }));
             form.addDocked(pager);
             let index = 0, size = 1, updating = false;
@@ -284,13 +320,21 @@ function openToolkitSettings(section) {
                     const width = form.body.getWidth() - 16;
                     const columns = width >= 720 ? 2 : 1;
                     const available = form.body.getHeight() - 16;
-                    size = Math.max(1, Math.floor(available / 112)) * columns;
+                    let cardHeight = 104;
+                    // Report descriptions add a second text block. Reserve room for
+                    // wrapped titles and notes before calculating page capacity.
+                    // #if CATALOG
+                    if (FEATURE_CATALOG.some(f => f.group === group && f.description && REPORT_IDS.includes(f.id)))
+                        cardHeight = width / columns < 420 ? 184 : 152;
+                    // #endif
+                    size = Math.max(1, Math.floor(available / (cardHeight + 8))) * columns;
                     const pages = Math.ceil(cards.length / size);
                     index = Math.max(0, Math.min(index, pages - 1));
                     page.Ext.suspendLayouts();
                     try {
                         cards.forEach((card, i) => {
                             card.setWidth(Math.floor(width / columns) - 8);
+                            card.setHeight(cardHeight);
                             card.setHidden(i < index * size || i >= (index + 1) * size);
                         });
                         previous.setDisabled(index === 0); next.setDisabled(index === pages - 1);
@@ -302,6 +346,9 @@ function openToolkitSettings(section) {
             pagers.push(arrange);
         }
         const readDraft = () => ({ schema: 1, apiPrefix: prefix ? prefix.getValue() : '/',
+            // #if MENU
+            toolsLayout: layout?.getValue() === 'inline' ? 'inline' : DEFAULT_TOOLS_LAYOUT,
+            // #endif
             features: Object.fromEntries([...boxes].map(([id, box]) => [id, !!box.getValue()])) });
         toolkitDialog.captureDraft = () => { settingsDraft = readDraft(); };
         const notices = page.Ext.create('Ext.panel.Panel', pageOptions({ dock: 'bottom', border: false, bodyPadding: '0 8' }));
@@ -320,6 +367,9 @@ function openToolkitSettings(section) {
         nativeChild(footer, 'Ext.button.Button', { text: 'Restore defaults', handler: () => {
             const defaults = defaultSettings();
             for (const [id, box] of boxes) box.setValue(defaults.features[id]);
+            // #if MENU
+            layout?.setValue(DEFAULT_TOOLS_LAYOUT);
+            // #endif
             prefix?.setValue('/'); status.setValue('Defaults selected. Save & Reload to apply.');
         } });
         nativeChild(footer, 'Ext.toolbar.Fill', {});

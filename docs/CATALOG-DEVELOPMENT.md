@@ -1,5 +1,14 @@
 # Configurable catalog development
 
+## Current local expansion — 0.8.0-dev.1
+
+Five further reports are authorized for implementation and local verification.
+The [0.8 expansion plan](EXPANSION-0.8.md) records their categories, scope and
+acceptance criteria. The [development checkpoint](TOOLKIT-DEVELOPMENT.md) owns
+actual verification results. No GitHub push or release is authorized without
+operator approval. The stable-promotion and implementation records below retain
+their historical meaning.
+
 ## Stable promotion — 2026-11-02
 
 The maintainer subsequently accepted the last tested dev.8 runtime for stable

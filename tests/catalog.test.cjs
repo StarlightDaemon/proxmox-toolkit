@@ -42,8 +42,8 @@ function fixture(overrides = {}) {
     const calls = [];
     return { calls, read: async (path, query) => { calls.push({ path, query }); return Object.hasOwn(map, path) ? map[path]?.error ? map[path] : { data: map[path] } : { error: 'HTTP 403' }; } };
 }
-test('all 22 features belong to Toolkit; only Copy & Paste remains as a second edition', () => {
-    assert.equal(features.length, 22);
+test('all 27 features belong to Toolkit; only Copy & Paste remains as a second edition', () => {
+    assert.equal(features.length, 27);
     assert.deepEqual(manifest.editions[0].features, features.map(f => f.id));
     assert.deepEqual(manifest.editions.map(e => e.id), ['toolkit', 'copy-paste']);
     assert.deepEqual(manifest.editions[1].features, ['COPY','PASTE_ONLY','PASTE']);
@@ -184,7 +184,7 @@ test('maintenance separates HA membership and current spare memory', async () =>
 
 for (const id of reports.filter(id => !['COMPARE', 'TASK_REPORT'].includes(id)))
     test(`${id} accepts an empty scope and selects all visible nodes/guests`, async () => {
-        const r = await M.run(id, fixture().read, { node: '  ', vmids: '  ' });
+        const r = await M.run(id, fixture().read, { node: '  ', vmids: '  ', origin: 'https://pve.example:8006' });
         assert.deepEqual(r.selection.nodes, ['pve', 'other']);
         assert.equal(r.selection.selectedGuests, 2);
         assert.match(r.scope, /All visible nodes; all visible guests/);

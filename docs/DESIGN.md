@@ -1,5 +1,21 @@
 # Design
 
+The working candidate is **0.8.0-dev.1**. Published stable 0.7.0 and its evidence
+remain preserved. The [0.8 expansion plan](EXPANSION-0.8.md) records five approved
+local additions: capacity/history, imported-baseline changes, support bundles,
+firewall configuration and update readiness. These reuse the existing workspace,
+GET client, request budgets and cancellation; no background collection is added.
+Model fragments separate collection/analysis for capacity/updates,
+drift/firewall and support-bundle preparation. The registry assigns the five
+reports to Inventory, Troubleshooting and Maintenance. Toolkit has 27 toggles;
+Copy & Paste retains three. All five new reports default off.
+
+Baselines are explicitly exported/imported, validated and held in memory.
+Support bundles expose a preview and assisted redaction before local export.
+Unknown or partial data stays explicit; configuration snapshots do not establish
+change authorship, effective firewall behavior, restore or placement safety,
+package-index freshness, or a universal reboot requirement.
+
 ## Configurable management layer
 
 Each handed-off development candidate advances the shared dev.N revision. The
@@ -65,7 +81,7 @@ The server tree, top bar and task log remain outside the panel. Report redraw
 destroys owned buttons before replacing DOM. Native theme/Firefox compartments
 and actual Proxmox console lifecycle still require live qualification.
 
-This describes **0.7.0** generated editions, promoted from dev.8 with no new runtime behavior. Historical 0.5.0 retains its accepted runtime at its tag/release. The maintainer accepted dev.8's tested workflow for promotion; detailed lifecycle and cross-script qualification remains tracked. The [historical design](historicals/DESIGN.md) preserves the baseline and development sequence. [Decisions](../DECISIONS.md) records the rationale.
+The preserved console/workspace design originated in **0.7.0**, promoted from dev.8 with no new runtime behavior. Historical 0.5.0 retains its accepted runtime at its tag/release. The maintainer accepted dev.8's tested workflow for promotion; detailed lifecycle and cross-script qualification remains tracked. The [historical design](historicals/DESIGN.md) preserves the baseline and development sequence. [Decisions](../DECISIONS.md) records the rationale.
 
 ## Editions and generation
 

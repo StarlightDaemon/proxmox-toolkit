@@ -2,7 +2,11 @@
 
 [Project overview](../README.md) · [Installation and updates](INSTALL.md)
 
-Stable 0.7.0 provides clipboard actions and a configurable catalog. See [catalog and settings](CATALOG.md) for all 22 toggles and report workflows. The sections below describe the existing six actions; Toolkit settings choose which appear. Copy & Paste includes only the three clipboard actions.
+Published stable 0.7.0 provides 22 configurable capabilities. The local
+0.8.0-dev.1 candidate adds five reports for 27 toggles; see [catalog and
+settings](CATALOG.md) for their workflows and [the expansion plan](EXPANSION-0.8.md)
+for acceptance limits. The console behavior below is preserved. Copy & Paste
+includes only the three clipboard actions.
 
 Click **Toolkit** immediately left of global
 **Documentation** to toggle the native workspace. It fills the main content area;
@@ -42,7 +46,7 @@ A pending paste expires after 15 seconds. Page hiding, navigation, control teard
 
 Console hiding reported by ExtJS is observed even if the console returns between polling ticks. Brief CSS-only visibility or connection changes that produce neither an event nor a polling observation cannot be reconstructed afterward. Browser prompt focus loss alone does not cancel a pending read, but focus is required again before sending. See [Design](DESIGN.md#paste-and-input-lifecycle) for the exact checks and limits.
 
-## Paste Only (development candidate)
+## Paste Only
 
 **Paste Only** reads the clipboard on activation and calls the terminal paste
 API once. It never calls the Enter API or appends a submission character, and
@@ -57,7 +61,7 @@ paste requirement apply. CRLF/CR become LF and all trailing LF characters are
 removed; other spaces and Unicode are retained. Cancellation, possible partial
 send and no-retry rules are identical. Recheck the current program and input.
 
-## Export Console (development candidate)
+## Export Console
 
 Open **Tools → Export Console** . This captures one
 snapshot. Choose **Download plain text** (default) or **Download Markdown** in
@@ -73,7 +77,7 @@ The browser may prompt, rename or cancel. **Download requested** proves only
 that a browser request was made; inspect the actual saved file. Exports can
 contain sensitive information. There is no clipboard change or server request.
 
-## Diagnostics (development candidate)
+## Diagnostics
 
 Open **Tools → Diagnostics** for a readable prerequisite snapshot. **Refresh**
 re-evaluates it; **Copy diagnostic report** writes the displayed snapshot as
@@ -99,7 +103,7 @@ specific prerequisites. DOCUMENT_HIDDEN, CONTEXT_INELIGIBLE, OWNER_UNAVAILABLE
 and INSPECTION_FAILED report contained incomplete inspection. If ExtJS or a
 unique native anchor is missing, use the existing optional probes in Testing.
 
-## Diagnostic Recipes (development candidate)
+## Diagnostic Recipes
 
 Open **Tools → Recipes**, use **Previous/Next**, inspect the exact command and
 explanation, then **Copy command**. It copies without a trailing newline. It

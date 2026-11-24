@@ -7,10 +7,11 @@ const manifest = require('./editions.json');
 const { features, reports } = require('./features.cjs');
 const root = path.join(__dirname, '..');
 let template = fs.readFileSync(path.join(root, 'src/toolkit.js'), 'utf8').replace(/\r\n/g, '\n');
-for (const file of ['settings', 'console-extras', 'catalog-model', 'catalog-ui']) {
+for (const file of ['settings', 'console-extras', 'capacity-updates', 'drift-firewall', 'support-bundle', 'catalog-model', 'catalog-ui']) {
     const fragment = fs.readFileSync(path.join(root, `src/${file}.js`), 'utf8').replace(/\r\n/g, '\n')
-        .replace(/^if \(typeof module.*$/m, '');
-    template = template.replace(`/* @${file} */`, fragment);
+        .replace(/^if \(typeof module.*$/m, '')
+        .replace(/^const .* = require\(.*$/gm, '');
+    template = template.replace(`/* @${file} */`, () => fragment);
 }
 const specs = {
     COPY: "{ text: 'Copy', icon: COPY_ICON, tooltip: COPY_TOOLTIP, unavailable: UNAVAILABLE, handler: copyConsole, marker: 'pveCopyConsoleButton' }",

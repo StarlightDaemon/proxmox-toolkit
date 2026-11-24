@@ -96,14 +96,23 @@ async function main() {
                 options.signal.addEventListener('abort', () => reject(new Error('Aborted fixture request')), { once: true });
             });
             const pathname = new URL(url).pathname;
-            const data = pathname.endsWith('/cluster/resources') ? [{type:'node',node:'pve'},{type:'node',node:'empty'},{type:'qemu',vmid:101,name:'<img src=x onerror=alert(1)>',node:'pve',status:'running',mem:1024}] :
-                pathname.endsWith('/config') ? {memory:2048,cores:2,net0:'virtio=AA:BB:CC:DD:EE:FF,bridge=vmbr0',scsi0:'local:vm-101-disk-0'} : [];
+            const data = pathname.endsWith('/cluster/resources') ? [{type:'node',node:'pve',maxmem:17179869184,mem:4294967296,maxcpu:8},{type:'node',node:'empty',maxmem:17179869184,mem:2147483648,maxcpu:8},{type:'qemu',vmid:101,name:'<img src=x onerror=alert(1)>',node:'pve',status:'running',mem:1024}] :
+                pathname.endsWith('/config') ? {memory:window.fixtureMemory || 2048,cores:2,sockets:1,net0:'virtio=AA:BB:CC:DD:EE:FF,bridge=vmbr0,firewall=1',scsi0:'local:vm-101-disk-0'} :
+                pathname.endsWith('/apt/versions') ? [{Package:'pve-manager',OldVersion:'9.1.0',Version:'9.2.0',CurrentState:'Installed',ManagerVersion:'9.1.0'}] :
+                pathname.endsWith('/apt/update') ? [{Package:'pve-manager',OldVersion:'9.1.0',Version:'9.2.0'}] :
+                pathname.endsWith('/apt/repositories') ? {files:[{repositories:[{Enabled:1,Types:['deb'],URIs:['https://user:SECRET@example.invalid/repo'],Suites:['trixie'],Components:['pve-no-subscription']}]}],errors:[]} :
+                pathname.endsWith('/status') ? {memory:{total:17179869184,used:4294967296,available:12884901888},cpuinfo:{cpus:8},'current-kernel':{release:'6.17.0-pve'}} :
+                pathname.endsWith('/rrddata') ? [{time:1,cpu:.1,memused:1073741824},{time:2,cpu:.4,memused:4294967296}] :
+                pathname.endsWith('/network') ? [{iface:'vmbr0',type:'bridge',mtu:1500,address:'192.0.2.1'}] :
+                pathname.endsWith('/firewall/options') ? {enable:1,policy_in:'DROP'} :
+                pathname.endsWith('/firewall/rules') ? [{pos:0,type:'in',action:'ACCEPT',enable:1,proto:'tcp',dport:'443'}] : [];
             return new Response(JSON.stringify({data}),{status:200,headers:{'content-type':'application/json'}}); };
         ${script.replace(/\}\)\(\);\s*$/, "window.fixtureAPI = { openToolkitSettings, openCatalogReport: typeof openCatalogReport === 'function' ? openCatalogReport : undefined, enable: id => runtimeSettings.features[id] = true };\n})();")}
 
     })()`;
     for(let n=0;n<100;n++){if(await evaluate('!!window.Ext?.isReady'))break;await pause(50);}
     await evaluate(setupFor(script));
+    await evaluate('window.fixtureBlobs=[];window.originalCreateURL=URL.createObjectURL;URL.createObjectURL=function(blob){window.fixtureBlobs.push(blob);return originalCreateURL.call(URL,blob);};window.originalAnchorClick=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(!this.download)return originalAnchorClick.call(this);};void 0');
     const query = selector => 'Ext.ComponentQuery.query('+JSON.stringify(selector)+')'+(selector === 'window' ? '.filter(w=>w.isVisible())' : '');
     const click = async text => evaluate('Ext.ComponentQuery.query("button").find(b=>b.text==='+JSON.stringify(text)+').handler()');
     const checks = async (value, expected, message) => assert.equal(await evaluate(value),expected,message);
@@ -139,7 +148,7 @@ async function main() {
     await checks(fillsContent,true,'fills precisely the main content region');
     await checks('(()=>{const el=Ext.ComponentQuery.query("[pveToolkitWorkspace]")[0].el.dom,r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2));})()',true,'workspace intercepts clicks over the console');
     await checks('["north","west","south"].every(region=>{const el=workspace.down("[region="+region+"]").el.dom;return !el.inert && el.getBoundingClientRect().width>0;})',true,'surrounding PVE regions remain usable');
-    await checks(query('checkbox')+'.length',22);
+    await checks(query('checkbox')+'.length',27);
     await checks(query('checkbox')+'.filter(c=>c.getValue()).length',3);
     assert.deepEqual(await evaluate('Ext.ComponentQuery.query("tabpanel")[0].items.items.map(c=>c.title)'),
         ['Console','Inventory','Recovery','Troubleshooting','Maintenance','Integration']);
@@ -149,7 +158,7 @@ async function main() {
             await checks('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().title',group,'native tab click selects category');
             await checks('(()=>{const t=Ext.ComponentQuery.query("tabpanel")[0],r=t.el.dom.getBoundingClientRect();return t.items.items.every(c=>{const b=c.tab.el.dom.getBoundingClientRect();return b.width>0&&b.left>=r.left&&b.right<=r.right&&b.top>=r.top;});})()',true,'all category tabs fit without horizontal scrolling');
             const seen = new Set();
-            for (let p = 0; p < 22; p++) {
+            for (let p = 0; p < 27; p++) {
                 const ids = await evaluate('Ext.ComponentQuery.query("[pveToolkitFeature]").filter(c=>c.isVisible(true)).map(c=>c.pveToolkitFeature)');
                 ids.forEach(id => seen.add(id));
                 await checks('(()=>{const f=Ext.ComponentQuery.query("tabpanel")[0].getActiveTab(),r=f.body.dom.getBoundingClientRect();return f.items.items.filter(c=>c.pveToolkitFeature&&c.isVisible(true)).every(c=>{const b=c.el.dom.getBoundingClientRect();return b.top>=r.top&&b.bottom<=r.bottom+1&&b.right<=r.right+1;});})()',true,'settings cards fit without scrolling');
@@ -159,7 +168,7 @@ async function main() {
                 await evaluate('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().down("button[text=Next]").handler()');
             }
             assert.deepEqual([...seen].sort(),require('./features.cjs').features.filter(f=>f.group===group).map(f=>f.id).sort(),'every option is reachable through pagination');
-            for (let p = 0; p < 22; p++) {
+            for (let p = 0; p < 27; p++) {
                 if (await evaluate('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().down("button[text=Previous]").disabled')) break;
                 await evaluate('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().down("button[text=Previous]").handler()');
             }
@@ -221,12 +230,79 @@ async function main() {
     await click('Back to Toolkit');
     await checks('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().title','Maintenance','Maintenance returns to its category');
     const chooserComponents = await evaluate('Ext.ComponentManager.getCount()');
-    for (const id of ['INVENTORY','COMPARE','BACKUPS','TASKS','TASK_REPORT','SNAPSHOTS','STORAGE','MAINTENANCE','NETWORK','GUEST_HEALTH','RECOVERY']) {
+    for (const id of require('./features.cjs').reports) {
         await evaluate(`fixtureAPI.enable(${JSON.stringify(id)});fixtureAPI.openCatalogReport(${JSON.stringify(id)});void 0`);
         await checks('Ext.ComponentQuery.query("button").find(b=>b.text==="Back to Toolkit").ownerCt.dock','bottom','every report has a docked return button');
         await click('Back to Toolkit');
         await checks('Ext.ComponentQuery.query("tabpanel")[0].getActiveTab().title',require('./features.cjs').features.find(f=>f.id===id).group);
         await checks('Ext.ComponentManager.getCount()',chooserComponents,'report navigation does not leak components');
+    }
+    for (const id of ['CAPACITY', 'DRIFT', 'SUPPORT', 'FIREWALL', 'UPDATES']) {
+        const before = await evaluate('fixtureRequests()');
+        await evaluate(`fixtureAPI.openCatalogReport(${JSON.stringify(id)})`);
+        await checks('fixtureRequests()', before, `${id} opens without collection`);
+        await checks('(()=>{const b=document.querySelector("input[data-field=includeGuestSets]");return !!b&&!b.parentNode.hidden&&!b.checked;})()', id === 'FIREWALL', `${id} guest-set option is shown unchecked only for Firewall`);
+        await click('Run report');
+        for (let n=0;n<100;n++) {
+            if (await evaluate('!Ext.ComponentQuery.query("button").find(b=>b.text==="Run report").disabled')) break;
+            await pause(20);
+        }
+        const text = await evaluate('document.querySelector(".pve-toolkit-report").textContent');
+        assert.doesNotMatch(text, /Unknown report feature|is not a function|Cannot read/);
+        await checks('document.querySelector(".pve-toolkit-report [role=status]").textContent.includes("failed")', false, `${id} collected`);
+        if (id === 'SUPPORT') {
+            assert.ok(await evaluate('!!document.querySelector("textarea[data-field=preview]")'), text);
+            await checks('!!document.querySelector("textarea[data-field=preview]").value',true);
+            await checks('document.querySelector("textarea[data-field=preview]").value.includes("AA:BB:CC:DD:EE:FF")',false,'MAC is pseudonymized');
+            await evaluate('document.querySelector("textarea[data-field=symptoms]").value="reviewed incident";document.querySelector("textarea[data-field=symptoms]").dispatchEvent(new Event("input"));void 0');
+            await checks('Ext.ComponentQuery.query("button").find(b=>b.text==="Download reviewed preview").disabled',true,'changed narrative invalidates prepared download');
+            await evaluate('document.querySelector("select[data-field=format]").value="json";void 0');
+            await click('Prepare preview');
+            await evaluate('const p=document.querySelector("textarea[data-field=preview]");const v=JSON.parse(p.value);v.symptoms="operator edited";p.value=JSON.stringify(v);void 0');
+            await click('Download reviewed preview');
+            await checks('fixtureBlobs.at(-1).text().then(text=>JSON.parse(text).symptoms)','operator edited','download uses operator-edited preview exactly');
+            await checks('Ext.ComponentQuery.query("button").some(b=>b.text==="Download JSON")',false,'no unreviewed support export bypass');
+        } else {
+            await checks('document.querySelectorAll(".pve-toolkit-report tbody tr").length > 0', true, `${id} renders data`);
+        }
+        if (id === 'DRIFT') {
+            await click('Download baseline JSON');
+            await evaluate('(async()=>{window.fixtureBaseline=await fixtureBlobs.at(-1).text();window.fixtureMemory=4096;const dt=new DataTransfer();dt.items.add(new File([fixtureBaseline],"baseline.json",{type:"application/json"}));const input=document.querySelector("input[data-field=baseline]");input.files=dt.files;input.dispatchEvent(new Event("change"));})()');
+            await pause(30); await click('Run report'); await pause(30);
+            assert.match(await evaluate('document.querySelector(".pve-toolkit-report table").textContent'), /memory/);
+            assert.match(await evaluate('document.querySelector(".pve-toolkit-report table").textContent'), /4096/);
+            const scopeCalls = await evaluate('fixtureRequests()');
+            await evaluate('document.querySelector("input[data-field=node]").value="pve";void 0');
+            await click('Run report');
+            await checks('fixtureRequests()',scopeCalls,'baseline scope mismatch is refused before transport');
+            assert.match(await evaluate('document.querySelector(".pve-toolkit-report p[role=status]").textContent'), /This baseline covers all visible nodes; all visible guests/);
+            // File chosen while the scope fields disagree: accepted on load, compared once the scope matches.
+            await evaluate('(()=>{const dt=new DataTransfer();dt.items.add(new File([fixtureBaseline],"baseline.json",{type:"application/json"}));const input=document.querySelector("input[data-field=baseline]");input.files=dt.files;input.dispatchEvent(new Event("change"));})()');
+            await pause(30);
+            assert.match(await evaluate('document.querySelector(".pve-toolkit-report p[role=status]").textContent'), /Cluster baseline loaded/);
+            await evaluate('document.querySelector("input[data-field=node]").value="";void 0');
+            await click('Run report'); await pause(30);
+            assert.ok(await evaluate('fixtureRequests()') > scopeCalls, 'baseline loaded before fixing scope still compares');
+            assert.match(await evaluate('document.querySelector(".pve-toolkit-report table").textContent'), /4096/);
+            const loadOrderCalls = await evaluate('fixtureRequests()');
+            await evaluate('document.querySelector("input[data-field=node]").value="";const dt=new DataTransfer();dt.items.add(new File(["{}"],"bad.json"));const input=document.querySelector("input[data-field=baseline]");input.files=dt.files;input.dispatchEvent(new Event("change"));void 0');
+            await pause(30); await click('Run report');
+            await checks('fixtureRequests()',loadOrderCalls,'invalid baseline cannot silently become a fresh capture');
+        }
+        if (id === 'UPDATES') {
+            await click('Download JSON');
+            assert.doesNotMatch(await evaluate('fixtureBlobs.at(-1).text()'),/SECRET/);
+            await checks('Ext.ComponentQuery.query("button").some(b=>b.text==="Open Maintenance Preflight")',true);
+        }
+        const screenshot = await call('Page.captureScreenshot',{format:'png'});
+        fs.writeFileSync(path.join(cache,`${id.toLowerCase()}.png`),Buffer.from(screenshot.data,'base64'));
+        await click('Back to Toolkit');
+        await checks('Ext.ComponentManager.getCount()',chooserComponents, `${id} collection and return do not leak components`);
+        await evaluate(`window.holdFixtureRequest=true;fixtureAPI.openCatalogReport(${JSON.stringify(id)});Ext.ComponentQuery.query('button').find(b=>b.text==='Run report').handler();void 0`);
+        await checks('heldFixtureSignal.aborted',false);
+        await click('Back to Toolkit');
+        await checks('heldFixtureSignal.aborted',true,`${id} closes with collection cancelled`);
+        await evaluate('window.holdFixtureRequest=false;void 0');
     }
     await evaluate('window.holdFixtureRequest = true;fixtureAPI.openCatalogReport("INVENTORY");Ext.ComponentQuery.query("button").find(b=>b.text==="Run report").handler();void 0');
     await checks('heldFixtureSignal.aborted',false);
@@ -261,6 +337,18 @@ async function main() {
     await call('Emulation.setDeviceMetricsOverride',{width:640,height:700,deviceScaleFactor:1,mobile:false});
     await pause(100);
     await checkCategories();
+    for (const id of ['CAPACITY','DRIFT','SUPPORT','FIREWALL','UPDATES']) {
+        await evaluate(`fixtureAPI.openCatalogReport(${JSON.stringify(id)})`);
+        await click('Run report'); await pause(30);
+        await evaluate('for(let el=document.querySelector(".pve-toolkit-report");el;el=el.parentElement)el.scrollTop=el.scrollHeight;void 0');
+        await checks('(()=>{const r=Ext.ComponentQuery.query("button").find(b=>b.text==="Back to Toolkit").el.dom.getBoundingClientRect();return r.width>0&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;})()',true,`${id} narrow report retains visible return action`);
+        if (id === 'SUPPORT') {
+            await checks('(()=>{const p=document.querySelector("textarea[data-field=preview]");return !!p&&p.clientWidth>100&&p.getBoundingClientRect().right<=innerWidth;})()',true,'narrow support preview fits workspace');
+            const shot = await call('Page.captureScreenshot',{format:'png'});
+            fs.writeFileSync(path.join(cache,'support-narrow.png'),Buffer.from(shot.data,'base64'));
+        }
+        await click('Back to Toolkit');
+    }
     await call('Emulation.setDeviceMetricsOverride',{width:800,height:844,deviceScaleFactor:1,mobile:false});
     await pause(100);
     await evaluate('fixtureAPI.openCatalogReport("INVENTORY")');
@@ -297,7 +385,7 @@ async function main() {
     await checks('typeof fixtureAPI.openCatalogReport','undefined');
     await checks('fixtureRequests()',0);
     assert.deepEqual(runtimeErrors, [], 'no uncaught browser exceptions');
-    console.log(JSON.stringify({browser:await call('Browser.getVersion'),extjs:await evaluate('Ext.getVersion().toString()'),checks:'Global Documentation toggle; main-region bounds; native view, iframe document, terminal and real local WebSocket preserved through repeated toggles; surrounding regions usable; resize and cleanup; navigation/logout exit; 22 toggles / three defaults; all report return routes and active-request cancellation; narrow scrolled layout; Escape; three-toggle companion; no uncaught browser exceptions.',screenshots:cache},null,2));
+    console.log(JSON.stringify({browser:await call('Browser.getVersion'),extjs:await evaluate('Ext.getVersion().toString()'),checks:'Global Documentation toggle; main-region bounds; native view, iframe document, terminal and real local WebSocket preserved; resize and cleanup; navigation/logout; 27 toggles / three defaults; five new report collections and cancellation; baseline export/import/change/scope rejection; edited support Blob bytes; no raw support export bypass; all report return routes; narrow report layouts and support preview; Escape; three-toggle companion; no uncaught browser exceptions.',screenshots:cache},null,2));
     await call('Browser.close'); socket.close();
 }
 main().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{child.kill();for(const socket of connections)socket.destroy();socketServer.close();});

@@ -17,9 +17,15 @@ test('exactly two installable editions are generated at the shared version', () 
 });
 test('Copy & Paste physically omits management, utility panels, exports and extra console features', () => {
     const text=buildEdition(manifest.editions.find(e=>e.id==='copy-paste'));
-    assert.doesNotMatch(text,/fetch\(|CatalogModel|openExport|openDiagnostics|openRecipes|openReview|openScopedCopy|openFind|function localDownload/);
+    assert.doesNotMatch(text,/fetch\(|CatalogModel|CapacityUpdates|DriftFirewall|SupportBundle|openExport|openDiagnostics|openRecipes|openReview|openScopedCopy|openFind|function localDownload/);
     assert.match(text,/GM_getValue/);assert.match(text,/GM_setClipboard/);assert.match(text,/navigator.clipboard.readText/);
     assert.match(text,/\['shell', 'lxc'\]/);assert.doesNotMatch(text,/allowed.push\('kvm'\)/);
+});
+test('build preserves literal regex replacement tokens in report fragments', () => {
+    const text = buildEdition(manifest.editions[0]);
+    assert.doesNotMatch(text, /\/\* @support-bundle \*\//);
+    const fragment = fs.readFileSync('src/support-bundle.js', 'utf8').replace(/\r\n/g, '\n').replace(/^if \(typeof module.*$/m, '');
+    assert.ok(text.includes(fragment), 'source fragment is inserted literally, including dollar replacement syntax');
 });
 test('version changes stamp both editions without changing their runtime bodies', () => {
     const version=manifest.version,before=manifest.editions.map(buildEdition);
