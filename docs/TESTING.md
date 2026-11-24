@@ -16,11 +16,11 @@ rejection, edited preview export bytes, component cleanup and narrow layouts.
 Screenshots were inspected. Exact artifacts, commands, review fixes and evidence
 limits are in [the development checkpoint](TOOLKIT-DEVELOPMENT.md).
 No live PVE/API, Firefox-manager, real clipboard or saved-file qualification is
-inferred from local tests or the historical results below. The candidate is
-under review in
-[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1)
-(GitHub Checks pass); further pushes, merge and publication require operator
-approval.
+inferred from local tests or the historical results below. The candidate was
+merged into `main` from
+[pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1) on
+2026-11-24 after its GitHub Checks passed; tags, releases and publication
+require operator approval.
 
 ## Stable 0.7.0 evidence
 

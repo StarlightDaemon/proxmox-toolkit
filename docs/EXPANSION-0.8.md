@@ -13,8 +13,9 @@ Local implementation does not publish a new release. With separate operator
 approval, the candidate was committed on `claude/expansion-0.8`, pushed and
 opened for review as
 [pull request #1](https://github.com/StarlightDaemon/proxmox-toolkit/pull/1).
-Further pushes still need operator approval; no merge, tag or release is
-authorized.
+With the operator's approval, pull request #1 was merged into `main` on
+2026-11-24 (merge commit `2b81862`). No tag or release has been made; tags,
+releases and publication still need separate operator approval.
 
 ## Refined catalog
 

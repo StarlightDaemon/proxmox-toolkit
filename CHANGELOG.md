@@ -24,8 +24,8 @@
   actions. Stored as `toolsLayout` in the existing settings key/schema; Copy &
   Paste is unchanged.
 - Stable 0.7.0 remains published and available for rollback. The candidate
-  branch was pushed with operator approval for review; no merge, tag or release
-  may occur without the operator's approval.
+  was merged into `main` from PR #1 on 2026-11-24 with operator approval; no
+  tag or release may occur without the operator's approval.
 
 ## 0.7.0 — 2026-11-02
 
